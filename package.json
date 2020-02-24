@@ -1,0 +1,30 @@
+{
+  "name": "absol-sheet",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --config webpack.config.js",
+    "dist": "webpack --config webpack.config.js  --progress --profile --colors --mode production "
+  },
+  "author": "Pham Quoc Du Thien",
+  "license": "ISC",
+  "dependencies": {
+    "absol": "^1.11.3",
+    "absol-acomp": "^0.8.9"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-loader": "^8.0.6",
+    "babel-minify-webpack-plugin": "^0.3.1",
+    "css-loader": "^2.1.1",
+    "raw-loader": "^2.0.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "private": true
+}
