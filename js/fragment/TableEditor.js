@@ -194,10 +194,19 @@ TableEidtor.prototype.selectCol = function (col) {
     }
 };
 
+TableEidtor.prototype.selectAll = function () {
+    this.selectedData = {
+        type: 'all'
+    };
+    this.$selectedbox.removeStyle('display');
+    this.updateSelectedPosition();
+};
+
 
 
 TableEidtor.prototype.updateSelectedPosition = function () {
     if (!this.selectedData) return;
+    console.log(this.selectedData.type )
     var fBound = this.$forceground.getBoundingClientRect();
     if (this.selectedData.row) {
         var row = this.selectedData.row;
@@ -222,25 +231,38 @@ TableEidtor.prototype.updateSelectedPosition = function () {
         });
         this.$header.addStyle('z-index', '19');
     }
+    else if (this.selectedData.type == 'all') {
+        var tBount = this.tableData.$view.getBoundingClientRect();
+        this.$selectedbox.addStyle({
+            left: tBount.left - fBound.left - 1 + 'px',// boder-width = 2px
+            top: tBount.top - fBound.top - 1 + 'px',
+            'min-width': tBount.width + 2 + 'px',
+            'min-height': tBount.height + 2 + 'px'
+        });
+    }
 };
 
 TableEidtor.prototype.loadHeader = function () {
     var thisEditor = this;
-
     var $headRow = this.$headRow;
     Array.prototype.forEach.call(this.tableData.$headRow.children, function (td, index) {
         var newTd = $(td.cloneNode(true));
         newTd.$originElt = td;
         newTd.__index__ = index - 1;
         newTd.on('mousedown', function (event) {
-            var col = thisEditor.tableData.findColByIndex(index - 1);
-            var row = thisEditor.tableData.findRowByClientY(this.getBoundingClientRect().bottom - 2);
+            if (index > 0) {
+                var col = thisEditor.tableData.findColByIndex(index - 1);
+                var row = thisEditor.tableData.findRowByClientY(this.getBoundingClientRect().bottom - 2);
 
-            if (col) {
-                thisEditor.selectCol(col);
-                var nextRow = row ? thisEditor.tableData.findRowByIndex(row.index + 1) : thisEditor.tableData.findRowByIndex(0);
-                if (nextRow)
-                    thisEditor.editCell(nextRow, col);
+                if (col) {
+                    thisEditor.selectCol(col);
+                    var nextRow = row ? thisEditor.tableData.findRowByIndex(row.index + 1) : thisEditor.tableData.findRowByIndex(0);
+                    if (nextRow)
+                        thisEditor.editCell(nextRow, col);
+                }
+            }
+            else {
+                thisEditor.selectAll();
             }
         });
         $headRow.addChild(newTd);

@@ -9,6 +9,9 @@
     position: absolute;
     top: 0;
     z-index: 20;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }
 
 
@@ -65,7 +68,6 @@ td.asht-table-editor-root-cell {
     border: 2px solid rgb(26, 115, 232);
     box-sizing: border-box;
     z-index: 18;
-    pointer-events: none;
 }
 
 
@@ -75,4 +77,5 @@ td.asht-table-editor-root-cell {
     position: absolute;
     z-index: 20;
     box-sizing: border-box;
+    pointer-events: none;
 }
