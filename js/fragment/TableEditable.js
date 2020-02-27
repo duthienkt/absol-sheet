@@ -238,6 +238,9 @@ TableEditable.prototype.loadTextCellEditor = function () {
             }
             event.preventDefault();
         }
+        else if (event.key == "Escape"){
+            thisTableEditable.editCell(null);
+        }
     }
 
     setTimeout(function () {
