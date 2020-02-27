@@ -126,7 +126,7 @@ TableData.prototype.getView = function () {
     this.$thead = $('thead', this.$view);
     this.$headRow = $('tr', this.$thead);
     this.$tbody = $('tbody', this.$view);
-    this.$rootCell = _('td.asht-table-editor-root-cell');
+    this.$rootCell = _('td.asht-table-data-root-cell');
     return this.$view;
 };
 

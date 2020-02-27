@@ -1,11 +1,11 @@
-.asht-table-editor {
+.asht-table-editable {
     position: relative;
     overflow: hidden;
     height: 60vh;
     /*test*/
 }
 
-.asht-table-editor-header {
+.asht-table-editable-header {
     position: absolute;
     top: 0;
     z-index: 20;
@@ -15,7 +15,7 @@
 }
 
 
-.asht-table-editor-forceground {
+.asht-table-editable-forceground {
     position: absolute;
     z-index: 10;
     top: 0;
@@ -27,7 +27,7 @@
 }
 
 
-.asht-table-editor-body {
+.asht-table-editable-body {
     height: 100%;
 }
 
@@ -58,12 +58,12 @@ table.asht-table-data>tbody>tr>td:first-child {
 }
 
 
-td.asht-table-editor-root-cell {
+td.asht-table-data-root-cell {
     min-width: 1em;
 }
 
 
-.asht-table-editor-editing-box {
+.asht-table-editable-editing-box {
     position: absolute;
     border: 2px solid rgb(26, 115, 232);
     box-sizing: border-box;
@@ -71,11 +71,12 @@ td.asht-table-editor-root-cell {
 }
 
 
-.asht-table-editor-selected-box {
+.asht-table-editable-selected-box {
     border: 1px solid rgba(26, 115, 232, 0.7);
-    background-color: rgba(26, 115, 232, 0.3);
+    background-color: rgba(26, 115, 232, 0.1);
     position: absolute;
     z-index: 20;
     box-sizing: border-box;
     pointer-events: none;
 }
+

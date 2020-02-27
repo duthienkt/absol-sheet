@@ -6,10 +6,11 @@ var _ = SComp._;
 var $ = SComp.$;
 
 
-function TableEidtor() {
+function TableEditable() {
     this.ev_wheel = this.ev_wheel.bind(this);
     this.ev_mosemove = this.ev_mosemove.bind(this);
     this.ev_forcegroundMouseDown = this.ev_forcegroundMouseDown.bind(this);
+    this.ev_dblclickEditBox = this.ev_dblclickEditBox.bind(this);
     this.ev_scrollBody = this.ev_scrollBody.bind(this);
     this.hoverRow = null;
     this.editingData = null;
@@ -17,47 +18,53 @@ function TableEidtor() {
 }
 
 
-TableEidtor.prototype.getView = function () {
+TableEditable.prototype.getView = function () {
     if (this.$view) return this.$view;
     this.$view = _({
-        class: 'asht-table-editor',
+        class: 'asht-table-editable',
         child: [
-            'bscroller.asht-table-editor-body',
+            'bscroller.asht-table-editable-body',
             {
-                class: 'asht-table-editor-forceground',
+                class: 'asht-table-editable-forceground',
                 child: [
                     {
                         tag: 'table',
-                        class: ['asht-table-editor-header', 'asht-table-data'],
+                        class: ['asht-table-editable-header', 'asht-table-data'],
                         child: {
                             tag: 'thead',
                             child: 'tr'
                         }
                     },
-                    '.asht-table-editor-editing-box',
-                    '.asht-table-editor-selected-box'
+                    '.asht-table-editable-editing-box',
+                    '.asht-table-editable-selected-box'
                 ]
             }
         ]
     });
 
-    this.$body = $('.asht-table-editor-body', this.$view);
+    this.$body = $('.asht-table-editable-body', this.$view);
     this.$body.on('scroll', this.ev_scrollBody);
-    this.$forceground = $('.asht-table-editor-forceground', this.$view);
+    this.$forceground = $('.asht-table-editable-forceground', this.$view);
     this.$forceground.on('mousedown', this.ev_forcegroundMouseDown);
-    this.$editingbox = $('.asht-table-editor-editing-box', this.$forceground).addStyle('display', 'none');
-    this.$selectedbox = $('.asht-table-editor-selected-box', this.$forceground).addStyle('display', 'none');
+    this.$editingbox = $('.asht-table-editable-editing-box', this.$forceground)
+        .addStyle('display', 'none')
+        .on('dblclick', this.ev_dblclickEditBox);
+
+    this.$selectedbox = $('.asht-table-editable-selected-box', this.$forceground).addStyle('display', 'none')
+
     this.$view.on('wheel', this.ev_wheel)
         .on('mousemove', this.ev_mosemove);
 
-    this.$header = $('.asht-table-editor-header', this.$view);
+    this.$header = $('.asht-table-editable-header', this.$view);
     this.$headRow = $('tr', this.$header);
     return this.$view;
 };
 
 
 
-TableEidtor.prototype.setData = function (data) {
+
+
+TableEditable.prototype.setData = function (data) {
     this.$body.clearChild();
     var tableData = new TableData(this);
     tableData.getView().addTo(this.$body);
@@ -67,11 +74,11 @@ TableEidtor.prototype.setData = function (data) {
 };
 
 
-TableEidtor.prototype.getData = function () {
+TableEditable.prototype.getData = function () {
 
 };
 
-TableEidtor.prototype.scrollYBy = function (dy) {
+TableEditable.prototype.scrollYBy = function (dy) {
     if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.offsetHeight) {
         dy = this.$body.scrollHeight - this.$body.offsetHeight - this.$body.scrollTop;
     }
@@ -82,21 +89,29 @@ TableEidtor.prototype.scrollYBy = function (dy) {
     return dy;
 };
 
+TableEditable.prototype.ev_dblclickEditBox = function (event) {
+    if (event.target == this.$editingbox) {
+        var editingData = this.editingData;
+        if (editingData.onDblClickEditBox) {
+            editingData.onDblClickEditBox();
+        }
+    }
+};
 
-
-TableEidtor.prototype.ev_wheel = function (ev) {
+TableEditable.prototype.ev_wheel = function (ev) {
     var dy = this.scrollYBy(ev.deltaY);
     if (dy != 0) ev.preventDefault();
 };
 
-TableEidtor.prototype.ev_scrollBody = function () {
+
+TableEditable.prototype.ev_scrollBody = function () {
     this.updateEditingBoxPosition();
     this.updateSelectedPosition();
 };
 
 
 
-TableEidtor.prototype.ev_mosemove = function (ev) {
+TableEditable.prototype.ev_mosemove = function (ev) {
     if (!this.tableData) return;
     var x = ev.clientX;
     var y = ev.clientY;
@@ -105,7 +120,7 @@ TableEidtor.prototype.ev_mosemove = function (ev) {
     this.hoverCol = this.tableData.findColByClientX(x);
 };
 
-TableEidtor.prototype.ev_forcegroundMouseDown = function (ev) {
+TableEditable.prototype.ev_forcegroundMouseDown = function (ev) {
     if (ev.target == this.$forceground) {
         if (this.hoverRow) {
             if (this.hoverCol) {
@@ -129,14 +144,16 @@ TableEidtor.prototype.ev_forcegroundMouseDown = function (ev) {
     }
 };
 
-TableEidtor.prototype.editCell = function (row, col) {
+TableEditable.prototype.editCell = function (row, col) {
     if (row && col) {
         this.$editingbox.removeStyle('display');
         this.editingData = {
             row: row,
             col: col
         };
+        this.$editingbox.clearChild();
         this.updateEditingBoxPosition();
+        this.loadTextCellEditor();
     }
     else {
         this.$editingbox.addStyle('display', 'none');
@@ -144,8 +161,98 @@ TableEidtor.prototype.editCell = function (row, col) {
     }
 };
 
+TableEditable.prototype.loadTextCellEditor = function () {
+    var thisTableEditable = this;
+    var editingData = this.editingData;
+    var cellElt = editingData.row.cells[editingData.col.index].elt;
+    var record = editingData.row.record;
+    var name = editingData.col.name;
+    var style = {
+        'min-width': parseFloat(this.$editingbox.style.minWidth.replace('px')) - 4,
+        'min-height': parseFloat(this.$editingbox.style.minHeight.replace('px')) - 4,
+        outline: 'none',
+        'font-size': cellElt.getComputedStyleValue('font-size'),
+        'font-family': cellElt.getComputedStyleValue('font-family'),
+        'font-style': cellElt.getComputedStyleValue('font-style'),
+        'line-height': cellElt.getComputedStyleValue('line-height'),
+        'padding-left': cellElt.getComputedStyleValue('padding-left'),
+        'padding-right': cellElt.getComputedStyleValue('padding-right'),
+        'padding-top': cellElt.getComputedStyleValue('padding-top'),
+        'padding-bottom': cellElt.getComputedStyleValue('padding-bottom'),
+        background: 'white',
+        opacity: '1',
+        display: 'block'
+    };
 
-TableEidtor.prototype.updateEditingBoxPosition = function () {
+    var editor = _({
+        tag: 'preinput',
+        style: {
+            opacity: '0',
+            padding: '0',
+            margin: '0',
+            display: 'inline-block'
+        },
+        outline: 'none'
+    }).addTo(this.$editingbox);
+
+
+    editor.on('change', function firstChange(event) {
+        editor.off('change', firstChange);
+        editor.addStyle(style);
+
+    });
+
+    function waitFirstKey(event) {
+        if (event.key == "Delete") {
+            cellElt.clearChild().addChild(_({ tag: 'span', child: { text: '' } }));
+            record[name] = '';
+        }
+        else if (event.key == 'Enter') {
+            editor.off('keydown', waitFirstKey, true);
+            editor.focus();
+            editor.value = record[name];
+            editor.on('keydown', waitFinishKey, true);
+            event.preventDefault();
+        }
+        else if (event.key.length == 1){
+            editor.off('keydown', waitFirstKey, true);
+            editor.on('keydown', waitFinishKey, true);
+        }
+    };
+
+    editor.on('keydown', waitFirstKey, true);
+
+    function waitFinishKey(event) {
+        if (event.key == "Enter") {
+            var text = editor.value;
+            if (event.altKey) {
+                var pos = editor.getSelectPostion();
+                var newText = text.substr(0, pos.start) + '\n' + text.substr(pos.end);
+                editor.applyData(newText, post.start + 1);
+                editor.waitToCommit(newText, post.start + 1);
+            }
+            else {
+                cellElt.clearChild().addChild(_({ tag: 'span', child: { text: text } }));
+                record[name] = text;
+                thisTableEditable.editCell(null);
+            }
+            event.preventDefault();
+        }
+    }
+
+    setTimeout(function () {
+        editor.focus();
+    }, 10);
+    this.editingData.onDblClickEditBox = function () {
+        editor.off('keydown', waitFirstKey, true);
+        editor.on('keydown', waitFinishKey, true);
+        editor.focus();
+        editor.value = record[name];
+    };
+};
+
+
+TableEditable.prototype.updateEditingBoxPosition = function () {
     if (!this.editingData) return;
     var row = this.editingData.row;
     var col = this.editingData.col;
@@ -162,7 +269,7 @@ TableEidtor.prototype.updateEditingBoxPosition = function () {
 
 
 
-TableEidtor.prototype.selectRow = function (row) {
+TableEditable.prototype.selectRow = function (row) {
     if (row) {
         this.selectedData = {
             type: 'row',
@@ -178,7 +285,7 @@ TableEidtor.prototype.selectRow = function (row) {
     }
 };
 
-TableEidtor.prototype.selectCol = function (col) {
+TableEditable.prototype.selectCol = function (col) {
     if (col) {
         this.selectedData = {
             type: 'col',
@@ -194,7 +301,7 @@ TableEidtor.prototype.selectCol = function (col) {
     }
 };
 
-TableEidtor.prototype.selectAll = function () {
+TableEditable.prototype.selectAll = function () {
     this.selectedData = {
         type: 'all'
     };
@@ -204,9 +311,8 @@ TableEidtor.prototype.selectAll = function () {
 
 
 
-TableEidtor.prototype.updateSelectedPosition = function () {
+TableEditable.prototype.updateSelectedPosition = function () {
     if (!this.selectedData) return;
-    console.log(this.selectedData.type )
     var fBound = this.$forceground.getBoundingClientRect();
     if (this.selectedData.row) {
         var row = this.selectedData.row;
@@ -242,7 +348,7 @@ TableEidtor.prototype.updateSelectedPosition = function () {
     }
 };
 
-TableEidtor.prototype.loadHeader = function () {
+TableEditable.prototype.loadHeader = function () {
     var thisEditor = this;
     var $headRow = this.$headRow;
     Array.prototype.forEach.call(this.tableData.$headRow.children, function (td, index) {
@@ -255,14 +361,20 @@ TableEidtor.prototype.loadHeader = function () {
                 var row = thisEditor.tableData.findRowByClientY(this.getBoundingClientRect().bottom - 2);
 
                 if (col) {
-                    thisEditor.selectCol(col);
                     var nextRow = row ? thisEditor.tableData.findRowByIndex(row.index + 1) : thisEditor.tableData.findRowByIndex(0);
+                    thisEditor.selectCol(col);
                     if (nextRow)
                         thisEditor.editCell(nextRow, col);
                 }
             }
             else {
                 thisEditor.selectAll();
+                var col = thisEditor.tableData.findColByIndex(0);
+                var row = thisEditor.tableData.findRowByClientY(this.getBoundingClientRect().bottom - 2);
+                var nextRow = row ? thisEditor.tableData.findRowByIndex(row.index + 1) : thisEditor.tableData.findRowByIndex(0);
+                if (nextRow)
+                    thisEditor.editCell(nextRow, col);
+
             }
         });
         $headRow.addChild(newTd);
@@ -271,7 +383,7 @@ TableEidtor.prototype.loadHeader = function () {
 };
 
 
-TableEidtor.prototype.updateHeaderPosition = function () {
+TableEditable.prototype.updateHeaderPosition = function () {
     Array.prototype.forEach.call(this.$headRow.children, function (td) {
         var originTd = td.$originElt;
         var bound = originTd.getBoundingClientRect();
@@ -284,7 +396,7 @@ TableEidtor.prototype.updateHeaderPosition = function () {
 
 
 
-var mSE = new TableEidtor();
+var mSE = new TableEditable();
 mSE.getView().addTo(document.body);
 
 var ct = _('contextcaptor').addTo(document.body);
@@ -500,4 +612,4 @@ mSE.setData({
     })
 });
 
-export default TableEidtor;
+export default TableEditable;
