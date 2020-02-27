@@ -1,8 +1,8 @@
 import SComp from "./js/dom/SComp";
-import TableEidtor from "./js/fragment/TableEditor";
+import TableEditable from "./js/fragment/TableEditable";
 
 
 export default {
     dom: SComp,
-    TableEidtor: TableEidtor
+    TableEditable: TableEditable
 };
