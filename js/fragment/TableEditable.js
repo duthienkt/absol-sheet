@@ -1,4 +1,4 @@
-import '../../css/tableeditor.css';
+import '../../css/tableeditable.css';
 import SComp from "../dom/SComp";
 import TableData from "../viewer/TableData";
 
