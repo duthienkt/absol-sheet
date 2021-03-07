@@ -6,7 +6,7 @@ var _ = SComp._;
 var $ = SComp.$;
 
 
-function TableEditable() {
+function TableEditor() {
     this.ev_wheel = this.ev_wheel.bind(this);
     this.ev_mosemove = this.ev_mosemove.bind(this);
     this.ev_forcegroundMouseDown = this.ev_forcegroundMouseDown.bind(this);
@@ -18,44 +18,44 @@ function TableEditable() {
 }
 
 
-TableEditable.prototype.getView = function () {
+TableEditor.prototype.getView = function () {
     if (this.$view) return this.$view;
     this.$view = _({
-        class: 'asht-table-editable',
+        class: 'asht-table-editor',
         child: [
-            'bscroller.asht-table-editable-body',
+            'bscroller.asht-table-editor-body',
             {
-                class: 'asht-table-editable-forceground',
+                class: 'asht-table-editor-forceground',
                 child: [
                     {
                         tag: 'table',
-                        class: ['asht-table-editable-header', 'asht-table-data'],
+                        class: ['asht-table-editor-header', 'asht-table-data'],
                         child: {
                             tag: 'thead',
                             child: 'tr'
                         }
                     },
-                    '.asht-table-editable-editing-box',
-                    '.asht-table-editable-selected-box'
+                    '.asht-table-editor-editing-box',
+                    '.asht-table-editor-selected-box'
                 ]
             }
         ]
     });
 
-    this.$body = $('.asht-table-editable-body', this.$view);
+    this.$body = $('.asht-table-editor-body', this.$view);
     this.$body.on('scroll', this.ev_scrollBody);
-    this.$forceground = $('.asht-table-editable-forceground', this.$view);
+    this.$forceground = $('.asht-table-editor-forceground', this.$view);
     this.$forceground.on('mousedown', this.ev_forcegroundMouseDown);
-    this.$editingbox = $('.asht-table-editable-editing-box', this.$forceground)
+    this.$editingbox = $('.asht-table-editor-editing-box', this.$forceground)
         .addStyle('display', 'none')
         .on('dblclick', this.ev_dblclickEditBox);
 
-    this.$selectedbox = $('.asht-table-editable-selected-box', this.$forceground).addStyle('display', 'none')
+    this.$selectedbox = $('.asht-table-editor-selected-box', this.$forceground).addStyle('display', 'none')
 
     this.$view.on('wheel', this.ev_wheel)
         .on('mousemove', this.ev_mosemove);
 
-    this.$header = $('.asht-table-editable-header', this.$view);
+    this.$header = $('.asht-table-editor-header', this.$view);
     this.$headRow = $('tr', this.$header);
     return this.$view;
 };
@@ -64,7 +64,7 @@ TableEditable.prototype.getView = function () {
 
 
 
-TableEditable.prototype.setData = function (data) {
+TableEditor.prototype.setData = function (data) {
     this.$body.clearChild();
     var tableData = new TableData(this);
     tableData.getView().addTo(this.$body);
@@ -74,11 +74,11 @@ TableEditable.prototype.setData = function (data) {
 };
 
 
-TableEditable.prototype.getData = function () {
+TableEditor.prototype.getData = function () {
 
 };
 
-TableEditable.prototype.scrollYBy = function (dy) {
+TableEditor.prototype.scrollYBy = function (dy) {
     if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.offsetHeight) {
         dy = this.$body.scrollHeight - this.$body.offsetHeight - this.$body.scrollTop;
     }
@@ -89,7 +89,7 @@ TableEditable.prototype.scrollYBy = function (dy) {
     return dy;
 };
 
-TableEditable.prototype.ev_dblclickEditBox = function (event) {
+TableEditor.prototype.ev_dblclickEditBox = function (event) {
     if (event.target == this.$editingbox) {
         var editingData = this.editingData;
         if (editingData.onDblClickEditBox) {
@@ -98,20 +98,20 @@ TableEditable.prototype.ev_dblclickEditBox = function (event) {
     }
 };
 
-TableEditable.prototype.ev_wheel = function (ev) {
+TableEditor.prototype.ev_wheel = function (ev) {
     var dy = this.scrollYBy(ev.deltaY);
     if (dy != 0) ev.preventDefault();
 };
 
 
-TableEditable.prototype.ev_scrollBody = function () {
+TableEditor.prototype.ev_scrollBody = function () {
     this.updateEditingBoxPosition();
     this.updateSelectedPosition();
 };
 
 
 
-TableEditable.prototype.ev_mosemove = function (ev) {
+TableEditor.prototype.ev_mosemove = function (ev) {
     if (!this.tableData) return;
     var x = ev.clientX;
     var y = ev.clientY;
@@ -120,7 +120,7 @@ TableEditable.prototype.ev_mosemove = function (ev) {
     this.hoverCol = this.tableData.findColByClientX(x);
 };
 
-TableEditable.prototype.ev_forcegroundMouseDown = function (ev) {
+TableEditor.prototype.ev_forcegroundMouseDown = function (ev) {
     if (ev.target == this.$forceground) {
         if (this.hoverRow) {
             if (this.hoverCol) {
@@ -144,7 +144,7 @@ TableEditable.prototype.ev_forcegroundMouseDown = function (ev) {
     }
 };
 
-TableEditable.prototype.editCell = function (row, col) {
+TableEditor.prototype.editCell = function (row, col) {
     if (row && col) {
         this.$editingbox.removeStyle('display');
         this.editingData = {
@@ -161,8 +161,8 @@ TableEditable.prototype.editCell = function (row, col) {
     }
 };
 
-TableEditable.prototype.loadTextCellEditor = function () {
-    var thisTableEditable = this;
+TableEditor.prototype.loadTextCellEditor = function () {
+    var thisTableEditor = this;
     var editingData = this.editingData;
     var cellElt = editingData.row.cells[editingData.col.index].elt;
     var record = editingData.row.record;
@@ -234,12 +234,12 @@ TableEditable.prototype.loadTextCellEditor = function () {
             else {
                 cellElt.clearChild().addChild(_({ tag: 'span', child: { text: text } }));
                 record[name] = text;
-                thisTableEditable.editCell(null);
+                thisTableEditor.editCell(null);
             }
             event.preventDefault();
         }
         else if (event.key == "Escape"){
-            thisTableEditable.editCell(null);
+            thisTableEditor.editCell(null);
         }
     }
 
@@ -255,7 +255,7 @@ TableEditable.prototype.loadTextCellEditor = function () {
 };
 
 
-TableEditable.prototype.updateEditingBoxPosition = function () {
+TableEditor.prototype.updateEditingBoxPosition = function () {
     if (!this.editingData) return;
     var row = this.editingData.row;
     var col = this.editingData.col;
@@ -272,7 +272,7 @@ TableEditable.prototype.updateEditingBoxPosition = function () {
 
 
 
-TableEditable.prototype.selectRow = function (row) {
+TableEditor.prototype.selectRow = function (row) {
     if (row) {
         this.selectedData = {
             type: 'row',
@@ -288,7 +288,7 @@ TableEditable.prototype.selectRow = function (row) {
     }
 };
 
-TableEditable.prototype.selectCol = function (col) {
+TableEditor.prototype.selectCol = function (col) {
     if (col) {
         this.selectedData = {
             type: 'col',
@@ -304,7 +304,7 @@ TableEditable.prototype.selectCol = function (col) {
     }
 };
 
-TableEditable.prototype.selectAll = function () {
+TableEditor.prototype.selectAll = function () {
     this.selectedData = {
         type: 'all'
     };
@@ -314,7 +314,7 @@ TableEditable.prototype.selectAll = function () {
 
 
 
-TableEditable.prototype.updateSelectedPosition = function () {
+TableEditor.prototype.updateSelectedPosition = function () {
     if (!this.selectedData) return;
     var fBound = this.$forceground.getBoundingClientRect();
     if (this.selectedData.row) {
@@ -351,7 +351,7 @@ TableEditable.prototype.updateSelectedPosition = function () {
     }
 };
 
-TableEditable.prototype.loadHeader = function () {
+TableEditor.prototype.loadHeader = function () {
     var thisEditor = this;
     var $headRow = this.$headRow;
     Array.prototype.forEach.call(this.tableData.$headRow.children, function (td, index) {
@@ -386,7 +386,7 @@ TableEditable.prototype.loadHeader = function () {
 };
 
 
-TableEditable.prototype.updateHeaderPosition = function () {
+TableEditor.prototype.updateHeaderPosition = function () {
     Array.prototype.forEach.call(this.$headRow.children, function (td) {
         var originTd = td.$originElt;
         var bound = originTd.getBoundingClientRect();
@@ -396,4 +396,4 @@ TableEditable.prototype.updateHeaderPosition = function () {
     });
 };
 
-export default TableEditable;
+export default TableEditor;

@@ -6,7 +6,7 @@ var $ = SComp.$;
 
 /**
  * 
- * @param {TableEditable} editor
+ * @param {TableEditor} editor
  */
 function TableData(editor) {
     this.propertyNames = [];
