@@ -226,10 +226,10 @@ TableEditable.prototype.loadTextCellEditor = function () {
         if (event.key == "Enter") {
             var text = editor.value;
             if (event.altKey) {
-                var pos = editor.getSelectPostion();
+                var pos = editor.getSelectPosition();
                 var newText = text.substr(0, pos.start) + '\n' + text.substr(pos.end);
-                editor.applyData(newText, post.start + 1);
-                editor.waitToCommit(newText, post.start + 1);
+                editor.applyData(newText, pos.start + 1);
+                editor.waitToCommit(newText, pos.start + 1);
             }
             else {
                 cellElt.clearChild().addChild(_({ tag: 'span', child: { text: text } }));

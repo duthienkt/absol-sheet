@@ -6,7 +6,7 @@ var $ = SComp.$;
 
 /**
  * 
- * @param {import('../fragment/TableEditor').default} editor 
+ * @param {TableEditable} editor
  */
 function TableData(editor) {
     this.propertyNames = [];
