@@ -5,7 +5,7 @@ var $ = SComp.$;
 
 
 /**
- * 
+ *
  * @param {TableEditor} editor
  */
 function TableData(editor) {
@@ -90,27 +90,7 @@ TableData.prototype.loadBody = function () {
         });
         return { elt: rowElt, cells: cells, index: index, record: record };
     });
-    this.loadPosition();
 };
-
-TableData.prototype.loadPosition = function () {
-    var bound = this.$view.getBoundingClientRect();
-    this.bodyRow.forEach(function (row) {
-        var rowBound = row.elt.getBoundingClientRect();
-        row.position = {
-            y: rowBound.top - bound.top,
-            height: rowBound.height,
-        };
-    });
-    this.headCells.forEach(function (cell) {
-        var cellBound = cell.elt.getBoundingClientRect();
-        cell.position = {
-            x: cellBound.left - bound.left,
-            width: cellBound.width,
-        };
-    });
-};
-
 
 
 TableData.prototype.getView = function () {
@@ -141,14 +121,16 @@ TableData.prototype.findRowByClientY = function (y) {
     var mid;
     var row;
     var rowY;
+    var position;
     while (length > 0) {
         mid = start + (length >> 1);
         row = this.bodyRow[mid];
-        rowY = bound.top + row.position.y;
+        position = row.elt.getBoundingClientRect();
+        rowY = position.top;
         if (y < rowY) {
             length = mid - start;
         }
-        else if (y > rowY + row.position.height) {
+        else if (y > rowY + position.height) {
             length = start + length - mid - 1;
             start = mid + 1;
         }
@@ -158,7 +140,6 @@ TableData.prototype.findRowByClientY = function (y) {
     }
     return null;
 };
-
 
 
 /**
@@ -171,14 +152,16 @@ TableData.prototype.findColByClientX = function (x) {
     var mid;
     var cell;
     var rowX;
+    var position;
     while (length > 0) {
         mid = start + (length >> 1);
         cell = this.headCells[mid];
-        rowX = bound.left + cell.position.x;
+        position = cell.elt.getBoundingClientRect();
+        rowX = position.x;
         if (x < rowX) {
             length = mid - start;
         }
-        else if (x > rowX + cell.position.width) {
+        else if (x > rowX + position.width) {
             length = start + length - mid - 1;
             start = mid + 1;
         }
