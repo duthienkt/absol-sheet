@@ -51,14 +51,20 @@ TableData.prototype.loadHeader = function () {
             tag: 'td',
             child: {
                 tag: 'span',
-                child: { text: name }
+                child: {
+                    text: (thisTable.propertyDescriptors
+                        && thisTable.propertyDescriptors[name]
+                        && thisTable.propertyDescriptors[name].text
+                    ) || name
+                }
             }
         });
         thisTable.$headRow.addChild(cell);
         return {
             elt: cell,
             index: i,
-            name: name
+            name: name,
+            descriptor: (thisTable.propertyDescriptors && thisTable.propertyDescriptors[name]) || { type: 'text' }
         };
     });
 };
@@ -78,11 +84,14 @@ TableData.prototype.loadBody = function () {
         });
         rowElt.addChild(indexCell);
         var cells = thisTable.propertyNames.map(function (name) {
+            var type = (thisTable.propertyDescriptors
+                && thisTable.propertyDescriptors[name]
+                && thisTable.propertyDescriptors[name].type) || 'text';
             var cellData = record[name];
-            var cellElt = _('td');
+            var cellElt = _('td.asht-type-' + type.replace(/[_]/g, '-'));
             var holder = { elt: cellElt };
             if (cellData !== null && cellData !== undefined) {
-                var fName = 'loadTextCell';
+                var fName = thisTable.type2functionName[type] || thisTable.type2functionName.text;
                 Object.assign(holder, thisTable[fName](cellElt, cellData, record, name));
             }
             rowElt.addChild(cellElt);
@@ -115,7 +124,6 @@ TableData.prototype.getView = function () {
  * @param {Number} y
  */
 TableData.prototype.findRowByClientY = function (y) {
-    var bound = this.$view.getBoundingClientRect();
     var length = this.bodyRow.length;
     var start = 0;
     var mid;
@@ -146,7 +154,6 @@ TableData.prototype.findRowByClientY = function (y) {
  * @param {Number} x
  */
 TableData.prototype.findColByClientX = function (x) {
-    var bound = this.$view.getBoundingClientRect();
     var length = this.headCells.length;
     var start = 0;
     var mid;
@@ -157,7 +164,7 @@ TableData.prototype.findColByClientX = function (x) {
         mid = start + (length >> 1);
         cell = this.headCells[mid];
         position = cell.elt.getBoundingClientRect();
-        rowX = position.x;
+        rowX = position.left;
         if (x < rowX) {
             length = mid - start;
         }
@@ -181,14 +188,30 @@ TableData.prototype.findRowByIndex = function (index) {
     return this.bodyRow[index] || null;
 };
 
+TableData.prototype.findIndexOfRow = function (row) {
+    return this.bodyRow.indexOf(row);
+};
+
+TableData.prototype.findIndexOfCol = function (col) {
+    return this.headCells.indexOf(col);
+};
+
+
+TableData.prototype.type2functionName = {
+    text: 'loadTextCell',
+    number: 'loadNumberCell'
+}
 
 TableData.prototype.loadTextCell = function (cellElt, value, record, name) {
-    cellElt.addChild(_({
-        tag: 'span',
-        child: {
-            text: value
-        }
-    }));
+    cellElt.clearChild();
+    var lineSpans = value.split(/\r?\n/).reduce(function (ac, line) {
+        ac.push(_({
+            tag: 'span', child: { text: line }
+        }));
+        ac.push(_('br'));
+        return ac;
+    }, []);
+    cellElt.addChild(lineSpans);
 };
 
 TableData.prototype.loadNumberCell = function (cellElt, value, record, name) {
@@ -198,6 +221,10 @@ TableData.prototype.loadNumberCell = function (cellElt, value, record, name) {
             text: value
         }
     }));
+};
+
+TableData.prototype.loadCell = function (descriptor, cellElt, value, record, name) {
+
 };
 
 
