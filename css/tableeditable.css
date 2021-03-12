@@ -2,60 +2,120 @@
     position: relative;
     overflow: hidden;
     height: 60vh;
-    /*test*/
+    --body-scroll-height: 0;
+    --body-scroll-width: 0;
 }
 
-.asht-table-editor-header {
-    position: absolute;
-    top: 0;
-    z-index: 20;
-    user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
+.asht-table-editor-content {
+    position: relative;
+    overflow: visible;
+    display: inline-block;
+    vertical-align: top;
 }
 
 
-.asht-table-editor-forceground {
+.asht-table-editor-foreground {
     position: absolute;
-    z-index: 10;
+    z-index: 15;
     top: 0;
     left: 0;
-    bottom: 0;
-    right: 7px;
+    bottom: var(--body-scroll-height);
+    right: var(--body-scroll-width);
     overflow: hidden;
-    /*for scroller*/
+    pointer-events: none;
+}
+
+.asht-table-editor-editing-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 100%;
+    z-index: 12;
+    overflow: hidden;
 }
 
 
 .asht-table-editor-body {
+    position: relative;
     height: 100%;
     overflow: auto;
+}
+
+
+.asht-table-editor-header-viewport,
+.asht-table-editor-index-viewport,
+.asht-table-editor-root-cell {
+    pointer-events: all;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+    z-index: 10;
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+}
+
+
+.asht-table-editor-root-cell {
+    border: solid 1px #dddddd;
+    box-sizing: border-box;
+    background-color: rgb(248, 249, 250);
+}
+
+.asht-table-editor-index-viewport {
+    bottom: 0;
+}
+
+.asht-table-editor-index-scroller {
+    height: 100%;
+    width: calc(100% + 18px);
+    overflow-y: scroll;
+}
+
+.asht-table-editor-header-viewport {
+    right: 0;
+}
+
+
+.asht-table-editor-header-scroller {
+    overflow-x: scroll;
 }
 
 
 table.asht-table-data {
     table-layout: fixed;
     border-collapse: collapse;
+    box-sizing: border-box;
 }
 
 table.asht-table-data,
-table.asht-table-data>tbody>tr>td,
-table.asht-table-data>thead>tr>td {
+table.asht-table-data > tbody > tr > td,
+table.asht-table-data > thead > tr > td,
+table.asht-table-data > tr > td {
     border: solid 1px #dddddd;
     padding-left: 0.35em;
     padding-right: 0.35em;
     white-space: pre-wrap;
     word-break: normal;
+    box-sizing: border-box;
+
 }
 
 
-table.asht-table-data>thead>tr>td {
+table.asht-table-data > thead > tr > td {
     background-color: rgb(248, 249, 250);
     text-align: center;
     box-sizing: border-box;
 }
 
-table.asht-table-data>tbody>tr>td:first-child {
+table.asht-table-data > tbody > tr > td > span {
+    white-space: nowrap;
+}
+
+table.asht-table-data > tbody > tr > td:first-child,
+table.asht-table-data > tr > td:first-child {
     background-color: rgb(248, 249, 250);
     text-align: right;
 }
@@ -68,11 +128,35 @@ td.asht-table-data-root-cell {
 
 .asht-table-editor-editing-box {
     position: absolute;
-    border: 2px solid rgb(26, 115, 232);
     box-sizing: border-box;
-    z-index: 18;
+    z-index: 8;
+    --cell-width: 0;
+    --cell-height: 0;
+    min-width: var(--cell-width);
+    min-height: var(--cell-height);
+    border: solid 1px rgb(26, 115, 232);
 }
 
+.asht-table-editor-editing-box::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    border: 2px solid rgb(26, 115, 232);
+    z-index: 2;
+}
+
+
+.asht-table-editor-editing-box > .as-preinput {
+    min-height: calc(var(--cell-height) - 2px);
+    min-width: calc(var(--cell-width) - 2px);
+    box-sizing: border-box;
+    display: block;
+}
 
 .asht-table-editor-selected-box {
     border: 1px solid rgba(26, 115, 232, 0.7);
@@ -83,3 +167,7 @@ td.asht-table-data-root-cell {
     pointer-events: none;
 }
 
+
+td.asht-type-number {
+    text-align: right;
+}
