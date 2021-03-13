@@ -74,35 +74,9 @@ TableData.prototype.loadBody = function () {
     this.$tbody.clearChild();
     this.bodyRow = this.records.map(function (record, idx) {
         return new TSRow(thisTable, record, idx);
-        //
-        // var rowElt = _('tr');
-        // thisTable.$tbody.addChild(rowElt);
-        // var indexCell = _({
-        //     tag: 'td',
-        //     child: {
-        //         tag: 'span',
-        //         child: { text: index + 1 + '' }
-        //     }
-        // });
-        // rowElt.addChild(indexCell);
-        // var cells = thisTable.propertyNames.map(function (name) {
-        //     var type = (thisTable.propertyDescriptors
-        //         && thisTable.propertyDescriptors[name]
-        //         && thisTable.propertyDescriptors[name].type) || 'text';
-        //     var cellData = record[name];
-        //     var cellElt = _('td.asht-type-' + type.replace(/[_]/g, '-'));
-        //     var holder = { elt: cellElt };
-        //     if (cellData !== null && cellData !== undefined) {
-        //         var fName = thisTable.type2functionName[type] || thisTable.type2functionName.text;
-        //         Object.assign(holder, thisTable[fName](cellElt, cellData, record, name));
-        //     }
-        //     rowElt.addChild(cellElt);
-        //     return holder;
-        // });
-        // return { elt: rowElt, cells: cells, index: index, record: record };
     });
     var rowEltList = this.bodyRow.map(function (row) {
-        return row.elt
+        return row.elt;
     });
     this.$tbody.addChild(rowEltList);
 };
