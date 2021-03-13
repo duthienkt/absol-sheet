@@ -72,33 +72,39 @@ TableData.prototype.loadHeader = function () {
 TableData.prototype.loadBody = function () {
     var thisTable = this;
     this.$tbody.clearChild();
-    this.bodyRow = this.records.map(function (record, index) {
-        var rowElt = _('tr');
-        thisTable.$tbody.addChild(rowElt);
-        var indexCell = _({
-            tag: 'td',
-            child: {
-                tag: 'span',
-                child: { text: index + 1 + '' }
-            }
-        });
-        rowElt.addChild(indexCell);
-        var cells = thisTable.propertyNames.map(function (name) {
-            var type = (thisTable.propertyDescriptors
-                && thisTable.propertyDescriptors[name]
-                && thisTable.propertyDescriptors[name].type) || 'text';
-            var cellData = record[name];
-            var cellElt = _('td.asht-type-' + type.replace(/[_]/g, '-'));
-            var holder = { elt: cellElt };
-            if (cellData !== null && cellData !== undefined) {
-                var fName = thisTable.type2functionName[type] || thisTable.type2functionName.text;
-                Object.assign(holder, thisTable[fName](cellElt, cellData, record, name));
-            }
-            rowElt.addChild(cellElt);
-            return holder;
-        });
-        return { elt: rowElt, cells: cells, index: index, record: record };
+    this.bodyRow = this.records.map(function (record, idx) {
+        return new TSRow(thisTable, record, idx);
+        //
+        // var rowElt = _('tr');
+        // thisTable.$tbody.addChild(rowElt);
+        // var indexCell = _({
+        //     tag: 'td',
+        //     child: {
+        //         tag: 'span',
+        //         child: { text: index + 1 + '' }
+        //     }
+        // });
+        // rowElt.addChild(indexCell);
+        // var cells = thisTable.propertyNames.map(function (name) {
+        //     var type = (thisTable.propertyDescriptors
+        //         && thisTable.propertyDescriptors[name]
+        //         && thisTable.propertyDescriptors[name].type) || 'text';
+        //     var cellData = record[name];
+        //     var cellElt = _('td.asht-type-' + type.replace(/[_]/g, '-'));
+        //     var holder = { elt: cellElt };
+        //     if (cellData !== null && cellData !== undefined) {
+        //         var fName = thisTable.type2functionName[type] || thisTable.type2functionName.text;
+        //         Object.assign(holder, thisTable[fName](cellElt, cellData, record, name));
+        //     }
+        //     rowElt.addChild(cellElt);
+        //     return holder;
+        // });
+        // return { elt: rowElt, cells: cells, index: index, record: record };
     });
+    var rowEltList = this.bodyRow.map(function (row) {
+        return row.elt
+    });
+    this.$tbody.addChild(rowEltList);
 };
 
 
@@ -200,9 +206,10 @@ TableData.prototype.findIndexOfCol = function (col) {
 TableData.prototype.type2functionName = {
     text: 'loadTextCell',
     number: 'loadNumberCell'
-}
+};
 
-TableData.prototype.loadTextCell = function (cellElt, value, record, name) {
+
+TableData.prototype.loadTextCell = function (cellElt, value, record, name, descriptor) {
     cellElt.clearChild();
     var lineSpans = value.split(/\r?\n/).reduce(function (ac, line) {
         ac.push(_({
@@ -229,3 +236,151 @@ TableData.prototype.loadCell = function (descriptor, cellElt, value, record, nam
 
 
 export default TableData;
+
+/***
+ *
+ * @param {TableData} table
+ * @param {Object} record
+ * @param {number} idx
+ * @constructor
+ */
+export function TSRow(table, record, idx) {
+    this.table = table;
+    this.elt = _('tr');
+    this.$idx = _('td');
+    this.elt.addChild(this.$idx);
+    /***
+     *
+     * @type {TSCell[]}
+     */
+    this.cells = [];
+    this.idx = idx;
+    this.record = record;
+}
+
+
+Object.defineProperty(TSRow.prototype, 'record', {
+    set: function (value) {
+        this._record = value;
+        this.loadCells();
+    },
+    get: function () {
+        return this._record;
+    }
+});
+
+
+Object.defineProperty(TSRow.prototype, 'propertyNames', {
+    get: function () {
+        return this.table.propertyNames;
+    }
+})
+
+Object.defineProperty(TSRow.prototype, 'idx', {
+    set: function (value) {
+        this._idx = value;
+        this.$idx.clearChild().addChild(_({ text: value + '' }));
+    },
+    get: function () {
+        return this._idx;
+    }
+})
+
+
+TSRow.prototype.loadCells = function () {
+    var row = this;
+    var propertyNames = this.propertyNames;
+    this.cells.forEach(function (cell) {
+        cell.elt.remove();
+    })
+    this.cells = propertyNames.map(function (pName) {
+        return new TSCell(row, pName);
+    });
+    var cellEltList = this.cells.map(function (cell) {
+        return cell.elt;
+    });
+    this.elt.addChild(cellEltList);
+};
+
+
+/***
+ *
+ * @param {TSRow} row
+ * @param {string} pName
+ * @constructor
+ */
+export function TSCell(row, pName) {
+    this.elt = _('td');
+    this.row = row;
+    this.pName = pName;
+}
+
+Object.defineProperty(TSCell.prototype, 'pName', {
+    set: function (value) {
+        this._pName = value;
+        this.load();
+    },
+    get: function () {
+        return this._pName;
+    }
+});
+
+Object.defineProperty(TSCell.prototype, 'record', {
+    get: function () {
+        return this.row.record;
+    }
+});
+
+Object.defineProperty(TSCell.prototype, 'table', {
+    get: function () {
+        return this.row.table;
+    }
+});
+
+Object.defineProperty(TSCell.prototype, 'descriptor', {
+    get: function () {
+        return (this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName]) || { type: 'text' };
+    }
+});
+
+Object.defineProperty(TSCell.prototype, 'value', {
+    get: function () {
+        return this.row.record[this.pName];
+    }
+});
+
+
+TSCell.prototype.type2functionName = {
+    text: 'loadTextCell',
+    number: 'loadNumberCell'
+};
+
+TSCell.prototype.load = function () {
+    var descriptor = this.descriptor;
+    var fName = this.type2functionName[descriptor.type];
+    this[fName](this.elt, this.value, this.record, this.pName, this.descriptor);
+};
+
+
+TSCell.prototype.loadTextCell = function (elt, value, record, name, descriptor) {
+    elt.clearChild();
+    var lineSpans = value.split(/\r?\n/).reduce(function (ac, line) {
+        ac.push(_({
+            tag: 'span', child: { text: line }
+        }));
+        ac.push(_('br'));
+        return ac;
+    }, []);
+    elt.addChild(lineSpans);
+};
+
+
+TSCell.prototype.loadNumberCell = function (elt, value, record, name, descriptor) {
+    elt.addChild(_({
+        tag: 'span',
+        child: {
+            text: value
+        }
+    }));
+};
+
