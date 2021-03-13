@@ -138,7 +138,6 @@ TableEditor.prototype.scrollYBy = function (dy, dx) {
     }
     if (dx)
         this.$body.scrollLeft += dx;
-    console.log(dx, dy)
     return dy * dy + dx * dx;
 };
 
