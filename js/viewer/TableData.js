@@ -253,7 +253,7 @@ Object.defineProperty(TSRow.prototype, 'propertyNames', {
 Object.defineProperty(TSRow.prototype, 'idx', {
     set: function (value) {
         this._idx = value;
-        this.$idx.clearChild().addChild(_({ text: value + '' }));
+        this.$idx.clearChild().addChild(_({ text: value + 1 + '' }));
     },
     get: function () {
         return this._idx;
