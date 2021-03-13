@@ -121,8 +121,8 @@ TableEditor.prototype.getData = function () {
 
 TableEditor.prototype.scrollYBy = function (dy, dx) {
     dx = dx || 0;
-    if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.offsetHeight) {
-        dy = this.$body.scrollHeight - this.$body.offsetHeight - this.$body.scrollTop;
+    if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.clientHeight) {
+        dy = this.$body.scrollHeight - this.$body.clientHeight - this.$body.scrollTop;
     }
     else if (this.$body.scrollTop + dy < 0) {
         dy = -this.$body.scrollTop;
@@ -130,14 +130,15 @@ TableEditor.prototype.scrollYBy = function (dy, dx) {
     if (dy)
         this.$body.scrollTop += dy;
 
-    if (this.$body.scrollLeft + dx > this.$body.scrollHeight - this.$body.offsetHeight) {
-        dx = this.$body.scrollHeight - this.$body.offsetHeight - this.$body.scrollLeft;
+    if (this.$body.scrollLeft + dx > this.$body.scrollWidth - this.$body.clientWidth) {
+        dx = this.$body.scrollWidth - this.$body.clientWidth - this.$body.scrollLeft;
     }
     else if (this.$body.scrollLeft + dx < 0) {
         dx = -this.$body.scrollLeft;
     }
     if (dx)
         this.$body.scrollLeft += dx;
+    console.log(dx, dy)
     return dy * dy + dx * dx;
 };
 
@@ -190,26 +191,6 @@ TableEditor.prototype.ev_headerMouseDown = function (ev) {
             this.editCell(row, col);
         }
     }
-    // newTd.on('mousedown', function (event) {
-    //     if (index > 0) {
-    //         col = thisEditor.tableData.findColByIndex(index - 1);
-    //         row = thisEditor.tableData.findRowByIndex(0);
-    //         if (col) {
-    //             thisEditor.selectCol(col);
-    //             if (row)
-    //                 thisEditor.editCell(row, col);
-    //         }
-    //     }
-    //     else {
-    //         thisEditor.selectAll();
-    //         var col = thisEditor.tableData.findColByIndex(0);
-    //         var row = thisEditor.tableData.findRowByClientY(this.getBoundingClientRect().bottom - 2);
-    //         var nextRow = row ? thisEditor.tableData.findRowByIndex(row.index + 1) : thisEditor.tableData.findRowByIndex(0);
-    //         if (nextRow)
-    //             thisEditor.editCell(nextRow, col);
-    //
-    //     }
-    // });
 };
 
 TableEditor.prototype.ev_editLayerMouseDown = function (ev) {
