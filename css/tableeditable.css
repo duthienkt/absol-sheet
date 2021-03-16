@@ -90,6 +90,13 @@ table.asht-table-data {
     box-sizing: border-box;
 }
 
+.asht-text-cell-editor-input {
+    outline: none;
+    padding: 0;
+    margin: 0;
+}
+
+
 table.asht-table-data,
 table.asht-table-data > tbody > tr > td,
 table.asht-table-data > thead > tr > td,
@@ -151,11 +158,20 @@ td.asht-table-data-root-cell {
 }
 
 
-.asht-table-editor-editing-box > .as-preinput {
+.asht-cell-editor-input {
     min-height: calc(var(--cell-height) - 2px);
     min-width: calc(var(--cell-width) - 2px);
     box-sizing: border-box;
     display: block;
+    border: none;
+    background: white;
+    outline: none;
+}
+
+.asht-cell-editor-input.asht-state-wait-action {
+    opacity: 0;
+    width: var(--cell-height);
+    height: var(--cell-height);
 }
 
 .asht-table-editor-selected-box {
