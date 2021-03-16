@@ -11,7 +11,7 @@ var $ = SComp.$;
 
 function TableEditor() {
     this.hoverRow = null;
-    this.editingData = null;
+    this.currentCellEditor = null;
     this.selectedData = null;
     for (var key in this) {
         if (key.startsWith('ev_')) {
@@ -143,12 +143,6 @@ TableEditor.prototype.scrollYBy = function (dy, dx) {
     return dy * dy + dx * dx;
 };
 
-TableEditor.prototype.ev_dblclickEditBox = function (event) {
-    var editingData = this.editingData;
-    if (editingData && editingData.onDblClickEditBox) {
-        editingData.onDblClickEditBox();
-    }
-};
 
 /***
  *
@@ -237,14 +231,10 @@ TableEditor.prototype.editCell = function (row, col) {
     }
     if (row && col) {
         this.$editingbox.removeStyle('display');
-        this.editingData = {
-            row: row,
-            col: col,
-            cell: row.cells[col.index]
-        };
+        var cell = row.cells[col.index];
         this.$editingbox.clearChild();
-        this.updateEditingBoxPosition();
-        switch (this.editingData.cell.descriptor.type) {
+
+        switch (cell.descriptor.type) {
             case 'text':
                 this.currentCellEditor = new TextCellEditor(this, row.cells[col.index]);
                 break;
@@ -253,7 +243,7 @@ TableEditor.prototype.editCell = function (row, col) {
                 break;
             default :
         }
-
+        this.updateEditingBoxPosition();
         this.scrollIntoRow(row);
         this.scrollIntoCol(col);
         if (this.currentCellEditor) {
@@ -262,17 +252,15 @@ TableEditor.prototype.editCell = function (row, col) {
     }
     else {
         this.$editingbox.addStyle('display', 'none');
-        this.editingData = null;
     }
 };
 
 
 
 TableEditor.prototype.updateEditingBoxPosition = function () {
-    if (!this.editingData) return;
-    var row = this.editingData.row;
-    var col = this.editingData.col;
-    var elt = row.cells[col.index].elt;
+    if (!this.currentCellEditor) return;
+    var cellEditor = this.currentCellEditor;
+    var elt = cellEditor.cell.elt;
     var eLBound = this.$editingLayer.getBoundingClientRect();
     var eBound = elt.getBoundingClientRect();
     var left = eBound.left - eLBound.left;
@@ -445,6 +433,8 @@ TableEditor.prototype.updateFixedTableEltPosition = function () {
     this.updateHeaderPosition();
     this.updateIndexColPosition();
     this.updateForegroundPosition();
+    this.updateEditingBoxPosition();
+    this.updateSelectedPosition();
 };
 
 TableEditor.prototype.scrollIntoRow = function (row) {
