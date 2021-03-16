@@ -159,8 +159,8 @@ td.asht-table-data-root-cell {
 
 
 .asht-cell-editor-input {
-    min-height: calc(var(--cell-height) - 2px);
-    min-width: calc(var(--cell-width) - 2px);
+    min-height: calc(var(--cell-height) - 0px);
+    min-width: calc(var(--cell-width) - 0px);
     box-sizing: border-box;
     display: block;
     border: none;
@@ -170,8 +170,12 @@ td.asht-table-data-root-cell {
 
 .asht-cell-editor-input.asht-state-wait-action {
     opacity: 0;
-    width: var(--cell-height);
+    width: var(--cell-width);
     height: var(--cell-height);
+}
+
+input.asht-cell-editor-input[type="number"].asht-state-editing {
+    width: calc(var(--cell-width) + 18px);
 }
 
 .asht-table-editor-selected-box {
