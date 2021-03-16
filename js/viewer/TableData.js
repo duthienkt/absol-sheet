@@ -163,6 +163,10 @@ TableData.prototype.findColByIndex = function (index) {
     return this.headCells[index] || null;
 };
 
+TableData.prototype.findColByName = function (name) {
+    return this.headCells[this.propertyNames.indexOf(name)] || null;
+};
+
 
 TableData.prototype.findRowByIndex = function (index) {
     return this.bodyRow[index] || null;
@@ -320,6 +324,10 @@ Object.defineProperty(TSCell.prototype, 'descriptor', {
 Object.defineProperty(TSCell.prototype, 'value', {
     get: function () {
         return this.row.record[this.pName];
+    },
+    set: function (value){
+        this.row.record[this.pName] = value;
+        this.load();
     }
 });
 
@@ -350,6 +358,7 @@ TSCell.prototype.loadTextCell = function (elt, value, record, name, descriptor) 
 
 
 TSCell.prototype.loadNumberCell = function (elt, value, record, name, descriptor) {
+    elt.clearChild();
     elt.addChild(_({
         tag: 'span',
         child: {
