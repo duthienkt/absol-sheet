@@ -102,4 +102,17 @@ NumberCellEditor.prototype.ev_dblClick = function (event) {
     this.startEditing();
 };
 
+
+NumberCellEditor.prototype.ev_blur = function (event) {
+    setTimeout(function () {
+        if (this.$input !== document.activeElement) {
+            //blur before finished
+            var value = parseFloat(this.$input.value);
+            if (isFinite(value))
+                this.cell.value = value;
+            this.finish();
+        }
+    }.bind(this), 100);
+};
+
 export default NumberCellEditor;
