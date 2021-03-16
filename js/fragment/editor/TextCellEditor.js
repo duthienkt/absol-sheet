@@ -48,8 +48,10 @@ TextCellEditor.prototype._loadCellStyle = function () {
 
 TextCellEditor.prototype.waitAction = function () {
     CellEditor.prototype.waitAction.call(this);
-    setTimeout(this.$input.focus.bind(this.$input), 100);
-    this.$input.value = this.cell.value;
+    setTimeout(function () {
+        this.$input.focus();
+        this.$input.applyData(this.cell.value, { start: 0, end: this.cell.value.length });
+    }.bind(this), 100);
     this.$input.removeClass('asht-state-editing')
         .addClass('asht-state-wait-action');
     this.$input.on('keydown', this.ev_firstKey)
@@ -70,7 +72,8 @@ TextCellEditor.prototype.startEditing = function () {
 TextCellEditor.prototype.finish = function () {
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
-        .off('dblclick', this.ev_dblClick);
+        .off('dblclick', this.ev_dblClick)
+        .off('blur', this.ev_blur);
     CellEditor.prototype.finish.call(this);
 };
 
@@ -87,7 +90,7 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
         this.startEditing();
         event.preventDefault();
     }
-    else if (event.key.length === 1) {
+    else if (event.key.length === 1 || event.key === "Backspace") {
         this.startEditing();
     }
     else if (event.key.startsWith('Arrow')) {
@@ -141,6 +144,9 @@ TextCellEditor.prototype.ev_dblClick = function (event) {
 TextCellEditor.prototype.ev_blur = function (event) {
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
+            //blur before finished
+            console.log('blur')
+            this.cell.value = this.$input.value;
             this.finish();
         }
     }.bind(this), 100);
