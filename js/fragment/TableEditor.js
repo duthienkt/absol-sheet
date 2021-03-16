@@ -2,6 +2,8 @@ import '../../css/tableeditable.css';
 import SComp from "../dom/SComp";
 import TableData from "../viewer/TableData";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import TextCellEditor from "./editor/TextCellEditor";
+import NumberCellEditor from "./editor/NumberCellEditor";
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -229,17 +231,34 @@ TableEditor.prototype.ev_resize = function (event) {
 
 
 TableEditor.prototype.editCell = function (row, col) {
+    if (this.currentCellEditor) {
+        this.currentCellEditor.off('finish', this.ev_cellEditorFinish);
+        this.currentCellEditor = null;
+    }
     if (row && col) {
         this.$editingbox.removeStyle('display');
         this.editingData = {
             row: row,
-            col: col
+            col: col,
+            cell: row.cells[col.index]
         };
         this.$editingbox.clearChild();
         this.updateEditingBoxPosition();
-        this.loadTextCellEditor();
+        switch (this.editingData.cell.descriptor.type) {
+            case 'text':
+                this.currentCellEditor = new TextCellEditor(this, row.cells[col.index]);
+                break;
+            case 'number':
+                this.currentCellEditor = new NumberCellEditor(this, row.cells[col.index]);
+                break;
+            default :
+        }
+
         this.scrollIntoRow(row);
         this.scrollIntoCol(col);
+        if (this.currentCellEditor) {
+            this.currentCellEditor.on('finish', this.ev_cellEditorFinish);
+        }
     }
     else {
         this.$editingbox.addStyle('display', 'none');
@@ -247,148 +266,6 @@ TableEditor.prototype.editCell = function (row, col) {
     }
 };
 
-TableEditor.prototype.loadTextCellEditor = function () {
-    var thisTableEditor = this;
-    var editingData = this.editingData;
-    var cellElt = editingData.row.cells[editingData.col.index].elt;
-    var record = editingData.row.record;
-    var col = editingData.col;
-    var name = col.name;
-    var row = editingData.row;
-    var rowIdx, colIdx;
-    var style = {
-        'min-width': parseFloat(this.$editingbox.style.minWidth.replace('px')) - 4,
-        'min-height': parseFloat(this.$editingbox.style.minHeight.replace('px')) - 4,
-        outline: 'none',
-        'font-size': cellElt.getComputedStyleValue('font-size'),
-        'font-family': cellElt.getComputedStyleValue('font-family'),
-        'font-style': cellElt.getComputedStyleValue('font-style'),
-        'line-height': cellElt.getComputedStyleValue('line-height'),
-        'padding-left': cellElt.getComputedStyleValue('padding-left'),
-        'padding-right': cellElt.getComputedStyleValue('padding-right'),
-        'padding-top': cellElt.getComputedStyleValue('padding-top'),
-        'padding-bottom': cellElt.getComputedStyleValue('padding-bottom'),
-        'text-align': cellElt.getComputedStyleValue('text-align'),
-        background: 'white',
-        opacity: '1',
-        display: 'block'
-    };
-
-    var editor = _({
-        tag: 'preinput',
-        style: {
-            opacity: '0',
-            padding: '0',
-            margin: '0',
-        },
-        outline: 'none'
-    }).addTo(this.$editingbox);
-    editingData.$editor = editor;
-
-
-    editor.on('change', function firstChange(event) {
-        editor.off('change', firstChange);
-        editor.addStyle(style);
-    });
-
-    function waitFirstKey(event) {
-        if (event.key == "Delete") {
-            cellElt.clearChild().addChild(_({ tag: 'span', child: { text: '' } }));
-            record[name] = '';
-        }
-        else if (event.key == 'Enter') {
-            editor.off('keydown', waitFirstKey, true);
-            editor.focus();
-            editor.value = record[name];
-            editor.on('keydown', waitFinishKey, true);
-            event.preventDefault();
-        }
-        else if (event.key.length == 1) {
-            editor.off('keydown', waitFirstKey, true);
-            editor.on('keydown', waitFinishKey, true);
-        }
-        else if (event.key === "F2") {
-            editor.off('keydown', waitFirstKey, true);
-            editor.focus();
-            editor.value = record[name];
-            editor.on('keydown', waitFinishKey, true);
-            event.preventDefault();
-        }
-        else if (event.key === 'ArrowDown') {
-            rowIdx = thisTableEditor.tableData.findIndexOfRow(row);
-            var nextRow = thisTableEditor.tableData.findRowByIndex(rowIdx + 1);
-            if (nextRow) {
-                event.preventDefault();
-                editor.off('keydown', waitFirstKey, true);
-                thisTableEditor.editCell(nextRow, col);
-            }
-        }
-        else if (event.key === 'ArrowUp') {
-            rowIdx = thisTableEditor.tableData.findIndexOfRow(row);
-            var prevRow = thisTableEditor.tableData.findRowByIndex(rowIdx - 1);
-            if (prevRow) {
-                event.preventDefault();
-                editor.off('keydown', waitFirstKey, true);
-                thisTableEditor.editCell(prevRow, col);
-            }
-        }
-        else if (event.key === 'ArrowLeft') {
-            colIdx = thisTableEditor.tableData.findIndexOfCol(col);
-            var prevCol = thisTableEditor.tableData.findColByIndex(colIdx - 1);
-            if (prevCol) {
-                event.preventDefault();
-                editor.off('keydown', waitFirstKey, true);
-                thisTableEditor.editCell(row, prevCol);
-            }
-        }
-        else if (event.key === 'ArrowRight') {
-            colIdx = thisTableEditor.tableData.findIndexOfCol(col);
-            var nextCol = thisTableEditor.tableData.findColByIndex(colIdx + 1);
-            if (nextCol) {
-                event.preventDefault();
-                editor.off('keydown', waitFirstKey, true);
-                thisTableEditor.editCell(row, nextCol);
-
-            }
-        }
-    }
-
-    editor.on('keydown', waitFirstKey, true);
-
-    function waitFinishKey(event) {
-        if (event.key == "Enter") {
-            var text = editor.value;
-            if (event.altKey) {
-                var pos = editor.getSelectPosition();
-                var newText = text.substr(0, pos.start) + '\n' + text.substr(pos.end);
-                editor.applyData(newText, pos.start + 1);
-                editor.waitToCommit(newText, pos.start + 1);
-            }
-            else {
-                thisTableEditor.tableData.loadTextCell(cellElt, text, record, name);
-                record[name] = text;
-                thisTableEditor.editCell(null);
-                thisTableEditor.updateFixedTableEltPosition();
-            }
-            event.preventDefault();
-        }
-        else if (event.key == "Escape") {
-            thisTableEditor.editCell(null);
-        }
-    }
-
-    setTimeout(function () {
-        editor.focus();
-    }, 10);
-    editingData.onDblClickEditBox = function () {
-        console.log('dbclick');
-        editor.off('keydown', waitFirstKey, true);
-        editor.on('keydown', waitFinishKey, true);
-        editor.focus();
-        editor.value = record[name];
-        editingData.onDblClickEditBox = null;
-    };
-};
 
 
 TableEditor.prototype.updateEditingBoxPosition = function () {
@@ -613,4 +490,17 @@ TableEditor.prototype.scrollIntoCol = function (col) {
     }
 };
 
+TableEditor.prototype.ev_cellEditorFinish = function (event) {
+    if (this.currentCellEditor === event.target){
+        this.editCell(null);
+    }
+};
+
 export default TableEditor;
+
+
+
+
+
+
+
