@@ -145,7 +145,6 @@ TextCellEditor.prototype.ev_blur = function (event) {
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
             //blur before finished
-            console.log('blur')
             this.cell.value = this.$input.value;
             this.finish();
         }
