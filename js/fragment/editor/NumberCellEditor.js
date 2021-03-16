@@ -36,6 +36,20 @@ NumberCellEditor.prototype.prepareInput = function () {
 };
 
 
+NumberCellEditor.prototype.waitAction = function () {
+    CellEditor.prototype.waitAction.call(this);
+    setTimeout(function () {
+        this.$input.focus();
+        this.$input.value = this.cell.value;
+        this.$input.select();
+    }.bind(this), 100);
+    this.$input.removeClass('asht-state-editing')
+        .addClass('asht-state-wait-action');
+    this.$input.on('keydown', this.ev_firstKey)
+        .off('keydown', this.ev_finishKey)
+        .on('dblclick', this.ev_dblClick);
+};
+
 NumberCellEditor.prototype.startEditing = function () {
     CellEditor.prototype.startEditing.call(this);
     this.$input.addClass('asht-state-editing')
@@ -59,7 +73,7 @@ NumberCellEditor.prototype.ev_firstKey = function (event) {
         this.startEditing();
         event.preventDefault();
     }
-    else if (event.key.length === 1) {
+    else if (event.key.length === 1 || event.key === "Backspace") {
         this.startEditing();
     }
     else if (event.key.startsWith('Arrow')) {
