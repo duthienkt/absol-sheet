@@ -1,9 +1,11 @@
 import '../../css/tableeditable.css';
 import SComp from "../dom/SComp";
-import TableData from "../viewer/TableData";
+import TableData, {TSRow} from "../viewer/TableData";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import TextCellEditor from "./editor/TextCellEditor";
 import NumberCellEditor from "./editor/NumberCellEditor";
+import "absol-acomp/js/BContextCapture";
+import ContextCaptor from 'absol-acomp/js/ContextMenu';
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -23,6 +25,7 @@ function TableEditor() {
 
 TableEditor.prototype.getView = function () {
     if (this.$view) return this.$view;
+    ContextCaptor.auto();
     this.$view = _({
         class: 'asht-table-editor',
         child: [
@@ -61,6 +64,7 @@ TableEditor.prototype.getView = function () {
                             child: {
                                 tag: 'table',
                                 class: ['asht-table-editor-index-col', 'asht-table-data'],
+                                extendEvent: 'contextmenu'
                             }
                         }
                     },
@@ -80,8 +84,7 @@ TableEditor.prototype.getView = function () {
     this.$editingLayer = $('.asht-table-editor-editing-layer', this.$view)
         .on('mousedown', this.ev_editLayerMouseDown);
     this.$editingbox = $('.asht-table-editor-editing-box', this.$view)
-        .addStyle('display', 'none')
-        .on('dblclick', this.ev_dblclickEditBox);
+        .addStyle('display', 'none');
 
     this.$selectedbox = $('.asht-table-editor-selected-box', this.$foreground).addStyle('display', 'none')
 
@@ -98,7 +101,8 @@ TableEditor.prototype.getView = function () {
 
     this.$indexViewport = $('.asht-table-editor-index-viewport', this.$view);
     this.$indexCol = $('.asht-table-editor-index-col', this.$view)
-        .on('mousedown', this.ev_indexColMouseDown);
+        .on('mousedown', this.ev_indexColMouseDown)
+        .on('contextmenu', this.ev_indexColContextMenu);
     this.$indexSccroller = $('.asht-table-editor-index-scroller', this.$view);
     return this.$view;
 };
@@ -214,8 +218,42 @@ TableEditor.prototype.ev_indexColMouseDown = function (ev) {
     if (this.hoverRow) {
         this.selectRow(this.hoverRow);
         this.editCell(this.hoverRow, this.tableData.headCells[0]);
-
     }
+};
+
+TableEditor.prototype.ev_indexColContextMenu = function (ev) {
+    var row = this.tableData.findRowByClientY(ev.clientY);
+    ev.showContextMenu({
+        items: [
+            {
+                cmd: 'insert_before',
+                text: 'Insert Before',
+                icon: 'span.mdi.mdi-table-row-plus-before'
+            },
+            {
+                cmd: 'insert_after',
+                text: 'Insert After',
+                icon: 'span.mdi.mdi-table-row-plus-after'
+            },
+            {
+                cmd: 'remove',
+                text: 'Remove',
+                icon: 'span.mdi.mdi-table-row-remove'
+            },
+        ]
+    }, function (ev1) {
+        switch (ev1.menuItem.cmd) {
+            case 'insert_before':
+                this.insertRow(row.idx, {})
+                break;
+            case 'insert_after':
+                this.insertRow(row.idx + 1, {});
+                break;
+            case 'remove':
+                this.removeRow(row.idx);
+                break;
+        }
+    }.bind(this));
 };
 
 
@@ -254,7 +292,6 @@ TableEditor.prototype.editCell = function (row, col) {
         this.$editingbox.addStyle('display', 'none');
     }
 };
-
 
 
 TableEditor.prototype.updateEditingBoxPosition = function () {
@@ -314,6 +351,46 @@ TableEditor.prototype.selectAll = function () {
     this.updateSelectedPosition();
 };
 
+TableEditor.prototype.insertRow = function (atIdx, record) {
+    var tableData = this.tableData;
+    atIdx = Math.min(atIdx, tableData.bodyRow.length);
+    var beforeRow = tableData.bodyRow[atIdx];
+    var row = new TSRow(tableData, record, atIdx);
+    if (beforeRow) {
+        tableData.records.splice(atIdx, 0, record);
+        tableData.$tbody.addChildBefore(row.elt, beforeRow.elt);
+        tableData.bodyRow.splice(atIdx, 0, row);
+    }
+    else {
+        tableData.records.push(record);
+        if (tableData.bodyRow.length > 0) {
+            tableData.$tbody.addChildAfter(row.elt, tableData.bodyRow[tableData.bodyRow.length - 1]);
+        }
+        else {
+            tableData.$tbody.addChildBefore(row.elt, tableData.$tbody.firstChild);
+        }
+        tableData.bodyRow.push(row);
+    }
+    for (var i = atIdx; i < tableData.bodyRow.length; ++i) {
+        tableData.bodyRow[i].idx = i;
+    }
+    this.loadIndexCol();
+    this.updateFixedTableEltPosition();
+};
+
+
+TableEditor.prototype.removeRow = function (atIdx) {
+    var tableData = this.tableData;
+    atIdx = Math.min(atIdx, tableData.bodyRow.length - 1);
+    if (atIdx < 0) return;
+    var row = tableData.bodyRow.splice(atIdx, 1)[0];
+    row.elt.remove();
+    for (var i = atIdx; i < tableData.bodyRow.length; ++i) {
+        tableData.bodyRow[i].idx = i;
+    }
+    this.loadIndexCol();
+    this.updateFixedTableEltPosition();
+};
 
 TableEditor.prototype.updateSelectedPosition = function () {
     if (!this.selectedData) return;
@@ -353,14 +430,12 @@ TableEditor.prototype.updateSelectedPosition = function () {
 };
 
 TableEditor.prototype.loadHeader = function () {
-    var thisEditor = this;
     var $headRow = this.$headRow;
     $headRow.clearChild();
     Array.prototype.forEach.call(this.tableData.$headRow.children, function (td, index) {
         var newTd = $(td.cloneNode(true));
         newTd.$originElt = td;
         newTd.__index__ = index - 1;
-
         $headRow.addChild(newTd);
     });
     this.updateHeaderPosition();
@@ -481,7 +556,7 @@ TableEditor.prototype.scrollIntoCol = function (col) {
 };
 
 TableEditor.prototype.ev_cellEditorFinish = function (event) {
-    if (this.currentCellEditor === event.target){
+    if (this.currentCellEditor === event.target) {
         this.editCell(null);
     }
 };
