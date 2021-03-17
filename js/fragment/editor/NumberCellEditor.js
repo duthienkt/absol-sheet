@@ -99,9 +99,9 @@ NumberCellEditor.prototype.ev_finishKey = function (event) {
     if (event.key === "Enter") {
         var text = this.$input.value;
         this.cell.value = parseFloat(text) || this.cell.value;
-        console.log("Todo: edit next cell")
         this.tableEditor.updateFixedTableEltPosition();
         event.preventDefault();
+        this.editCellNext();
     }
     else if (event.key === "Escape") {
         event.preventDefault();

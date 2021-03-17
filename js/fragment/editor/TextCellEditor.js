@@ -123,8 +123,8 @@ TextCellEditor.prototype.ev_finishKey = function (event) {
         }
         else {
             this.cell.value = text;
-            console.log("Todo: edit next cell")
             this.tableEditor.updateFixedTableEltPosition();
+            this.editCellNext();
         }
         event.preventDefault();
     }
