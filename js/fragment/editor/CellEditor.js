@@ -93,7 +93,21 @@ CellEditor.prototype.editCellRight = function () {
 };
 
 CellEditor.prototype.editCellNext = function () {
-
+    var colIdx = this.cell.table.findIndexOfCol(this.col);
+    var nextCol = this.cell.table.findColByIndex(colIdx + 1);
+    if (nextCol) {
+        this.finish();
+        this.tableEditor.editCell(this.row, nextCol);
+    }
+    else{
+        var rowIdx = this.cell.row.idx;
+        var nextRow = this.cell.table.findRowByIndex(rowIdx + 1);
+        var firstCol = this.cell.table.findColByIndex(0);
+        if (nextRow && firstCol) {
+            this.finish();
+            this.tableEditor.editCell(nextRow, firstCol);
+        }
+    }
 };
 
 CellEditor.prototype.finish = function () {
