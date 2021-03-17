@@ -6,13 +6,12 @@ var $ = SComp.$;
 
 /**
  *
- * @param {TableEditor} editor
+ * @constructor
  */
-function TableData(editor) {
+function TableData() {
     this.propertyNames = [];
     this.propertyDescriptors = {};
     this.records = [];
-    this.editor = editor;
     this.bodyRow = [];
     this.headCells = [];
 }
@@ -181,38 +180,6 @@ TableData.prototype.findIndexOfCol = function (col) {
 };
 
 
-TableData.prototype.type2functionName = {
-    text: 'loadTextCell',
-    number: 'loadNumberCell'
-};
-
-
-TableData.prototype.loadTextCell = function (cellElt, value, record, name, descriptor) {
-    cellElt.clearChild();
-    var lineSpans = value.split(/\r?\n/).reduce(function (ac, line) {
-        ac.push(_({
-            tag: 'span', child: { text: line }
-        }));
-        ac.push(_('br'));
-        return ac;
-    }, []);
-    cellElt.addChild(lineSpans);
-};
-
-TableData.prototype.loadNumberCell = function (cellElt, value, record, name) {
-    cellElt.addChild(_({
-        tag: 'span',
-        child: {
-            text: value
-        }
-    }));
-};
-
-TableData.prototype.loadCell = function (descriptor, cellElt, value, record, name) {
-
-};
-
-
 export default TableData;
 
 /***
@@ -325,7 +292,7 @@ Object.defineProperty(TSCell.prototype, 'value', {
     get: function () {
         return this.row.record[this.pName];
     },
-    set: function (value){
+    set: function (value) {
         this.row.record[this.pName] = value;
         this.load();
     }
@@ -345,6 +312,7 @@ TSCell.prototype.load = function () {
 
 
 TSCell.prototype.loadTextCell = function (elt, value, record, name, descriptor) {
+    value = value || '';
     elt.clearChild();
     var lineSpans = value.split(/\r?\n/).reduce(function (ac, line) {
         ac.push(_({
@@ -358,11 +326,12 @@ TSCell.prototype.loadTextCell = function (elt, value, record, name, descriptor) 
 
 
 TSCell.prototype.loadNumberCell = function (elt, value, record, name, descriptor) {
+    value = value;
     elt.clearChild();
     elt.addChild(_({
         tag: 'span',
         child: {
-            text: value
+            text: value||''
         }
     }));
 };
