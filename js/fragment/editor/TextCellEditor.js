@@ -49,8 +49,9 @@ TextCellEditor.prototype._loadCellStyle = function () {
 TextCellEditor.prototype.waitAction = function () {
     CellEditor.prototype.waitAction.call(this);
     setTimeout(function () {
+        var text = this.cell.value || '';
         this.$input.focus();
-        this.$input.applyData(this.cell.value, { start: 0, end: this.cell.value.length });
+        this.$input.applyData(text, { start: 0, end: text.length });
     }.bind(this), 100);
     this.$input.removeClass('asht-state-editing')
         .addClass('asht-state-wait-action');
@@ -89,7 +90,8 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
         this.$input.value = this.cell.value;
         this.startEditing();
         event.preventDefault();
-    } else if (event.key === 'Tab') {
+    }
+    else if (event.key === 'Tab') {
         this.editCellNext();
         event.preventDefault();
     }
@@ -116,9 +118,9 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 TextCellEditor.prototype.ev_finishKey = function (event) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" ||event.key === "Tab") {
         var text = this.$input.value;
-        if (event.altKey) {
+        if (event.altKey && event.key === "Enter") {
             var pos = this.$input.getSelectPosition();
             var newText = text.substr(0, pos.start) + '\n' + text.substr(pos.end);
             this.$input.applyData(newText, pos.start + 1);
