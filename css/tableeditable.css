@@ -178,6 +178,26 @@ input.asht-cell-editor-input[type="number"].asht-state-editing {
     width: calc(var(--cell-width) + 18px);
 }
 
+.asht-boolean-cell-editor-input.asht-state-wait-action > .as-checkbox-input {
+    visibility: hidden;
+}
+
+.asht-boolean-cell-editor-input {
+    text-align: center;
+}
+
+.asht-boolean-cell-editor-input .as-checkbox-input {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.asht-boolean-cell-editor-input::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    height: var(--cell-height);
+}
+
 .asht-table-editor-selected-box {
     border: 1px solid rgba(26, 115, 232, 0.7);
     background-color: rgba(26, 115, 232, 0.1);
