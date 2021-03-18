@@ -191,3 +191,7 @@ input.asht-cell-editor-input[type="number"].asht-state-editing {
 td.asht-type-number {
     text-align: right;
 }
+
+td.asht-type-boolean {
+    text-align: center;
+}
