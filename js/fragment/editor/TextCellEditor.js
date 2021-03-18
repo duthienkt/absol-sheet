@@ -89,6 +89,9 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
         this.$input.value = this.cell.value;
         this.startEditing();
         event.preventDefault();
+    } else if (event.key === 'Tab') {
+        this.editCellNext();
+        event.preventDefault();
     }
     else if (event.key.length === 1 || event.key === "Backspace") {
         this.startEditing();

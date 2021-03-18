@@ -73,6 +73,10 @@ NumberCellEditor.prototype.ev_firstKey = function (event) {
         this.startEditing();
         event.preventDefault();
     }
+    else if (event.key === 'Tab') {
+        this.editCellNext();
+        event.preventDefault();
+    }
     else if (event.key.length === 1 || event.key === "Backspace") {
         this.startEditing();
     }
@@ -96,7 +100,7 @@ NumberCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 NumberCellEditor.prototype.ev_finishKey = function (event) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter"|| event.key === "Tab") {
         var text = this.$input.value;
         this.cell.value = parseFloat(text) || this.cell.value;
         this.tableEditor.updateFixedTableEltPosition();

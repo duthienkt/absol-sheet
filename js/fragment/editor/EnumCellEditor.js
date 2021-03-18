@@ -92,6 +92,7 @@ EnumCellEditor.prototype.startEditing = function () {
         .off('dblclick', this.ev_dblClick);
     this.$input.addStyle(this._cellStyle);
     this.$input.on('keydown', this.ev_finishKey);
+    this.$selectlistBox.on('keydown', this.ev_finishKey);
 
     this.$selectlistBox.addTo(document.body);
     this.$selectlistBox.followTarget = this.$input;
@@ -103,7 +104,8 @@ EnumCellEditor.prototype.finish = function () {
         .off('keydown', this.ev_firstKey)
         .off('dblclick', this.ev_dblClick)
         .off('blur', this.ev_blur);
-    this.$selectlistBox.off('blur', this.ev_blur);
+    this.$selectlistBox.off('keydown', this.ev_finishKey)
+        .off('blur', this.ev_blur);
     CellEditor.prototype.finish.call(this);
     this.$selectlistBox.followTarget = null;
     this.$selectlistBox.remove();
@@ -120,6 +122,10 @@ EnumCellEditor.prototype.ev_firstKey = function (event) {
     else if (event.key === 'Enter' || event.key === 'F2') {
         this.$input.value = this.cell.value;
         this.startEditing();
+        event.preventDefault();
+    }
+    else if (event.key === 'Tab') {
+        this.editCellNext();
         event.preventDefault();
     }
     else if (event.key.length === 1 || event.key === "Backspace") {
@@ -145,6 +151,10 @@ EnumCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 EnumCellEditor.prototype.ev_finishKey = function (event) {
+    if (event.key ==="Tab"){
+        this.editCellNext();
+        event.preventDefault();
+    }
 };
 
 EnumCellEditor.prototype.ev_dblClick = function (event) {
@@ -156,8 +166,9 @@ EnumCellEditor.prototype.ev_blur = function (event) {
     if (this._waitBlurTimeout >= 0) clearTimeout(this._waitBlurTimeout);
     this._waitBlurTimeout = setTimeout(function () {
         this._waitBlurTimeout = -1;
-        if (!document.activeElement || this.$input !== document.activeElement
-            || AElement.prototype.isDescendantOf.call(document.activeElement, this.$selectlistBox)) {
+        if (!document.activeElement
+            || (this.$input !== document.activeElement
+                && !AElement.prototype.isDescendantOf.call(document.activeElement, this.$selectlistBox))) {
             //blur before finished
             this.finish();
         }
