@@ -93,6 +93,10 @@ BooleanCellEditor.prototype.ev_firstKey = function (event) {
     else if (event.key.length === 1 || event.key === "Backspace") {
         this.startEditing();
     }
+    else if (event.key === 'Tab') {
+        this.editCellNext();
+        event.preventDefault();
+    }
     else if (event.key.startsWith('Arrow')) {
         event.preventDefault();
         switch (event.key) {
@@ -113,7 +117,7 @@ BooleanCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 BooleanCellEditor.prototype.ev_finishKey = function (event) {
-    if (event.key === "Tab") {
+    if (event.key === "Tab" || event.key === "Enter") {
         this.editCellNext();
         event.preventDefault();
     }

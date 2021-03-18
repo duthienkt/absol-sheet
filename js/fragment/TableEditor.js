@@ -362,17 +362,17 @@ TableEditor.prototype.selectAll = function () {
 TableEditor.prototype.insertRow = function (atIdx, record) {
     var tableData = this.tableData;
     atIdx = Math.min(atIdx, tableData.bodyRow.length);
-    var beforeRow = tableData.bodyRow[atIdx];
+    var currentRow = tableData.bodyRow[atIdx];
     var row = new TSRow(tableData, record, atIdx);
-    if (beforeRow) {
+    if (currentRow) {
         tableData.records.splice(atIdx, 0, record);
-        tableData.$tbody.addChildBefore(row.elt, beforeRow.elt);
+        tableData.$tbody.addChildBefore(row.elt, currentRow.elt);
         tableData.bodyRow.splice(atIdx, 0, row);
     }
     else {
         tableData.records.push(record);
         if (tableData.bodyRow.length > 0) {
-            tableData.$tbody.addChildAfter(row.elt, tableData.bodyRow[tableData.bodyRow.length - 1]);
+            tableData.$tbody.addChildAfter(row.elt, tableData.bodyRow[tableData.bodyRow.length - 1].elt);
         }
         else {
             tableData.$tbody.addChildBefore(row.elt, tableData.$tbody.firstChild);

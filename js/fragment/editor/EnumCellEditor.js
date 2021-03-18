@@ -39,7 +39,7 @@ EnumCellEditor.prototype.prepareInput = function () {
         tag: 'button',
         class: 'asht-cell-editor-input',
         child: {
-            text: descriptor.__val2Item__[this.cell.value].text
+            text: (descriptor.__val2Item__[this.cell.value] && descriptor.__val2Item__[this.cell.value].text) || ""
         },
         on: {
             blur: this.ev_blur
@@ -151,7 +151,7 @@ EnumCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 EnumCellEditor.prototype.ev_finishKey = function (event) {
-    if (event.key ==="Tab"){
+    if (event.key === "Tab") {
         this.editCellNext();
         event.preventDefault();
     }
