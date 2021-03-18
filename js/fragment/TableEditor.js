@@ -6,6 +6,7 @@ import TextCellEditor from "./editor/TextCellEditor";
 import NumberCellEditor from "./editor/NumberCellEditor";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
+import EnumCellEditor from "./editor/EnumCellEditor";
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -278,6 +279,9 @@ TableEditor.prototype.editCell = function (row, col) {
                 break;
             case 'number':
                 this.currentCellEditor = new NumberCellEditor(this, row.cells[col.index]);
+                break;
+                case 'enum':
+                this.currentCellEditor = new EnumCellEditor(this, row.cells[col.index]);
                 break;
             default :
         }
