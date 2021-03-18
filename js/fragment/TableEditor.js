@@ -7,6 +7,7 @@ import NumberCellEditor from "./editor/NumberCellEditor";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import EnumCellEditor from "./editor/EnumCellEditor";
+import BooleanCellEditor from "./editor/BooleanCellEditor";
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -280,8 +281,11 @@ TableEditor.prototype.editCell = function (row, col) {
             case 'number':
                 this.currentCellEditor = new NumberCellEditor(this, row.cells[col.index]);
                 break;
-                case 'enum':
+            case 'enum':
                 this.currentCellEditor = new EnumCellEditor(this, row.cells[col.index]);
+                break;
+            case 'boolean':
+                this.currentCellEditor = new BooleanCellEditor(this, row.cells[col.index]);
                 break;
             default :
         }
