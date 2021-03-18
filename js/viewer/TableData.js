@@ -301,12 +301,15 @@ Object.defineProperty(TSCell.prototype, 'value', {
 
 TSCell.prototype.type2functionName = {
     text: 'loadTextCell',
-    number: 'loadNumberCell'
+    number: 'loadNumberCell',
+    enum: 'loadEnumCell',
+    boolean: 'loadBooleanCell'
 };
 
 TSCell.prototype.load = function () {
     var descriptor = this.descriptor;
     var fName = this.type2functionName[descriptor.type];
+    this.elt.attr('class', 'asht-type-' + descriptor.type);
     this[fName](this.elt, this.value, this.record, this.pName, this.descriptor);
 };
 
@@ -326,13 +329,37 @@ TSCell.prototype.loadTextCell = function (elt, value, record, name, descriptor) 
 
 
 TSCell.prototype.loadNumberCell = function (elt, value, record, name, descriptor) {
-    value = value;
+    value = value || 0;
     elt.clearChild();
     elt.addChild(_({
         tag: 'span',
         child: {
-            text: value||''
+            text: value + ''
         }
     }));
 };
 
+
+TSCell.prototype.loadEnumCell = function (elt, value, record, name, descriptor) {
+    descriptor.__val2Item__ = descriptor.__val2Item__ || (descriptor.items || [])
+        .reduce(function (ac, item) {
+            ac[item.value] = item;
+            return ac;
+        }, {});
+    elt.clearChild();
+    if (value !== null && value !== undefined && descriptor.__val2Item__[value]) {
+        elt.addChild(_({
+            tag: 'span',
+            child: {
+                text: descriptor.__val2Item__[value].text
+            }
+        }));
+    }
+};
+
+TSCell.prototype.loadBooleanCell = function (elt, value, record, name, descriptor) {
+    elt.clearChild();
+    if (value) {
+        elt.addChild(_('span.mdi.mdi-check'));
+    }
+};
