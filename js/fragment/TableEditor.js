@@ -33,7 +33,6 @@ TableEditor.prototype.getView = function () {
         child: [
             'attachhook',
             {
-                tag: 'bscroller',
                 class: 'asht-table-editor-body',
                 child: {
                     class: 'asht-table-editor-content', child: {
@@ -124,7 +123,7 @@ TableEditor.prototype.setData = function (data) {
 
 
 TableEditor.prototype.getData = function () {
-
+    return this.tableData && this.tableData.export();
 };
 
 TableEditor.prototype.scrollYBy = function (dy, dx) {
@@ -568,6 +567,14 @@ TableEditor.prototype.ev_cellEditorFinish = function (event) {
         this.editCell(null);
     }
 };
+
+
+Object.defineProperty(TableEditor.prototype, 'records', {
+    get: function () {
+        return this.tableData && this.tableData.records;
+    }
+});
+
 
 export default TableEditor;
 
