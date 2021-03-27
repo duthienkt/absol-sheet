@@ -1,6 +1,7 @@
 import OOP from "absol/src/HTML5/OOP";
 import CellEditor from "./CellEditor";
 import AElement from "absol/src/HTML5/AElement";
+import {_, $} from '../../dom/SCore';
 
 
 /***

@@ -1,5 +1,6 @@
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
+import {_, $} from '../../dom/SCore';
 
 /***
  * @extends EventEmitter

@@ -1,7 +1,7 @@
 import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
 import CellEditor from "./CellEditor";
-
+import {_, $} from '../../dom/SCore';
 
 /***
  * @extends CellEditor

@@ -2,6 +2,7 @@ import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
 import CellEditor from "./CellEditor";
 import TextCellEditor from "./TextCellEditor";
+import {_, $} from '../../dom/SCore';
 
 
 /***

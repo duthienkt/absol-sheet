@@ -3,6 +3,7 @@ import CellEditor from "./CellEditor";
 import {getScreenSize, traceOutBoundingClientRect} from "absol/src/HTML5/Dom";
 import SelectMenu from "absol-acomp/js/SelectMenu2";
 import AElement from "absol/src/HTML5/AElement";
+import {_, $} from '../../dom/SCore';
 
 
 /***
