@@ -153,7 +153,7 @@ td.asht-table-data-root-cell {
     top: 0;
     bottom: 0;
     box-sizing: border-box;
-    border: 2px solid rgb(26, 115, 232);
+    border: 1px solid rgb(26, 115, 232);
     z-index: 2;
 }
 
