@@ -141,7 +141,7 @@ td.asht-table-data-root-cell {
     --cell-height: 0;
     min-width: var(--cell-width);
     min-height: var(--cell-height);
-    border: solid 1px rgb(26, 115, 232);
+    border: solid 1px rgb(134, 158, 193);
 }
 
 .asht-table-editor-editing-box::before {
@@ -153,8 +153,13 @@ td.asht-table-data-root-cell {
     top: 0;
     bottom: 0;
     box-sizing: border-box;
-    border: 1px solid rgb(26, 115, 232);
+    border: 1px solid rgb(134, 158, 193);
     z-index: 2;
+}
+
+.asht-table-editor-editing-box.as-status-focus,
+.asht-table-editor-editing-box.as-status-focus::before {
+    border-color: rgb(26, 115, 232);
 }
 
 

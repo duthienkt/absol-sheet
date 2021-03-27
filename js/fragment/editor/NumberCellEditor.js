@@ -123,15 +123,17 @@ NumberCellEditor.prototype.ev_dblClick = function (event) {
 
 
 NumberCellEditor.prototype.ev_blur = function (event) {
+    this.$editingbox.removeClass('as-status-focus');
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
             //blur before finished
             var value = parseFloat(this.$input.value);
             if (isFinite(value))
                 this.cell.value = value;
-            this.finish();
         }
     }.bind(this), 100);
 };
+
+NumberCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
 
 export default NumberCellEditor;

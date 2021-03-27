@@ -2,6 +2,7 @@ import OOP from "absol/src/HTML5/OOP";
 import CellEditor from "./CellEditor";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
+import TextCellEditor from "./TextCellEditor";
 
 
 /***
@@ -39,7 +40,8 @@ BooleanCellEditor.prototype.prepareInput = function () {
         class: ['asht-cell-editor-input', 'asht-boolean-cell-editor-input'],
         child: this.$checkbox,
         on: {
-            blur: this.ev_blur
+            blur: this.ev_blur,
+            focus: this.ev_focus
         }
     });
     this.$editingbox.clearChild()
@@ -73,8 +75,10 @@ BooleanCellEditor.prototype.finish = function () {
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
         .off('dblclick', this.ev_dblClick)
+        .off('blur', this.ev_blur)
+        .off('focus', this.ev_focus);
+    this.$checkbox.off('focus', this.ev_focus)
         .off('blur', this.ev_blur);
-    this.$checkbox.off('blur', this.ev_blur);
     CellEditor.prototype.finish.call(this);
 };
 
@@ -137,7 +141,7 @@ BooleanCellEditor.prototype.ev_blur = function (event) {
             || (this.$input !== document.activeElement
                 && !AElement.prototype.isDescendantOf.call(document.activeElement, this.$input))) {
             //blur before finished
-            this.finish();
+            this.$editingbox.removeClass('as-status-focus');
         }
     }.bind(this), 100);
 };
@@ -146,5 +150,8 @@ BooleanCellEditor.prototype.ev_change = function (event) {
     this.cell.value = this.$checkbox.checked;
     this.tableEditor.updateFixedTableEltPosition();
 };
+
+BooleanCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
+
 
 export default BooleanCellEditor;

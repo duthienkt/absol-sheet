@@ -4,6 +4,7 @@ import {getScreenSize, traceOutBoundingClientRect} from "absol/src/HTML5/Dom";
 import SelectMenu from "absol-acomp/js/SelectMenu2";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
+import TextCellEditor from "./TextCellEditor";
 
 
 /***
@@ -43,7 +44,8 @@ EnumCellEditor.prototype.prepareInput = function () {
             text: (descriptor.__val2Item__[this.cell.value] && descriptor.__val2Item__[this.cell.value].text) || ""
         },
         on: {
-            blur: this.ev_blur
+            blur: this.ev_blur,
+            focus: this.ev_focus
         }
     });
     /*
@@ -164,6 +166,7 @@ EnumCellEditor.prototype.ev_dblClick = function (event) {
 };
 
 EnumCellEditor.prototype.ev_blur = function (event) {
+    this.$editingbox.removeClass('as-status-focus');
     if (this._waitBlurTimeout >= 0) clearTimeout(this._waitBlurTimeout);
     this._waitBlurTimeout = setTimeout(function () {
         this._waitBlurTimeout = -1;
@@ -171,7 +174,6 @@ EnumCellEditor.prototype.ev_blur = function (event) {
             || (this.$input !== document.activeElement
                 && !AElement.prototype.isDescendantOf.call(document.activeElement, this.$selectlistBox))) {
             //blur before finished
-            this.finish();
         }
     }.bind(this), 100);
 };
@@ -196,5 +198,7 @@ EnumCellEditor.prototype.ev_selectListBoxPressItem = function (event) {
     this.tableEditor.updateFixedTableEltPosition();
     this.waitAction();
 };
+
+EnumCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
 
 export default EnumCellEditor;

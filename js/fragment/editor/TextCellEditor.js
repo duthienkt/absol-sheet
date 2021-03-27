@@ -23,7 +23,8 @@ TextCellEditor.prototype.prepareInput = function () {
         tag: PreInput.tag,
         class: 'asht-cell-editor-input',
         on: {
-            blur: this.ev_blur
+            blur: this.ev_blur,
+            focus: this.ev_focus
         }
     });
     this.$editingbox.clearChild()
@@ -74,6 +75,7 @@ TextCellEditor.prototype.finish = function () {
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
         .off('dblclick', this.ev_dblClick)
+        .off('blur', this.ev_focus)
         .off('blur', this.ev_blur);
     CellEditor.prototype.finish.call(this);
 };
@@ -118,7 +120,7 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
 };
 
 TextCellEditor.prototype.ev_finishKey = function (event) {
-    if (event.key === "Enter" ||event.key === "Tab") {
+    if (event.key === "Enter" || event.key === "Tab") {
         var text = this.$input.value;
         if (event.altKey && event.key === "Enter") {
             var pos = this.$input.getSelectPosition();
@@ -147,13 +149,18 @@ TextCellEditor.prototype.ev_dblClick = function (event) {
 };
 
 TextCellEditor.prototype.ev_blur = function (event) {
+    this.$editingbox.removeClass('as-status-focus');
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
             //blur before finished
             this.cell.value = this.$input.value;
-            this.finish();
         }
     }.bind(this), 100);
 };
+
+TextCellEditor.prototype.ev_focus = function () {
+    this.$editingbox.addClass('as-status-focus');
+};
+
 
 export default TextCellEditor;
