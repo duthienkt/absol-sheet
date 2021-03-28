@@ -392,6 +392,7 @@ TableEditor.prototype.removeRow = function (atIdx) {
     if (atIdx < 0) return;
     var row = tableData.bodyRow.splice(atIdx, 1)[0];
     row.elt.remove();
+    this.tableData.records.splice(atIdx, 1);
     for (var i = atIdx; i < tableData.bodyRow.length; ++i) {
         tableData.bodyRow[i].idx = i;
     }
