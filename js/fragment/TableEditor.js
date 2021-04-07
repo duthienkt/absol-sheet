@@ -77,7 +77,10 @@ TableEditor.prototype.getView = function () {
     });
     this.$attachook = $('attachhook', this.$view);
     this.$attachook.requestUpdateSize = this.ev_resize;
-    ResizeSystem.add(this.$attachook);
+    this.$attachook.on('attached', function (){
+        ResizeSystem.add(this);
+        this.requestUpdateSize();
+    });
     this.$body = $('.asht-table-editor-body', this.$view);
     this.$body.on('scroll', this.ev_scrollBody);
     this.$content = $('.asht-table-editor-content', this.$view);
@@ -259,7 +262,7 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
 
 
 TableEditor.prototype.ev_resize = function (event) {
-    this.updateEditingBoxPosition();
+    this.updateFixedTableEltPosition();
 };
 
 
