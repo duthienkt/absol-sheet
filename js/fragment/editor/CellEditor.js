@@ -113,6 +113,7 @@ CellEditor.prototype.editCellNext = function () {
 
 CellEditor.prototype.finish = function () {
     if (this.state !== "FINISHED") {
+        this.state = "FINISHED";
         this.emit('finish', { type: 'finish', target: this });
     }
 };

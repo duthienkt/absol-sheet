@@ -72,6 +72,7 @@ TextCellEditor.prototype.startEditing = function () {
 };
 
 TextCellEditor.prototype.finish = function () {
+    if (this.state === "FINISHED") return;
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
         .off('dblclick', this.ev_dblClick)

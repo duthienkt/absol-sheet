@@ -77,7 +77,7 @@ TableEditor.prototype.getView = function () {
     });
     this.$attachook = $('attachhook', this.$view);
     this.$attachook.requestUpdateSize = this.ev_resize;
-    this.$attachook.on('attached', function (){
+    this.$attachook.on('attached', function () {
         ResizeSystem.add(this);
         this.requestUpdateSize();
     });
@@ -269,6 +269,8 @@ TableEditor.prototype.ev_resize = function (event) {
 TableEditor.prototype.editCell = function (row, col) {
     if (this.currentCellEditor) {
         this.currentCellEditor.off('finish', this.ev_cellEditorFinish);
+        if (this.currentCellEditor.state !== "FINISHED")
+            this.currentCellEditor.finish();
         this.currentCellEditor = null;
     }
     if (row && col) {

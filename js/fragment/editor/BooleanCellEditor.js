@@ -71,6 +71,7 @@ BooleanCellEditor.prototype.startEditing = function () {
 };
 
 BooleanCellEditor.prototype.finish = function () {
+    if (this.state === "FINISHED") return;
     if (this._waitBlurTimeout > 0) clearTimeout(this._waitBlurTimeout);
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
