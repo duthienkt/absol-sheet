@@ -4,6 +4,7 @@
     height: 60vh;
     --body-scroll-height: 0;
     --body-scroll-width: 0;
+    background-color: white;
 }
 
 .asht-table-editor-content {
