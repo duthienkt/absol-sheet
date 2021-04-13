@@ -518,6 +518,7 @@ TableEditor.prototype.updateForegroundPosition = function () {
 };
 
 TableEditor.prototype.updateFixedTableEltPosition = function () {
+    if (!this.tableData) return;
     this.updateHeaderPosition();
     this.updateIndexColPosition();
     this.updateForegroundPosition();
