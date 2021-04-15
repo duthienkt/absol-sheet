@@ -88,13 +88,28 @@ TableData.prototype.getView = function () {
         class: 'asht-table-data',
         child: [
             { tag: 'thead', child: 'tr' },
-            'tbody'
+            {
+                tag: 'tbody',
+                child: [
+                    {}
+                ]
+            }
         ]
     });
     this.$thead = $('thead', this.$view);
     this.$headRow = $('tr', this.$thead);
     this.$tbody = $('tbody', this.$view);
     this.$rootCell = _('td.asht-table-data-root-cell');
+    this.$newRow = _({
+        tag: 'tr',
+        class: 'asht-row-new',
+        child: [{
+            tag: 'td',
+            child: {
+                text: "*"
+            }
+        }]
+    })
     return this.$view;
 };
 

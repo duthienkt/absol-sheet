@@ -8,12 +8,18 @@ import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import EnumCellEditor from "./editor/EnumCellEditor";
 import BooleanCellEditor from "./editor/BooleanCellEditor";
+import OOP from "absol/src/HTML5/OOP";
+import EventEmitter from "absol/src/HTML5/EventEmitter";
 
 var _ = SComp._;
 var $ = SComp.$;
 
-
+/***
+ *
+ * @constructor
+ */
 function TableEditor() {
+    EventEmitter.call(this);
     this.hoverRow = null;
     this.currentCellEditor = null;
     this.selectedData = null;
@@ -23,6 +29,8 @@ function TableEditor() {
         }
     }
 }
+
+OOP.mixClass(TableEditor, EventEmitter);
 
 
 TableEditor.prototype.getView = function () {
@@ -226,6 +234,7 @@ TableEditor.prototype.ev_indexColMouseDown = function (ev) {
 };
 
 TableEditor.prototype.ev_indexColContextMenu = function (ev) {
+    var thisTE = this;
     var row = this.tableData.findRowByClientY(ev.clientY);
     ev.showContextMenu({
         items: [
@@ -246,18 +255,51 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
             },
         ]
     }, function (ev1) {
-        switch (ev1.menuItem.cmd) {
-            case 'insert_before':
-                this.insertRow(row.idx, {})
-                break;
-            case 'insert_after':
-                this.insertRow(row.idx + 1, {});
-                break;
-            case 'remove':
-                this.removeRow(row.idx);
-                break;
+        var cmd = ev1.menuItem.cmd;
+        var eventData = { cmd: cmd };
+        if (cmd === 'remove') {
+            eventData.type = 'cmd_remove_row';
+            eventData.rowIdx = row.idx;
+            eventData.accepted = true;
+            eventData.accept = function (isAccepted) {
+                this.accepted = isAccepted;
+            };
+            thisTE.emit(eventData.type, eventData, thisTE);
+            if (eventData.accepted && eventData.accepted.then) {
+                eventData.accepted.then(function (isAccept) {
+                    if (isAccept)
+                        thisTE.removeRow(eventData.rowIdx);
+                });
+            }
+            else if (eventData.accepted) {
+                thisTE.removeRow(eventData.rowIdx);
+            }
         }
-    }.bind(this));
+        else {
+            eventData.type = 'cmd_insert_row';
+            eventData.rowIdx = row.idx + (cmd === 'insert_after' ? 1 : 0);
+            eventData.result = {};
+            eventData.resolve = function (result) {
+                this.result = result;
+            };
+
+            thisTE.emit(eventData.type, eventData, thisTE);
+            console.log(eventData.result)
+            if (eventData.result) {
+                if (eventData.result.then) {
+                    eventData.result.then(function (result) {
+                        if (result){
+                            thisTE.insertRow(eventData.rowIdx, result);
+                        }
+                    });
+                }
+                else {
+                    thisTE.insertRow(eventData.rowIdx, eventData.result);
+                }
+            }
+
+        }
+    });
 };
 
 
