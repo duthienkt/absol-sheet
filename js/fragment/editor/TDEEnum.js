@@ -1,25 +1,25 @@
 import OOP from "absol/src/HTML5/OOP";
-import CellEditor from "./CellEditor";
+import TDEBase from "./TDEBase";
 import {getScreenSize, traceOutBoundingClientRect} from "absol/src/HTML5/Dom";
 import SelectMenu from "absol-acomp/js/SelectMenu2";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
-import TextCellEditor from "./TextCellEditor";
+import TDEText from "./TDEText";
 
 
 /***
- * @extends CellEditor
+ * @extends TDEBase
  * @param {TableEditor} tableEditor
  * @param {TSCell} cell
  * @constructor
  */
-function EnumCellEditor(tableEditor, cell) {
-    CellEditor.call(this, tableEditor, cell);
+function TDEEnum(tableEditor, cell) {
+    TDEBase.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(EnumCellEditor, CellEditor);
+OOP.mixClass(TDEEnum, TDEBase);
 
-EnumCellEditor.prototype.prepareInput = function () {
+TDEEnum.prototype.prepareInput = function () {
     var descriptor = this.cell.descriptor;
     this.$selectlistBox = _({
         tag: 'selectlistbox',
@@ -58,7 +58,7 @@ EnumCellEditor.prototype.prepareInput = function () {
         .addChild(this.$input);
 };
 
-EnumCellEditor.prototype._loadCellStyle = function () {
+TDEEnum.prototype._loadCellStyle = function () {
     var cellElt = this.cell.elt;
     this._cellStyle = {
         'font-size': cellElt.getComputedStyleValue('font-size'),
@@ -73,8 +73,8 @@ EnumCellEditor.prototype._loadCellStyle = function () {
     };
 };
 
-EnumCellEditor.prototype.waitAction = function () {
-    CellEditor.prototype.waitAction.call(this);
+TDEEnum.prototype.waitAction = function () {
+    TDEBase.prototype.waitAction.call(this);
     setTimeout(function () {
         this.$input.focus();
     }.bind(this), 100);
@@ -87,8 +87,8 @@ EnumCellEditor.prototype.waitAction = function () {
     this.$selectlistBox.remove();
 };
 
-EnumCellEditor.prototype.startEditing = function () {
-    CellEditor.prototype.startEditing.call(this);
+TDEEnum.prototype.startEditing = function () {
+    TDEBase.prototype.startEditing.call(this);
     this.$input.addClass('asht-state-editing')
         .removeClass('asht-state-wait-action');
     this.$input.off('keydown', this.ev_firstKey)
@@ -101,7 +101,7 @@ EnumCellEditor.prototype.startEditing = function () {
     this.$selectlistBox.followTarget = this.$input;
 };
 
-EnumCellEditor.prototype.finish = function () {
+TDEEnum.prototype.finish = function () {
     if (this.state === "FINISHED") return;
     if (this._waitBlurTimeout > 0) clearTimeout(this._waitBlurTimeout);
     this.$input.off('keydown', this.ev_finishKey)
@@ -110,7 +110,7 @@ EnumCellEditor.prototype.finish = function () {
         .off('blur', this.ev_blur);
     this.$selectlistBox.off('keydown', this.ev_finishKey)
         .off('blur', this.ev_blur);
-    CellEditor.prototype.finish.call(this);
+    TDEBase.prototype.finish.call(this);
     this.$selectlistBox.followTarget = null;
     this.$selectlistBox.remove();
 };
@@ -119,7 +119,7 @@ EnumCellEditor.prototype.finish = function () {
  *
  * @param {KeyboardEvent} event
  */
-EnumCellEditor.prototype.ev_firstKey = function (event) {
+TDEEnum.prototype.ev_firstKey = function (event) {
     if (event.key === "Delete") {
         this.cell.value = "";
     }
@@ -154,19 +154,19 @@ EnumCellEditor.prototype.ev_firstKey = function (event) {
     }
 };
 
-EnumCellEditor.prototype.ev_finishKey = function (event) {
+TDEEnum.prototype.ev_finishKey = function (event) {
     if (event.key === "Tab") {
         this.editCellNext();
         event.preventDefault();
     }
 };
 
-EnumCellEditor.prototype.ev_dblClick = function (event) {
+TDEEnum.prototype.ev_dblClick = function (event) {
     event.preventDefault();
     this.startEditing();
 };
 
-EnumCellEditor.prototype.ev_blur = function (event) {
+TDEEnum.prototype.ev_blur = function (event) {
     this.$editingbox.removeClass('as-status-focus');
     if (this._waitBlurTimeout >= 0) clearTimeout(this._waitBlurTimeout);
     this._waitBlurTimeout = setTimeout(function () {
@@ -179,7 +179,7 @@ EnumCellEditor.prototype.ev_blur = function (event) {
     }.bind(this), 100);
 };
 
-EnumCellEditor.prototype.ev_preUpdateListPosition = function () {
+TDEEnum.prototype.ev_preUpdateListPosition = function () {
     var bound = this.$input.getBoundingClientRect();
     var screenSize = getScreenSize();
     var availableTop = bound.top - 5;
@@ -193,13 +193,13 @@ EnumCellEditor.prototype.ev_preUpdateListPosition = function () {
     }
 };
 
-EnumCellEditor.prototype.ev_selectListBoxPressItem = function (event) {
+TDEEnum.prototype.ev_selectListBoxPressItem = function (event) {
     this.$input.firstChild.data = this.cell.descriptor.__val2Item__[event.value].text;
     this.cell.value = event.value;
     this.tableEditor.updateFixedTableEltPosition();
     this.waitAction();
 };
 
-EnumCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
+TDEEnum.prototype.ev_focus = TDEText.prototype.ev_focus;
 
-export default EnumCellEditor;
+export default TDEEnum;
