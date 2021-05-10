@@ -9,6 +9,7 @@ import {formatDateString, LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Ti
  */
 function TDDate() {
     TDBase.apply(this, arguments);
+    this.elt.addClass('asht-type-date');
 }
 
 OOP.mixClass(TDDate, TDBase);
@@ -31,6 +32,9 @@ TDDate.prototype.reload = function () {
     }
     else if (vType === 'number') {
         dateValue = new Date(value);
+    }
+    else if (value && value.getTime) {
+        dateValue = value;
     }
     if (value) {
         if (!dateValue || isNaN(dateValue.getTime())) {
@@ -56,6 +60,23 @@ TDDate.prototype._dateFromString = function (dateString) {
         return new Date(dateString);
     }
 };
+
+
+Object.defineProperty(TDDate.prototype, 'dateValue', {
+    get: function () {
+        var value = this.value;
+        var vType = typeof value;
+        var dateValue;
+        if (vType === 'string') {
+            dateValue = this._dateFromString(value);
+        }
+        else if (vType === 'number') {
+            dateValue = new Date(value);
+        }
+        if (dateValue && dateValue.getTime() > 0) return dateValue;
+        return undefined;
+    }
+});
 
 TDBase.typeClasses.date = TDDate;
 TDBase.typeClasses.Date = TDDate;
