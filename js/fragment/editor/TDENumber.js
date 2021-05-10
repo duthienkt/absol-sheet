@@ -1,21 +1,21 @@
 import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
-import TextCellEditor from "./TextCellEditor";
+import TDEText from "./TDEText";
 import {_, $} from '../../dom/SCore';
 
 
 /***
- * @extends TextCellEditor
+ * @extends TDEText
  * @param {TableEditor} tableEditor
  * @param {TSCell} cell
  * @constructor
  */
 function TDENumber(tableEditor, cell) {
-    TextCellEditor.call(this, tableEditor, cell);
+    TDEText.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(TDENumber, TextCellEditor);
+OOP.mixClass(TDENumber, TDEText);
 
 TDENumber.prototype.prepareInput = function () {
     var descriptor = this.cell.descriptor;
@@ -134,6 +134,6 @@ TDENumber.prototype.ev_blur = function (event) {
     }.bind(this), 100);
 };
 
-TDENumber.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
+TDENumber.prototype.ev_focus = TDEText.prototype.ev_focus;
 
 export default TDENumber;
