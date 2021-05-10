@@ -136,4 +136,8 @@ TDENumber.prototype.ev_blur = function (event) {
 
 TDENumber.prototype.ev_focus = TDEText.prototype.ev_focus;
 
+TDEBase.typeClasses.number = TDENumber;
+TDEBase.typeClasses.Number = TDENumber;
+
+
 export default TDENumber;

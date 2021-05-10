@@ -202,4 +202,6 @@ TDEEnum.prototype.ev_selectListBoxPressItem = function (event) {
 
 TDEEnum.prototype.ev_focus = TDEText.prototype.ev_focus;
 
+TDEBase.typeClasses.enum = TDEEnum;
+
 export default TDEEnum;
