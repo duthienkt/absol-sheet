@@ -118,4 +118,7 @@ TDEBase.prototype.finish = function () {
     }
 };
 
+
+TDEBase.typeClasses = {};
+
 export default TDEBase;
