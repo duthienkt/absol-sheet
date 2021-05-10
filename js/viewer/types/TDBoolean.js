@@ -8,6 +8,7 @@ import OOP from "absol/src/HTML5/OOP";
  */
 function TDBoolean() {
     TDBase.apply(this, arguments);
+    this.elt.addClass('asht-type-boolean');
 }
 
 OOP.mixClass(TDBoolean, TDBase);
@@ -16,7 +17,6 @@ TDBoolean.prototype.attachView = function () {
     this.elt.clearChild();
     this.$check = _('span.mdi.mdi-check');
     this.elt.addChild(this.$check);
-
 };
 
 TDBoolean.prototype.reload = function () {
