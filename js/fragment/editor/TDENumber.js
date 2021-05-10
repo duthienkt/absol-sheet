@@ -1,6 +1,6 @@
 import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
-import CellEditor from "./CellEditor";
+import TDEBase from "./TDEBase";
 import TextCellEditor from "./TextCellEditor";
 import {_, $} from '../../dom/SCore';
 
@@ -11,13 +11,13 @@ import {_, $} from '../../dom/SCore';
  * @param {TSCell} cell
  * @constructor
  */
-function NumberCellEditor(tableEditor, cell) {
+function TDENumber(tableEditor, cell) {
     TextCellEditor.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(NumberCellEditor, TextCellEditor);
+OOP.mixClass(TDENumber, TextCellEditor);
 
-NumberCellEditor.prototype.prepareInput = function () {
+TDENumber.prototype.prepareInput = function () {
     var descriptor = this.cell.descriptor;
     /***
      * @type {PreInput}
@@ -37,8 +37,8 @@ NumberCellEditor.prototype.prepareInput = function () {
 };
 
 
-NumberCellEditor.prototype.waitAction = function () {
-    CellEditor.prototype.waitAction.call(this);
+TDENumber.prototype.waitAction = function () {
+    TDEBase.prototype.waitAction.call(this);
     setTimeout(function () {
         this.$input.focus();
         this.$input.value = this.cell.value;
@@ -51,8 +51,8 @@ NumberCellEditor.prototype.waitAction = function () {
         .on('dblclick', this.ev_dblClick);
 };
 
-NumberCellEditor.prototype.startEditing = function () {
-    CellEditor.prototype.startEditing.call(this);
+TDENumber.prototype.startEditing = function () {
+    TDEBase.prototype.startEditing.call(this);
     this.$input.addClass('asht-state-editing')
         .removeClass('asht-state-wait-action');
     this.$input.off('keydown', this.ev_firstKey)
@@ -65,7 +65,7 @@ NumberCellEditor.prototype.startEditing = function () {
  *
  * @param {KeyboardEvent} event
  */
-NumberCellEditor.prototype.ev_firstKey = function (event) {
+TDENumber.prototype.ev_firstKey = function (event) {
     if (event.key === "Delete") {
         this.cell.value = 0;
     }
@@ -100,7 +100,7 @@ NumberCellEditor.prototype.ev_firstKey = function (event) {
     }
 };
 
-NumberCellEditor.prototype.ev_finishKey = function (event) {
+TDENumber.prototype.ev_finishKey = function (event) {
     if (event.key === "Enter"|| event.key === "Tab") {
         var text = this.$input.value;
         this.cell.value = parseFloat(text) || this.cell.value;
@@ -114,7 +114,7 @@ NumberCellEditor.prototype.ev_finishKey = function (event) {
     }
 };
 
-NumberCellEditor.prototype.ev_dblClick = function (event) {
+TDENumber.prototype.ev_dblClick = function (event) {
     event.preventDefault();
     this.$input.value = this.cell.value;
     setTimeout(this.$input.focus.bind(this.$input), 100);
@@ -122,7 +122,7 @@ NumberCellEditor.prototype.ev_dblClick = function (event) {
 };
 
 
-NumberCellEditor.prototype.ev_blur = function (event) {
+TDENumber.prototype.ev_blur = function (event) {
     this.$editingbox.removeClass('as-status-focus');
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
@@ -134,6 +134,6 @@ NumberCellEditor.prototype.ev_blur = function (event) {
     }.bind(this), 100);
 };
 
-NumberCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
+TDENumber.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
 
-export default NumberCellEditor;
+export default TDENumber;
