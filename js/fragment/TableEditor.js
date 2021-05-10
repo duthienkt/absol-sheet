@@ -2,14 +2,18 @@ import '../../css/tableeditable.css';
 import SComp from "../dom/SComp";
 import TableData, {TSRow} from "../viewer/TableData";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
-import TextCellEditor from "./editor/TextCellEditor";
-import NumberCellEditor from "./editor/NumberCellEditor";
+import "./editor/TDEText";
+import "./editor/TDENumber";
+import "./editor/TDEDate";
+import "./editor/TDEEnum";
+import "./editor/TDEEnumSet";
+import  "./editor/TDEBoolean";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
-import EnumCellEditor from "./editor/EnumCellEditor";
-import BooleanCellEditor from "./editor/BooleanCellEditor";
 import OOP from "absol/src/HTML5/OOP";
 import EventEmitter from "absol/src/HTML5/EventEmitter";
+import TDEBase from "./editor/TDEBase";
+import Toast from "absol-acomp/js/Toast";
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -105,6 +109,8 @@ TableEditor.prototype.getView = function () {
 
     this.$rootCell = $('.asht-table-editor-root-cell', this.$view)
         .on('mousedown', this.ev_rootCellMouseDown);
+    this.$rootCell.defineEvent('contextmenu');
+    this.$rootCell.on('contextmenu', this.ev_rootCellContextMenu);
     this.$header = $('.asht-table-editor-header', this.$view);
     this.$headRow = $('tr', this.$header)
         .on('mousedown', this.ev_headerMouseDown);
@@ -284,11 +290,10 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
             };
 
             thisTE.emit(eventData.type, eventData, thisTE);
-            console.log(eventData.result)
             if (eventData.result) {
                 if (eventData.result.then) {
                     eventData.result.then(function (result) {
-                        if (result){
+                        if (result) {
                             thisTE.insertRow(eventData.rowIdx, result);
                         }
                     });
@@ -299,6 +304,52 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
             }
 
         }
+    });
+};
+
+TableEditor.prototype.ev_rootCellContextMenu = function (ev) {
+    var thisTE = this;
+    ev.showContextMenu({
+        items: [
+            {
+                cmd: 'insert_first',
+                text: 'Insert First',
+                icon: 'span.mdi.mdi-table-row-plus-before'
+            },
+            {
+                cmd: 'append_last',
+                text: 'Append Last',
+                icon: 'span.mdi.mdi-table-row-plus-after'
+            }
+        ]
+    }, function (ev1) {
+        var cmd = ev1.menuItem.cmd;
+        var eventData = { cmd: cmd };
+        eventData.type = 'cmd_insert_row';
+        eventData.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.records.length;
+        eventData.result = {};
+        eventData.resolve = function (result) {
+            this.result = result;
+        };
+
+        thisTE.emit(eventData.type, eventData, thisTE);
+        if (eventData.result) {
+            if (eventData.result.then) {
+                eventData.result.then(function (result) {
+                    if (result) {
+                        thisTE.insertRow(eventData.rowIdx, result);
+                        if (cmd === 'append_last') {
+                            thisTE.$body.scrollTop = thisTE.$body.scrollHeight - thisTE.$body.clientHeight;
+                        }
+                    }
+                });
+            }
+            else {
+                thisTE.insertRow(eventData.rowIdx, eventData.result);
+                thisTE.$body.scrollTop = thisTE.$body.scrollHeight - thisTE.$body.clientHeight;
+            }
+        }
+
     });
 };
 
@@ -314,27 +365,25 @@ TableEditor.prototype.editCell = function (row, col) {
         if (this.currentCellEditor.state !== "FINISHED")
             this.currentCellEditor.finish();
         this.currentCellEditor = null;
-    }
-    if (row && col) {
-        this.$editingbox.removeStyle('display');
-        var cell = row.cells[col.index];
         this.$editingbox.clearChild();
 
-        switch (cell.descriptor.type) {
-            case 'text':
-                this.currentCellEditor = new TextCellEditor(this, row.cells[col.index]);
-                break;
-            case 'number':
-                this.currentCellEditor = new NumberCellEditor(this, row.cells[col.index]);
-                break;
-            case 'enum':
-                this.currentCellEditor = new EnumCellEditor(this, row.cells[col.index]);
-                break;
-            case 'boolean':
-                this.currentCellEditor = new BooleanCellEditor(this, row.cells[col.index]);
-                break;
-            default :
+    }
+    if (row && col) {
+        var cell = row.cells[col.index];
+
+
+        var EditorClass = TDEBase.typeClasses[cell.descriptor.type];
+        if (EditorClass) {
+            this.currentCellEditor = new EditorClass(this, row.cells[col.index]);
+            this.$editingbox.removeStyle('display');
         }
+        else {
+            this.currentCellEditor = null;
+            this.showError('Data Error', 'Not support ' + cell.descriptor.type);
+            this.$editingbox.addStyle('display', 'none');
+        }
+
+
         this.updateEditingBoxPosition();
         this.scrollIntoRow(row);
         this.scrollIntoCol(col);
@@ -616,6 +665,18 @@ TableEditor.prototype.ev_cellEditorFinish = function (event) {
         this.editCell(null);
     }
 };
+
+TableEditor.prototype.showError = function (title, message) {
+    var toast = Toast.make({
+        props: {
+            htitle: title,
+            message: message,
+            variant: 'error'
+        }
+    });
+
+    setTimeout(toast.disappear.bind(toast), 2000);
+}
 
 
 Object.defineProperty(TableEditor.prototype, 'records', {
