@@ -8,6 +8,7 @@ import OOP from "absol/src/HTML5/OOP";
  */
 function TDNumber() {
     TDBase.apply(this, arguments);
+    this.elt.addClass('asht-type-number');
 }
 
 OOP.mixClass(TDNumber, TDBase);
