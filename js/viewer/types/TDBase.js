@@ -40,6 +40,7 @@ Object.defineProperty(TDBase.prototype, 'value', {
     },
     set: function (value) {
         this.row.record[this.pName] = value;
+        this.reload();
     }
 });
 
