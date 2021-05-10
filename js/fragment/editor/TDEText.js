@@ -163,5 +163,7 @@ TDEText.prototype.ev_focus = function () {
     this.$editingbox.addClass('as-status-focus');
 };
 
+TDEBase.typeClasses.string = TDEText;
+TDEBase.typeClasses.text = TDEText;
 
 export default TDEText;
