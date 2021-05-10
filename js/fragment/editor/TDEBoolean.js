@@ -1,25 +1,24 @@
 import OOP from "absol/src/HTML5/OOP";
-import CellEditor from "./CellEditor";
+import TDEBase from "./TDEBase";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
-import TextCellEditor from "./TextCellEditor";
+import TDEText from "./TDEText";
 
 
 /***
- * @extends CellEditor
+ * @extends TDEBase
  * @param {TableEditor} tableEditor
  * @param {TSCell} cell
  * @constructor
  */
-function BooleanCellEditor(tableEditor, cell) {
-    CellEditor.call(this, tableEditor, cell);
+function TDEBoolean(tableEditor, cell) {
+    TDEBase.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(BooleanCellEditor, CellEditor);
+OOP.mixClass(TDEBoolean, TDEBase);
 
-BooleanCellEditor.prototype.prepareInput = function () {
+TDEBoolean.prototype.prepareInput = function () {
     var descriptor = this.cell.descriptor;
-
     this.$checkbox = _({
         tag: 'checkboxbutton',
         props: {
@@ -48,8 +47,8 @@ BooleanCellEditor.prototype.prepareInput = function () {
         .addChild(this.$input);
 };
 
-BooleanCellEditor.prototype.waitAction = function () {
-    CellEditor.prototype.waitAction.call(this);
+TDEBoolean.prototype.waitAction = function () {
+    TDEBase.prototype.waitAction.call(this);
     setTimeout(function () {
         this.$input.focus();
     }.bind(this), 100);
@@ -61,8 +60,8 @@ BooleanCellEditor.prototype.waitAction = function () {
 
 };
 
-BooleanCellEditor.prototype.startEditing = function () {
-    CellEditor.prototype.startEditing.call(this);
+TDEBoolean.prototype.startEditing = function () {
+    TDEBase.prototype.startEditing.call(this);
     this.$input.addClass('asht-state-editing')
         .removeClass('asht-state-wait-action');
     this.$input.off('keydown', this.ev_firstKey)
@@ -70,7 +69,7 @@ BooleanCellEditor.prototype.startEditing = function () {
     this.$input.on('keydown', this.ev_finishKey);
 };
 
-BooleanCellEditor.prototype.finish = function () {
+TDEBoolean.prototype.finish = function () {
     if (this.state === "FINISHED") return;
     if (this._waitBlurTimeout > 0) clearTimeout(this._waitBlurTimeout);
     this.$input.off('keydown', this.ev_finishKey)
@@ -80,14 +79,14 @@ BooleanCellEditor.prototype.finish = function () {
         .off('focus', this.ev_focus);
     this.$checkbox.off('focus', this.ev_focus)
         .off('blur', this.ev_blur);
-    CellEditor.prototype.finish.call(this);
+    TDEBase.prototype.finish.call(this);
 };
 
 /***
  *
  * @param {KeyboardEvent} event
  */
-BooleanCellEditor.prototype.ev_firstKey = function (event) {
+TDEBoolean.prototype.ev_firstKey = function (event) {
     if (event.key === "Delete") {
         this.cell.value = "";
     }
@@ -122,19 +121,19 @@ BooleanCellEditor.prototype.ev_firstKey = function (event) {
     }
 };
 
-BooleanCellEditor.prototype.ev_finishKey = function (event) {
+TDEBoolean.prototype.ev_finishKey = function (event) {
     if (event.key === "Tab" || event.key === "Enter") {
         this.editCellNext();
         event.preventDefault();
     }
 };
 
-BooleanCellEditor.prototype.ev_dblClick = function (event) {
+TDEBoolean.prototype.ev_dblClick = function (event) {
     event.preventDefault();
     this.startEditing();
 };
 
-BooleanCellEditor.prototype.ev_blur = function (event) {
+TDEBoolean.prototype.ev_blur = function (event) {
     if (this._waitBlurTimeout >= 0) clearTimeout(this._waitBlurTimeout);
     this._waitBlurTimeout = setTimeout(function () {
         this._waitBlurTimeout = -1;
@@ -147,12 +146,14 @@ BooleanCellEditor.prototype.ev_blur = function (event) {
     }.bind(this), 100);
 };
 
-BooleanCellEditor.prototype.ev_change = function (event) {
+TDEBoolean.prototype.ev_change = function (event) {
     this.cell.value = this.$checkbox.checked;
     this.tableEditor.updateFixedTableEltPosition();
 };
 
-BooleanCellEditor.prototype.ev_focus = TextCellEditor.prototype.ev_focus;
+TDEBoolean.prototype.ev_focus = TDEText.prototype.ev_focus;
 
+TDEBase.typeClasses.bool = TDEBoolean;
+TDEBase.typeClasses.boolean = TDEBoolean;
 
-export default BooleanCellEditor;
+export default TDEBoolean;
