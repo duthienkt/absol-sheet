@@ -8,7 +8,7 @@ import {_, $} from '../../dom/SCore';
  * @param {TSCell} cell
  * @constructor
  */
-function CellEditor(tableEditor, cell) {
+function TDEBase(tableEditor, cell) {
     EventEmitter.call(this);
     this.state = "INIT";
     this.tableEditor = tableEditor;
@@ -22,13 +22,13 @@ function CellEditor(tableEditor, cell) {
     this.waitAction();
 }
 
-OOP.mixClass(CellEditor, EventEmitter);
+OOP.mixClass(TDEBase, EventEmitter);
 
 /***
  *
  * @protected
  */
-CellEditor.prototype.prepareInput = function () {
+TDEBase.prototype.prepareInput = function () {
 
 };
 
@@ -36,12 +36,12 @@ CellEditor.prototype.prepareInput = function () {
  *
  * @protected
  */
-CellEditor.prototype.waitAction = function () {
+TDEBase.prototype.waitAction = function () {
     this.state = "WAIT_ACTION";
 };
 
 
-CellEditor.prototype.startEditing = function () {
+TDEBase.prototype.startEditing = function () {
     this.state = "EDITING";
 };
 
@@ -50,7 +50,7 @@ CellEditor.prototype.startEditing = function () {
  *
  * @protected
  */
-CellEditor.prototype._bindEvent = function () {
+TDEBase.prototype._bindEvent = function () {
     for (var fName in this) {
         if (typeof this[fName] === "function" && fName.startsWith('ev_')) {
             this[fName] = this[fName].bind(this);
@@ -58,7 +58,7 @@ CellEditor.prototype._bindEvent = function () {
     }
 };
 
-CellEditor.prototype.editCellAbove = function () {
+TDEBase.prototype.editCellAbove = function () {
     var rowIdx = this.cell.row.idx;
     var prevRow = this.cell.table.findRowByIndex(rowIdx - 1);
     if (prevRow) {
@@ -66,7 +66,7 @@ CellEditor.prototype.editCellAbove = function () {
     }
 };
 
-CellEditor.prototype.editCellBellow = function () {
+TDEBase.prototype.editCellBellow = function () {
     var rowIdx = this.cell.row.idx;
     var nextRow = this.cell.table.findRowByIndex(rowIdx + 1);
     if (nextRow) {
@@ -75,7 +75,7 @@ CellEditor.prototype.editCellBellow = function () {
     }
 };
 
-CellEditor.prototype.editCellLeft = function () {
+TDEBase.prototype.editCellLeft = function () {
     var colIdx = this.cell.table.findIndexOfCol(this.col);
     var prevCol = this.cell.table.findColByIndex(colIdx - 1);
     if (prevCol) {
@@ -84,7 +84,7 @@ CellEditor.prototype.editCellLeft = function () {
     }
 };
 
-CellEditor.prototype.editCellRight = function () {
+TDEBase.prototype.editCellRight = function () {
     var colIdx = this.cell.table.findIndexOfCol(this.col);
     var nextCol = this.cell.table.findColByIndex(colIdx + 1);
     if (nextCol) {
@@ -93,7 +93,7 @@ CellEditor.prototype.editCellRight = function () {
     }
 };
 
-CellEditor.prototype.editCellNext = function () {
+TDEBase.prototype.editCellNext = function () {
     var colIdx = this.cell.table.findIndexOfCol(this.col);
     var nextCol = this.cell.table.findColByIndex(colIdx + 1);
     if (nextCol) {
@@ -111,11 +111,11 @@ CellEditor.prototype.editCellNext = function () {
     }
 };
 
-CellEditor.prototype.finish = function () {
+TDEBase.prototype.finish = function () {
     if (this.state !== "FINISHED") {
         this.state = "FINISHED";
         this.emit('finish', { type: 'finish', target: this });
     }
 };
 
-export default CellEditor;
+export default TDEBase;
