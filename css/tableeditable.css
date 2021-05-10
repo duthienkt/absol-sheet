@@ -221,3 +221,13 @@ td.asht-type-number {
 td.asht-type-boolean {
     text-align: center;
 }
+
+td.asht-row-idx {
+    text-align: right;
+}
+/*
+.asht-table-editor-editing-layer,
+.asht-table-editor-header,
+.asht-table-editor-index-viewport {
+    visibility: hidden;
+}*/
