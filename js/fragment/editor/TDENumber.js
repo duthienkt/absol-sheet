@@ -32,6 +32,7 @@ TDENumber.prototype.prepareInput = function () {
             blur: this.ev_blur
         }
     });
+    if (descriptor.step) this.$input.step = descriptor.step;
     this.$editingbox.clearChild()
         .addChild(this.$input);
 };
