@@ -1,21 +1,21 @@
 import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
-import CellEditor from "./CellEditor";
+import TDEBase from "./TDEBase";
 import {_, $} from '../../dom/SCore';
 
 /***
- * @extends CellEditor
+ * @extends TDEBase
  * @param {TableEditor} tableEditor
  * @param {TSCell} cell
  * @constructor
  */
-function TextCellEditor(tableEditor, cell) {
-    CellEditor.call(this, tableEditor, cell);
+function TDEText(tableEditor, cell) {
+    TDEBase.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(TextCellEditor, CellEditor);
+OOP.mixClass(TDEText, TDEBase);
 
-TextCellEditor.prototype.prepareInput = function () {
+TDEText.prototype.prepareInput = function () {
     /***
      * @type {PreInput}
      */
@@ -32,7 +32,7 @@ TextCellEditor.prototype.prepareInput = function () {
     this._loadCellStyle();
 };
 
-TextCellEditor.prototype._loadCellStyle = function () {
+TDEText.prototype._loadCellStyle = function () {
     var cellElt = this.cell.elt;
     this._cellStyle = {
         'font-size': cellElt.getComputedStyleValue('font-size'),
@@ -47,8 +47,8 @@ TextCellEditor.prototype._loadCellStyle = function () {
     };
 };
 
-TextCellEditor.prototype.waitAction = function () {
-    CellEditor.prototype.waitAction.call(this);
+TDEText.prototype.waitAction = function () {
+    TDEBase.prototype.waitAction.call(this);
     setTimeout(function () {
         var text = this.cell.value || '';
         this.$input.focus();
@@ -61,8 +61,8 @@ TextCellEditor.prototype.waitAction = function () {
         .on('dblclick', this.ev_dblClick);
 };
 
-TextCellEditor.prototype.startEditing = function () {
-    CellEditor.prototype.startEditing.call(this);
+TDEText.prototype.startEditing = function () {
+    TDEBase.prototype.startEditing.call(this);
     this.$input.addClass('asht-state-editing')
         .removeClass('asht-state-wait-action');
     this.$input.off('keydown', this.ev_firstKey)
@@ -71,21 +71,21 @@ TextCellEditor.prototype.startEditing = function () {
     this.$input.on('keydown', this.ev_finishKey);
 };
 
-TextCellEditor.prototype.finish = function () {
+TDEText.prototype.finish = function () {
     if (this.state === "FINISHED") return;
     this.$input.off('keydown', this.ev_finishKey)
         .off('keydown', this.ev_firstKey)
         .off('dblclick', this.ev_dblClick)
         .off('blur', this.ev_focus)
         .off('blur', this.ev_blur);
-    CellEditor.prototype.finish.call(this);
+    TDEBase.prototype.finish.call(this);
 };
 
 /***
  *
  * @param {KeyboardEvent} event
  */
-TextCellEditor.prototype.ev_firstKey = function (event) {
+TDEText.prototype.ev_firstKey = function (event) {
     if (event.key === "Delete") {
         this.cell.value = "";
     }
@@ -120,7 +120,7 @@ TextCellEditor.prototype.ev_firstKey = function (event) {
     }
 };
 
-TextCellEditor.prototype.ev_finishKey = function (event) {
+TDEText.prototype.ev_finishKey = function (event) {
     if (event.key === "Enter" || event.key === "Tab") {
         var text = this.$input.value;
         if (event.altKey && event.key === "Enter") {
@@ -142,14 +142,14 @@ TextCellEditor.prototype.ev_finishKey = function (event) {
     }
 };
 
-TextCellEditor.prototype.ev_dblClick = function (event) {
+TDEText.prototype.ev_dblClick = function (event) {
     event.preventDefault();
     this.$input.value = this.cell.value;
     setTimeout(this.$input.focus.bind(this.$input), 100);
     this.startEditing();
 };
 
-TextCellEditor.prototype.ev_blur = function (event) {
+TDEText.prototype.ev_blur = function (event) {
     this.$editingbox.removeClass('as-status-focus');
     setTimeout(function () {
         if (this.$input !== document.activeElement) {
@@ -159,9 +159,9 @@ TextCellEditor.prototype.ev_blur = function (event) {
     }.bind(this), 100);
 };
 
-TextCellEditor.prototype.ev_focus = function () {
+TDEText.prototype.ev_focus = function () {
     this.$editingbox.addClass('as-status-focus');
 };
 
 
-export default TextCellEditor;
+export default TDEText;
