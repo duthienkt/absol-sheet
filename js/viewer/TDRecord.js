@@ -13,6 +13,7 @@ import  "./types/TDEnum";
 import  "./types/TDArrayOfText";
 import  "./types/TDEnumSet";
 import  "./types/TDDate";
+import {_} from '../dom/SCore';
 
 
 export function TDRecord(table, record, idx) {

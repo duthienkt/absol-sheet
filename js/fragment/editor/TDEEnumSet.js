@@ -1,6 +1,8 @@
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import {_, $} from '../../dom/SCore';
+
 
 /***
  * @extends TDEBase

@@ -1,6 +1,6 @@
 import '../../css/tableeditable.css';
 import SComp from "../dom/SComp";
-import TableData, {TSRow} from "../viewer/TableData";
+import TableData from "../viewer/TableData";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import "./editor/TDEText";
 import "./editor/TDENumber";
@@ -458,7 +458,7 @@ TableEditor.prototype.insertRow = function (atIdx, record) {
     var tableData = this.tableData;
     atIdx = Math.min(atIdx, tableData.bodyRow.length);
     var currentRow = tableData.bodyRow[atIdx];
-    var row = new TSRow(tableData, record, atIdx);
+    var row = new TDRecord(tableData, record, atIdx);
     if (currentRow) {
         tableData.records.splice(atIdx, 0, record);
         tableData.$tbody.addChildBefore(row.elt, currentRow.elt);
