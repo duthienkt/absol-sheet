@@ -14,7 +14,7 @@ import OOP from "absol/src/HTML5/OOP";
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
-
+import TDRecord from "../viewer/TDRecord";
 var _ = SComp._;
 var $ = SComp.$;
 
