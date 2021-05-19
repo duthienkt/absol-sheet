@@ -1,28 +1,67 @@
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
 import {_, $} from '../../dom/SCore';
+import noop from "absol/src/Code/noop";
+
+
+var STATE_STANDBY = 0;
+var STATE_RUNNING = 1;
+var STATE_STOP = 2;
+var STATE_DESTROYED = 3;
 
 /***
  * @extends EventEmitter
  * @param {TableEditor} tableEditor
- * @param {TSCell} cell
+ * @param {TDEBase} cell
  * @constructor
  */
 function TDEBase(tableEditor, cell) {
     EventEmitter.call(this);
-    this.state = "INIT";
+    this.state = STATE_STANDBY;
     this.tableEditor = tableEditor;
     this.cell = cell;
-    this.row = cell.row;
     this.col = cell.table.findColByName(cell.pName);
     this.$editingbox = tableEditor.$editingbox;
     this._bindEvent();
     this.$input = null;
     this.prepareInput();
-    this.waitAction();
+    this.reload();
 }
 
 OOP.mixClass(TDEBase, EventEmitter);
+
+TDEBase.prototype.onStart = noop;
+TDEBase.prototype.onStop = noop;
+TDEBase.prototype.onDestroy = noop;
+
+TDEBase.prototype.start = function () {
+    if (this.state === STATE_STANDBY) {
+        this.state = STATE_RUNNING;
+        this.onStart();
+    }
+    else if (this.state === STATE_DESTROYED) {
+        console.error(this, "Editor destroyed!");
+    }
+};
+
+
+TDEBase.prototype.stop = function (){
+  if (this.state === STATE_RUNNING){
+      this.state = STATE_STOP;
+      this.onStop();
+  }
+};
+
+TDEBase.prototype.destroy = function (){
+    if (this.state === STATE_RUNNING){
+        this.stop();
+    }
+    if (this.state !== STATE_DESTROYED){
+        this.onDestroy();
+        this.state = STATE_DESTROYED;
+    }
+}
+
 
 /***
  *
@@ -32,14 +71,9 @@ TDEBase.prototype.prepareInput = function () {
 
 };
 
-/***
- *
- * @protected
- */
-TDEBase.prototype.waitAction = function () {
-    this.state = "WAIT_ACTION";
-};
+TDEBase.prototype.reload = function () {
 
+};
 
 TDEBase.prototype.startEditing = function () {
     this.state = "EDITING";
@@ -100,7 +134,7 @@ TDEBase.prototype.editCellNext = function () {
         this.finish();
         this.tableEditor.editCell(this.row, nextCol);
     }
-    else{
+    else {
         var rowIdx = this.cell.row.idx;
         var nextRow = this.cell.table.findRowByIndex(rowIdx + 1);
         var firstCol = this.cell.table.findColByIndex(0);
@@ -117,6 +151,12 @@ TDEBase.prototype.finish = function () {
         this.emit('finish', { type: 'finish', target: this });
     }
 };
+
+Object.defineProperty(TDEBase.prototype, 'row', {
+    get: function () {
+        return this.cell.row;
+    }
+});
 
 
 TDEBase.typeClasses = {};
