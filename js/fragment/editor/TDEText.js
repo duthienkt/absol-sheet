@@ -2,6 +2,7 @@ import PreInput from "absol-acomp/js/PreInput";
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
 import {_, $} from '../../dom/SCore';
+import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 /***
  * @extends TDEBase
@@ -54,7 +55,6 @@ TDEText.prototype.onStart = function () {
 
 TDEText.prototype.reload = function () {
     this.$input.value = this.cell.value;
-
 };
 
 TDEText.prototype.onStart = function () {
@@ -91,6 +91,7 @@ TDEText.prototype.ev_keydown = function (event) {
 
 TDEText.prototype.ev_inputChange = function () {
     this.cell.value = this.$input.value;
+    ResizeSystem.update();
 };
 
 
