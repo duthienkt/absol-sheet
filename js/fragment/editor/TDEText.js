@@ -6,7 +6,7 @@ import {_, $} from '../../dom/SCore';
 /***
  * @extends TDEBase
  * @param {TableEditor} tableEditor
- * @param {TSCell} cell
+ * @param {TDEBase} cell
  * @constructor
  */
 function TDEText(tableEditor, cell) {
@@ -23,13 +23,14 @@ TDEText.prototype.prepareInput = function () {
         tag: PreInput.tag,
         class: 'asht-cell-editor-input',
         on: {
-            blur: this.ev_blur,
-            focus: this.ev_focus
+            change: this.ev_inputChange,
+            keydown: this.ev_keydown
         }
     });
     this.$editingbox.clearChild()
         .addChild(this.$input);
     this._loadCellStyle();
+    this.$input.addStyle(this._cellStyle);
 };
 
 TDEText.prototype._loadCellStyle = function () {
@@ -47,80 +48,29 @@ TDEText.prototype._loadCellStyle = function () {
     };
 };
 
-TDEText.prototype.waitAction = function () {
-    TDEBase.prototype.waitAction.call(this);
+TDEText.prototype.onStart = function () {
+    console.log('start');
+};
+
+TDEText.prototype.reload = function () {
+    this.$input.value = this.cell.value;
+
+};
+
+TDEText.prototype.onStart = function () {
     setTimeout(function () {
-        var text = this.cell.value || '';
         this.$input.focus();
-        this.$input.applyData(text, { start: 0, end: text.length });
-    }.bind(this), 100);
-    this.$input.removeClass('asht-state-editing')
-        .addClass('asht-state-wait-action');
-    this.$input.on('keydown', this.ev_firstKey)
-        .off('keydown', this.ev_finishKey)
-        .on('dblclick', this.ev_dblClick);
+        var text = this.$input.value;
+        this.$input.applyData(text, { start: text.length, end: text.length });
+    }.bind(this), 5);
 };
 
-TDEText.prototype.startEditing = function () {
-    TDEBase.prototype.startEditing.call(this);
-    this.$input.addClass('asht-state-editing')
-        .removeClass('asht-state-wait-action');
-    this.$input.off('keydown', this.ev_firstKey)
-        .off('dblclick', this.ev_dblClick);
-    this.$input.addStyle(this._cellStyle);
-    this.$input.on('keydown', this.ev_finishKey);
-};
-
-TDEText.prototype.finish = function () {
-    if (this.state === "FINISHED") return;
-    this.$input.off('keydown', this.ev_finishKey)
-        .off('keydown', this.ev_firstKey)
-        .off('dblclick', this.ev_dblClick)
-        .off('blur', this.ev_focus)
-        .off('blur', this.ev_blur);
-    TDEBase.prototype.finish.call(this);
-};
 
 /***
  *
  * @param {KeyboardEvent} event
  */
-TDEText.prototype.ev_firstKey = function (event) {
-    if (event.key === "Delete") {
-        this.cell.value = "";
-    }
-    else if (event.key === 'Enter' || event.key === 'F2') {
-        this.$input.value = this.cell.value;
-        this.startEditing();
-        event.preventDefault();
-    }
-    else if (event.key === 'Tab') {
-        this.editCellNext();
-        event.preventDefault();
-    }
-    else if (event.key.length === 1 || event.key === "Backspace") {
-        this.startEditing();
-    }
-    else if (event.key.startsWith('Arrow')) {
-        event.preventDefault();
-        switch (event.key) {
-            case "ArrowLeft":
-                this.editCellLeft();
-                break;
-            case "ArrowRight":
-                this.editCellRight();
-                break;
-            case "ArrowUp":
-                this.editCellAbove();
-                break;
-            case "ArrowDown":
-                this.editCellBellow();
-                break;
-        }
-    }
-};
-
-TDEText.prototype.ev_finishKey = function (event) {
+TDEText.prototype.ev_keydown = function (event) {
     if (event.key === "Enter" || event.key === "Tab") {
         var text = this.$input.value;
         if (event.altKey && event.key === "Enter") {
@@ -136,32 +86,13 @@ TDEText.prototype.ev_finishKey = function (event) {
         }
         event.preventDefault();
     }
-    else if (event.key === "Escape") {
-        event.preventDefault();
-        this.waitAction();
-    }
 };
 
-TDEText.prototype.ev_dblClick = function (event) {
-    event.preventDefault();
-    this.$input.value = this.cell.value;
-    setTimeout(this.$input.focus.bind(this.$input), 100);
-    this.startEditing();
+
+TDEText.prototype.ev_inputChange = function () {
+    this.cell.value = this.$input.value;
 };
 
-TDEText.prototype.ev_blur = function (event) {
-    this.$editingbox.removeClass('as-status-focus');
-    setTimeout(function () {
-        if (this.$input !== document.activeElement) {
-            //blur before finished
-            this.cell.value = this.$input.value;
-        }
-    }.bind(this), 100);
-};
-
-TDEText.prototype.ev_focus = function () {
-    this.$editingbox.addClass('as-status-focus');
-};
 
 TDEBase.typeClasses.string = TDEText;
 TDEBase.typeClasses.text = TDEText;
