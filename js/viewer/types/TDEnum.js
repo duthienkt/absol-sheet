@@ -9,6 +9,7 @@ import {_} from "../../dom/SCore";
  */
 function TDEnum() {
     TDBase.apply(this, arguments);
+    this.elt.addClass('asht-type-enum');
 }
 
 OOP.mixClass(TDEnum, TDBase);
