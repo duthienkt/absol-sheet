@@ -180,8 +180,9 @@ td.asht-table-data-root-cell {
     height: var(--cell-height);
 }
 
-input.asht-cell-editor-input[type="number"].asht-state-editing {
-    width: calc(var(--cell-width) + 18px);
+input.asht-cell-editor-input[type="number"] {
+    width: var(--cell-width);
+    text-align: right;
 }
 
 .asht-boolean-cell-editor-input.asht-state-wait-action > .as-checkbox-input {
@@ -233,10 +234,6 @@ input.asht-cell-editor-input[type="number"].asht-state-editing {
     border: none;
 }
 
-.asht-date-cell-editor-input:not(.asht-state-editing) .as-date-input-icon-ctn {
-    display: none;
-}
-
 .asht-date-cell-editor-input.asht-state-editing {
     width: calc(var(--cell-width) + 28px);
 }
@@ -258,6 +255,7 @@ input.asht-cell-editor-input[type="number"].asht-state-editing {
 
 td.asht-type-number {
     text-align: right;
+    padding-left: calc(0.35em + 18px);
 }
 
 td.asht-type-boolean {
@@ -266,12 +264,26 @@ td.asht-type-boolean {
 
 table.asht-table-data > tbody > tr > td.asht-type-date {
     text-align: left;
-    padding-right: 1em;
+    padding-right: 1.35em;
+    min-width: 120px;
+    box-sizing: border-box;
 }
 
 td.asht-row-idx {
     text-align: right;
 }
+
+table.asht-table-data > tbody > tr > td.asht-type-enum {
+    text-align: left;
+    padding-right: calc(0.35em + 18px);
+}
+
+
+.asht-cell-editor-input.as-select-menu {
+    height: var(--cell-height);
+    width: var(--cell-width);
+}
+
 
 /*
 .asht-table-editor-editing-layer,
