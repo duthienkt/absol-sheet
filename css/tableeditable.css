@@ -1,10 +1,10 @@
 .asht-table-editor {
     position: relative;
     overflow: hidden;
-    height: 60vh;
     --body-scroll-height: 0;
     --body-scroll-width: 0;
     background-color: white;
+    min-height: 50px;
 }
 
 .asht-table-editor-content {
@@ -228,7 +228,9 @@ input.asht-cell-editor-input[type="number"] {
     pointer-events: none;
 }
 
-.asht-date-cell-editor-input {
+.asht-date-cell-editor-input,
+.asht-date-time-cell-editor-input
+{
     height: var(--cell-height);
     width: var(--cell-width);
     border: none;
@@ -238,7 +240,9 @@ input.asht-cell-editor-input[type="number"] {
     width: calc(var(--cell-width) + 28px);
 }
 
-.asht-date-cell-editor-input input {
+.asht-date-cell-editor-input input,
+.asht-date-time-cell-editor-input input
+{
     padding-left: 0.35em;
     font: inherit;
 }
@@ -266,6 +270,13 @@ table.asht-table-data > tbody > tr > td.asht-type-date {
     text-align: left;
     padding-right: 1.35em;
     min-width: 120px;
+    box-sizing: border-box;
+}
+
+table.asht-table-data > tbody > tr > td.asht-type-date-time {
+    text-align: left;
+    padding-right: 1.35em;
+    min-width: 190px;
     box-sizing: border-box;
 }
 

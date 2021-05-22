@@ -5,9 +5,10 @@ import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import "./editor/TDEText";
 import "./editor/TDENumber";
 import "./editor/TDEDate";
+import "./editor/TDEDateTime";
 import "./editor/TDEEnum";
 import "./editor/TDEEnumSet";
-import  "./editor/TDEBoolean";
+import "./editor/TDEBoolean";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP from "absol/src/HTML5/OOP";
@@ -15,6 +16,8 @@ import EventEmitter from "absol/src/HTML5/EventEmitter";
 import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
 import TDRecord from "../viewer/TDRecord";
+import DomSignal from "absol/src/HTML5/DomSignal";
+
 var _ = SComp._;
 var $ = SComp.$;
 
@@ -87,12 +90,18 @@ TableEditor.prototype.getView = function () {
             }
         ]
     });
+
     this.$attachook = $('attachhook', this.$view);
     this.$attachook.requestUpdateSize = this.ev_resize;
     this.$attachook.on('attached', function () {
         ResizeSystem.add(this);
         this.requestUpdateSize();
     });
+
+    this.$domSignal = _('attachhook').addTo(this.$view);
+    this.domSignal = new DomSignal(this.$domSignal);
+    this.domSignal.on('request_load_foreground_content', this.loadForegroundContent.bind(this));
+
     this.$body = $('.asht-table-editor-body', this.$view);
     this.$body.on('scroll', this.ev_scrollBody);
     this.$content = $('.asht-table-editor-content', this.$view);
@@ -133,8 +142,13 @@ TableEditor.prototype.setData = function (data) {
     this.$content.addChildBefore(this.$tableData, this.$editingLayer);
     tableData.import(data);
     this.tableData = tableData;
+    this.domSignal.emit('request_load_foreground_content');
+};
+
+TableEditor.prototype.loadForegroundContent = function () {
     this.loadHeader();
     this.loadIndexCol();
+    this.updateFixedTableEltPosition();
     this.updateForegroundPosition();
 };
 
@@ -362,8 +376,7 @@ TableEditor.prototype.ev_resize = function (event) {
 TableEditor.prototype.editCell = function (row, col) {
     if (this.currentCellEditor) {
         this.currentCellEditor.off('finish', this.ev_cellEditorFinish);
-        if (this.currentCellEditor.state !== "FINISHED")
-            this.currentCellEditor.finish();
+        this.currentCellEditor.destroy();
         this.currentCellEditor = null;
         this.$editingbox.clearChild();
 
@@ -376,6 +389,7 @@ TableEditor.prototype.editCell = function (row, col) {
         if (EditorClass) {
             this.currentCellEditor = new EditorClass(this, row.cells[col.index]);
             this.$editingbox.removeStyle('display');
+            this.currentCellEditor.start();
         }
         else {
             this.currentCellEditor = null;
@@ -610,9 +624,14 @@ TableEditor.prototype.updateForegroundPosition = function () {
 
 TableEditor.prototype.updateFixedTableEltPosition = function () {
     if (!this.tableData) return;
+    var tableBound = this.tableData.getView().getBoundingClientRect()
+    this.$view.addStyle({
+        '--table-data-width': tableBound.width + 'px',
+        '--table-data-height': tableBound.height + 'px',
+    });
+    this.updateForegroundPosition();
     this.updateHeaderPosition();
     this.updateIndexColPosition();
-    this.updateForegroundPosition();
     this.updateEditingBoxPosition();
     this.updateSelectedPosition();
 };

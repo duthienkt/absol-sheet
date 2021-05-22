@@ -13,6 +13,7 @@ import  "./types/TDEnum";
 import  "./types/TDArrayOfText";
 import  "./types/TDEnumSet";
 import  "./types/TDDate";
+import  "./types/TDDateTime";
 import {_} from '../dom/SCore';
 
 
