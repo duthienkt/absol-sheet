@@ -1,7 +1,7 @@
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
 import {_, $} from '../../dom/SCore';
-import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import ResizeSystem from 'absol/src/HTML5/ResizeSystem';
 
 
 /***
@@ -10,15 +10,15 @@ import ResizeSystem from "absol/src/HTML5/ResizeSystem";
  * @param {TSCell} cell
  * @constructor
  */
-function TDEEnum(tableEditor, cell) {
+function TDETreeEnum(tableEditor, cell) {
     TDEBase.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(TDEEnum, TDEBase);
+OOP.mixClass(TDETreeEnum, TDEBase);
 
-TDEEnum.prototype.prepareInput = function () {
+TDETreeEnum.prototype.prepareInput = function () {
     this.$input = _({
-        tag: 'selectmenu',
+        tag: 'selecttreemenu',
         class: 'asht-cell-editor-input',
         on:{
             change: this.ev_inputChange
@@ -30,14 +30,14 @@ TDEEnum.prototype.prepareInput = function () {
     this.$input.addStyle(this._cellStyle);
 };
 
-TDEEnum.prototype.reload = function () {
+TDETreeEnum.prototype.reload = function () {
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
 
 }
 
-TDEEnum.prototype._loadCellStyle = function () {
+TDETreeEnum.prototype._loadCellStyle = function () {
     var cellElt = this.cell.elt;
     this._cellStyle = {
         'font-size': cellElt.getComputedStyleValue('font-size'),
@@ -46,12 +46,13 @@ TDEEnum.prototype._loadCellStyle = function () {
     };
 };
 
-TDEEnum.prototype.ev_inputChange = function (){
+TDETreeEnum.prototype.ev_inputChange = function (){
     this.cell.value = this.$input.value;
     ResizeSystem.update();
 };
 
 
-TDEBase.typeClasses.enum = TDEEnum;
+TDEBase.typeClasses.treeenum = TDETreeEnum;
+TDEBase.typeClasses.TreeEnum = TDETreeEnum;
 
-export default TDEEnum;
+export default TDETreeEnum;

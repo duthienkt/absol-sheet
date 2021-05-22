@@ -229,8 +229,7 @@ input.asht-cell-editor-input[type="number"] {
 }
 
 .asht-date-cell-editor-input,
-.asht-date-time-cell-editor-input
-{
+.asht-date-time-cell-editor-input {
     height: var(--cell-height);
     width: var(--cell-width);
     border: none;
@@ -241,8 +240,7 @@ input.asht-cell-editor-input[type="number"] {
 }
 
 .asht-date-cell-editor-input input,
-.asht-date-time-cell-editor-input input
-{
+.asht-date-time-cell-editor-input input {
     padding-left: 0.35em;
     font: inherit;
 }
@@ -293,6 +291,10 @@ table.asht-table-data > tbody > tr > td.asht-type-enum {
 .asht-cell-editor-input.as-select-menu {
     height: var(--cell-height);
     width: var(--cell-width);
+}
+
+.absol-selectmenu.as-select-menu.as-select-tree-menu.asht-cell-editor-input {
+    min-width: calc(var(--select-list-estimate-width) + 30px);
 }
 
 

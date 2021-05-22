@@ -9,6 +9,7 @@ import "./editor/TDEDateTime";
 import "./editor/TDEEnum";
 import "./editor/TDEEnumSet";
 import "./editor/TDEBoolean";
+import "./editor/TDETreeEnum";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP from "absol/src/HTML5/OOP";

@@ -10,6 +10,7 @@ import  "./types/TDText";
 import  "./types/TDNumber";
 import  "./types/TDBoolean";
 import  "./types/TDEnum";
+import  "./types/TDTreeEnum";
 import  "./types/TDArrayOfText";
 import  "./types/TDEnumSet";
 import  "./types/TDDate";
