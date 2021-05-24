@@ -34,7 +34,7 @@ TDEEnumSet.prototype.prepareInput = function () {
 
 
 TDEEnumSet.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.values;
+    this.cell.value = this.$input.values.slice();
     ResizeSystem.update();
 };
 

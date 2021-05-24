@@ -6,15 +6,15 @@
  * @constructor
  */
 import TDBase from "./types/TDBase";
-import  "./types/TDText";
-import  "./types/TDNumber";
-import  "./types/TDBoolean";
-import  "./types/TDEnum";
-import  "./types/TDTreeEnum";
-import  "./types/TDArrayOfText";
-import  "./types/TDEnumSet";
-import  "./types/TDDate";
-import  "./types/TDDateTime";
+import "./types/TDText";
+import "./types/TDNumber";
+import "./types/TDBoolean";
+import "./types/TDEnum";
+import "./types/TDTreeEnum";
+import "./types/TDArrayOfText";
+import "./types/TDEnumSet";
+import "./types/TDDate";
+import "./types/TDDateTime";
 import {_} from '../dom/SCore';
 
 
@@ -28,6 +28,7 @@ export function TDRecord(table, record, idx) {
      * @type {TDBase[]}
      */
     this.properties = [];
+    this.propertyByName = {};
     this.idx = idx;
     this.record = record;
 }
@@ -80,15 +81,32 @@ TDRecord.prototype.loadCells = function () {
     var propertyDescriptors = this.propertyDescriptors;
     this.properties.forEach(function (cell) {
         cell.elt.remove();
-    })
+    });
+    this.propertyByName = {};
     this.properties = propertyNames.map(function (pName) {
         var descriptor = propertyDescriptors[pName] || { type: 'notSupport' };
-        return new (TDBase.typeClasses[descriptor.type] || TDBase.typeClasses.notSupport)(tdRow, pName);
+        var td = new (TDBase.typeClasses[descriptor.type] || TDBase.typeClasses.notSupport)(tdRow, pName);
+        tdRow.propertyByName[pName] = td;
+        return td;
     });
     var cellEltList = this.properties.map(function (cell) {
         return cell.elt;
     });
     this.elt.addChild(cellEltList);
+};
+
+TDRecord.prototype.notifyPropertyChange = function (pName) {
+    var descriptor = this.propertyDescriptors[pName];
+    var dependents = descriptor.__dependents__;
+    var propertyTD;
+    if (dependents && dependents.length > 0) {
+        for (var i = 0; i < dependents.length; ++i) {
+            propertyTD = this.propertyByName[dependents[i]];
+            propertyTD.renewDescriptor();
+            propertyTD.reload();
+        }
+    }
+
 };
 
 export default TDRecord;

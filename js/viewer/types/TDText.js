@@ -13,7 +13,7 @@ function TDText() {
 
 OOP.mixClass(TDText, TDBase);
 
-TDText.prototype.reload = function (){
+TDText.prototype.loadValue = function (){
     this.elt.clearChild();
     var value = (this.value || '') + '';
     this.$lines = value.split(/\r?\n/).reduce(function (ac, line) {

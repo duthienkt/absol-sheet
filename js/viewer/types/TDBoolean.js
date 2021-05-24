@@ -20,7 +20,7 @@ TDBoolean.prototype.attachView = function () {
     this.elt.addChild(this.$check);
 };
 
-TDBoolean.prototype.reload = function () {
+TDBoolean.prototype.loadValue = function () {
     var value = this.value;
     if (value)
         this.$check.removeStyle('display');

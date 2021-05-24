@@ -23,7 +23,7 @@ TDDateTime.prototype.attachView = function () {
     this.elt.addChild(this.$date);
 };
 
-TDDateTime.prototype.reload = function () {
+TDDateTime.prototype.loadValue = function () {
     var value = this.value;
     var vType = typeof value;
     var text = '';

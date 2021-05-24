@@ -21,10 +21,11 @@ TDEnumSet.prototype.attachView = function () {
     this.elt.addChild(this.$text);
 };
 
-TDEnumSet.prototype.reload = function () {
+TDEnumSet.prototype.loadDescriptor = function () {
     var descriptor = this.descriptor;
-    if (!descriptor.__val2Item__) {
-        Object.defineProperty(descriptor, '__val2Item__', {
+    descriptor.items = descriptor.items || [];
+    if (!descriptor.items.__val2Item__) {
+        Object.defineProperty(descriptor.items, '__val2Item__', {
             configurable: true,
             enumerable: false,
             value: (descriptor.items || [])
@@ -34,15 +35,19 @@ TDEnumSet.prototype.reload = function () {
                 }, {})
         });
     }
+};
+
+TDEnumSet.prototype.loadValue = function () {
+    var descriptor = this.descriptor;
     var value = this.value || [];
     var text = value.map(function (iVal) {
-        var item = descriptor.__val2Item__[iVal];
+        var item = descriptor.items.__val2Item__[iVal];
         if (item) return item.text;
         return '?[' + JSON.stringify(iVal) + ']';
     }).join(', ');
     this.$text.firstChild.data = text;
+};
 
-}
 
 TDBase.typeClasses.EnumSet = TDEnumSet;
 TDBase.typeClasses['{enum}'] = TDEnumSet;
