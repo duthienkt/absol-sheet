@@ -30,8 +30,68 @@ TableData.prototype.import = function (data) {
     this.propertyDescriptors = data.propertyDescriptors;
     this.propertyNames = data.propertyNames;
     this.records = data.records;
+    this._computeData();
     this.reload();
 };
+
+
+TableData.prototype._computeData = function () {
+    var descriptors = this.propertyDescriptors;
+    var descriptor;
+    var pName;
+    this.propertyNames.forEach(function (name) {
+        descriptor = descriptors[name];
+        if (!descriptor) return;
+        if (descriptor.dependencies) {
+            Object.defineProperty(descriptor, '__dependencies_dict__',
+                {
+                    configurable: true,
+                    enumerable: false,
+                    value: descriptor.dependencies.reduce(function (ac, cr) {
+                        ac[cr] = true;
+                        return ac;
+                    }, {})
+                });
+        }
+    });
+
+    for (var i = 0; i < this.propertyNames.length; ++i) {
+        pName = this.propertyNames[i];
+        descriptor = descriptors[pName];
+        if (!descriptor) continue;
+        Object.defineProperty(descriptor, '__dependents__',
+            {
+                configurable: true,
+                enumerable: false,
+                value: this._findAllDependency(pName)
+            });
+    }
+};
+
+TableData.prototype._findAllDependency = function (pName) {
+    var descriptors = this.propertyDescriptors;
+    var propertyNames = this.propertyNames;
+    var queue = [pName];
+    var visited = { pName: true };
+    var res = [];
+    var i;
+    var u, v;
+    while (queue.length > 0) {
+        u = queue.shift();
+        for (i = 0; i < propertyNames.length; ++i) {
+            v = propertyNames[i];
+            if (!visited[v] && descriptors[v]
+                && descriptors[v].__dependencies_dict__
+                && descriptors[v].__dependencies_dict__[u]) {
+                visited[v] = true;
+                queue.push(v);
+                res.push(v);
+            }
+        }
+    }
+    return res;
+};
+
 
 TableData.prototype.reload = function () {
     this.loadHeader();
