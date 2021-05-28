@@ -5,6 +5,12 @@
     --body-scroll-width: 0;
     background-color: white;
     min-height: 50px;
+    --table-data-height: 50px;
+    height: var(--table-data-height);
+}
+
+.asht-table-editor.as-overflow-x{
+    height: calc(var(--table-data-height) + 17px);
 }
 
 .asht-table-editor-content {
@@ -98,35 +104,6 @@ table.asht-table-data {
 }
 
 
-table.asht-table-data,
-table.asht-table-data > tbody > tr > td,
-table.asht-table-data > thead > tr > td,
-table.asht-table-data > tr > td {
-    border: solid 1px #dddddd;
-    padding-left: 0.35em;
-    padding-right: 0.35em;
-    white-space: pre-wrap;
-    word-break: normal;
-    box-sizing: border-box;
-
-}
-
-
-table.asht-table-data > thead > tr > td {
-    background-color: rgb(248, 249, 250);
-    text-align: center;
-    box-sizing: border-box;
-}
-
-table.asht-table-data > tbody > tr > td > span {
-    white-space: nowrap;
-}
-
-table.asht-table-data > tbody > tr > td:first-child,
-table.asht-table-data > tr > td:first-child {
-    background-color: rgb(248, 249, 250);
-    text-align: right;
-}
 
 
 td.asht-table-data-root-cell {
@@ -174,11 +151,11 @@ td.asht-table-data-root-cell {
     outline: none;
 }
 
-.asht-cell-editor-input.asht-state-wait-action {
-    opacity: 0;
-    width: var(--cell-width);
-    height: var(--cell-height);
+asht-cell-editor-input.as-preinput {
+    min-width: calc(var(--cell-width) + 1px);
 }
+
+
 
 input.asht-cell-editor-input[type="number"] {
     width: var(--cell-width);
@@ -267,14 +244,14 @@ td.asht-type-boolean {
 table.asht-table-data > tbody > tr > td.asht-type-date {
     text-align: left;
     padding-right: 1.35em;
-    min-width: 120px;
+    min-width: calc(6em + 50px);
     box-sizing: border-box;
 }
 
 table.asht-table-data > tbody > tr > td.asht-type-date-time {
     text-align: left;
     padding-right: 1.35em;
-    min-width: 190px;
+    min-width: calc(10em + 50px);
     box-sizing: border-box;
 }
 

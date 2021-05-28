@@ -1,0 +1,41 @@
+table.asht-table-data {
+    --row-height: 21px;
+}
+
+
+table.asht-table-data,
+table.asht-table-data > tbody > tr > td,
+table.asht-table-data > thead > tr > td,
+table.asht-table-data > tr > td {
+    border: solid 1px #dddddd;
+    padding-left: 0.35em;
+    padding-right: 0.35em;
+    white-space: pre-wrap;
+    word-break: normal;
+    box-sizing: border-box;
+
+}
+
+
+table.asht-table-data > tbody > tr > td,
+table.asht-table-data > tr > td {
+    height: var(--row-height);
+    min-height: var(--row-height);
+}
+
+
+table.asht-table-data > thead > tr > td {
+    background-color: rgb(248, 249, 250);
+    text-align: center;
+    box-sizing: border-box;
+}
+
+table.asht-table-data > tbody > tr > td > span {
+    white-space: pre;
+}
+
+table.asht-table-data > tbody > tr > td:first-child,
+table.asht-table-data > tr > td:first-child {
+    background-color: rgb(248, 249, 250);
+    text-align: right;
+}
