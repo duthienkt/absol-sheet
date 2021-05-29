@@ -16,9 +16,18 @@ import "./types/TDEnumSet";
 import "./types/TDDate";
 import "./types/TDDateTime";
 import {_} from '../dom/SCore';
+import EventEmitter from "absol/src/HTML5/EventEmitter";
+import OOP from "absol/src/HTML5/OOP";
 
-
+/***
+ * @extends EventEmitter
+ * @param {TableData} table
+ * @param {Object} record
+ * @param {number|"*"} idx
+ * @constructor
+ */
 export function TDRecord(table, record, idx) {
+    EventEmitter.call(this);
     this.table = table;
     this.elt = _('tr');
     this.$idx = _('td');
@@ -32,6 +41,8 @@ export function TDRecord(table, record, idx) {
     this.idx = idx;
     this.record = record;
 }
+
+OOP.mixClass(TDRecord, EventEmitter);
 
 
 Object.defineProperty(TDRecord.prototype, 'record', {
@@ -60,7 +71,12 @@ Object.defineProperty(TDRecord.prototype, 'propertyDescriptors', {
 Object.defineProperty(TDRecord.prototype, 'idx', {
     set: function (value) {
         this._idx = value;
-        this.$idx.clearChild().addChild(_({ text: value + 1 + '' }));
+        if (value === "*") {
+            this.$idx.clearChild().addChild(_({ text: '*' }));
+        }
+        else {
+            this.$idx.clearChild().addChild(_({ text: value + 1 + '' }));
+        }
     },
     get: function () {
         return this._idx;
@@ -106,7 +122,7 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
             propertyTD.reload();
         }
     }
-
+    this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
 };
 
 export default TDRecord;
