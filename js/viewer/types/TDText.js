@@ -17,6 +17,7 @@ TDText.prototype.loadValue = function (){
     this.elt.clearChild();
     var value = (this.value || '') + '';
     this.$lines = value.split(/\r?\n/).reduce(function (ac, line) {
+        line = line.replace(/\s\s/g, ' \u00A0');
         ac.push(_({
             tag: 'span', child: { text: line }
         }));
