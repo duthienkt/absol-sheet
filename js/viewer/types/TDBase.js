@@ -1,6 +1,6 @@
 /***
  *
- * @param {TSRow} row
+ * @param {TDRecord} row
  * @param {string} pName
  * @constructor
  */
@@ -15,6 +15,7 @@ function TDBase(row, pName) {
     this.attachView();
     this.loadDescriptor();
     this.loadValue();
+
 }
 
 TDBase.prototype.renewDescriptor = function () {
@@ -32,7 +33,7 @@ TDBase.prototype.renewDescriptor = function () {
             }
             else {
                 matched = Object.keys(cCase.case).every(function (record, key) {
-                    return this[key] == record[key];
+                    return this[key] === record[key];
                 }.bind(cCase.case, this.record));
                 if (matched) {
                     selectedCase = cCase;
@@ -47,6 +48,10 @@ TDBase.prototype.renewDescriptor = function () {
     }
     this.descriptor = descriptor;
     return descriptor;
+};
+
+TDBase.prototype.implicit = function (value) {
+    return value;
 };
 
 
@@ -68,6 +73,10 @@ Object.defineProperty(TDBase.prototype, 'value', {
         return this.row.record[this.pName];
     },
     set: function (value) {
+        value = this.implicit(value);
+        if ((value === undefined || value === null)
+            && (this.row.record[this.pName] === null || this.row.record[this.pName] === undefined))
+            return;
         if (value !== this.row.record[this.pName]) {
             this.row.record[this.pName] = value;
             this.loadValue();
@@ -91,6 +100,38 @@ TDBase.prototype.reload = function () {
     this.loadDescriptor();
     this.loadValue();
 };
+
+/***
+ *
+ * @param {string} expString
+ */
+TDBase.prototype.invokeExpression = function (expString) {
+    if (expString[0] === '=') {
+        expString = 'var result ' + expString + ';\nreturn result;'
+    }
+    else if (expString[0] === '{' && expString[expString.length - 1] === '}') {
+        expString = expString.substr(1, expString.length - 2);
+    }
+    else throw  new Error("Invalid expression");
+    var record = this.record;
+    var paramNames = this.table.propertyNames;
+    var paramValues = paramNames.map(function (name) {
+        return record[name];
+    });
+    var f = (new Function([
+        'return function(' + paramNames.join(', ') + '){',
+        expString,
+        '}'
+    ].join('\n')))();
+    return f.apply(record, paramValues);
+};
+
+TDBase.prototype.isExpression = function (v) {
+    if (typeof v !== "string") return false;
+    if (v[0] === '=') return true;
+    return v[0] === '{' && v[v.length - 1] === '}';
+};
+
 
 TDBase.prototype.loadDescriptor = noop;
 TDBase.prototype.loadValue = noop;
