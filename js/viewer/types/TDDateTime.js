@@ -2,6 +2,7 @@ import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import {LOCAL_DATE_FORMAT, parseDateTime, formatDateTime} from "absol/src/Time/datetime";
 import {_} from "../../dom/SCore";
+import TDDate from "./TDDate";
 
 
 /***
@@ -23,23 +24,15 @@ TDDateTime.prototype.attachView = function () {
     this.elt.addChild(this.$date);
 };
 
+TDDateTime.prototype.implicit = TDDate.prototype.implicit;
+
 TDDateTime.prototype.loadValue = function () {
     var value = this.value;
-    var vType = typeof value;
     var text = '';
-    var dateValue;
-    if (vType === "string") {
-        dateValue = this._dateFromString(value);
-    }
-    else if (vType === 'number') {
-        dateValue = new Date(value);
-    }
-    else if (value && value.getTime) {
-        dateValue = value;
-    }
+    var dateValue = this.implicit(value);
 
     if (value) {
-        if (!dateValue || isNaN(dateValue.getTime())) {
+        if (!dateValue) {
             text = "?[" + JSON.stringify(value) + ']';
         }
         else if (dateValue) {

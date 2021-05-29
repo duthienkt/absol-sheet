@@ -1,6 +1,6 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {formatDateString, LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
+import { formatDateTime, LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
 import {_} from "../../dom/SCore";
 
 
@@ -23,10 +23,8 @@ TDDate.prototype.attachView = function () {
     this.elt.addChild(this.$date);
 };
 
-TDDate.prototype.loadValue = function () {
-    var value = this.value;
+TDDate.prototype.implicit = function (value) {
     var vType = typeof value;
-    var text = '';
     var dateValue;
     if (vType === "string") {
         dateValue = this._dateFromString(value);
@@ -37,12 +35,23 @@ TDDate.prototype.loadValue = function () {
     else if (value && value.getTime) {
         dateValue = value;
     }
+
+    if (dateValue && isNaN(dateValue.getTime())) dateValue = null;
+    return dateValue;
+};
+
+
+TDDate.prototype.loadValue = function () {
+    var value = this.value;
+    var vType = typeof value;
+    var text = '';
+    var dateValue = this.implicit(value);
     if (value) {
-        if (!dateValue || isNaN(dateValue.getTime())) {
+        if (!dateValue) {
             text = "?[" + JSON.stringify(value) + ']';
         }
         else if (dateValue) {
-            text = formatDateString(dateValue, this.descriptor.format || LOCAL_DATE_FORMAT);
+            text = formatDateTime(dateValue, (this.descriptor.format || LOCAL_DATE_FORMAT).replace(/m/g, 'M'));
         }
     }
     else {

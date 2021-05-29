@@ -14,6 +14,11 @@ function TDBoolean() {
 
 OOP.mixClass(TDBoolean, TDBase);
 
+TDBoolean.prototype.implicit = function (value) {
+    if (['false', '0', 'no'].indexOf(value)) return false;
+    return !!value;
+};
+
 TDBoolean.prototype.attachView = function () {
     this.elt.clearChild();
     this.$check = _('span.mdi.mdi-check');
@@ -21,7 +26,7 @@ TDBoolean.prototype.attachView = function () {
 };
 
 TDBoolean.prototype.loadValue = function () {
-    var value = this.value;
+    var value = this.implicit(this.value);
     if (value)
         this.$check.removeStyle('display');
     else
