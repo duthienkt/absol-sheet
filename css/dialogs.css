@@ -1,0 +1,60 @@
+.asht-modal {
+    position: fixed;
+    z-index: 100000;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.asht-window {
+    z-index: 110000;
+    user-select: none;
+}
+
+.asht-window.as-blink .absol-onscreen-window-head-bar {
+    animation: asht-window-hear-blink 0.75s;
+
+}
+
+.asht-window.as-blink .absol-onscreen-window-head-bar button{
+    background-color: transparent;
+}
+
+@keyframes asht-window-hear-blink {
+    0% {
+        background-color: rgba(169, 169, 169, 0.15)
+    }
+    15% {
+        background-color: rgba(169, 169, 169, 0.5)
+    }
+    25% {
+        background-color: rgba(169, 169, 169, 0.15)
+    }
+    35% {
+        background-color: rgba(169, 169, 169, 0.5)
+    }
+    50% {
+        background-color: rgba(169, 169, 169, 0.15)
+    }
+    65% {
+        background-color: rgba(169, 169, 169, 0.5)
+    }
+    75% {
+        background-color: rgba(169, 169, 169, 0.15)
+    }
+
+    100% {
+        background-color: rgba(169, 169, 169, 0.15)
+    }
+
+}
+
+.asht-select-row-width-window-content {
+    padding: 5px;
+}
+
+.asht-select-row-width-window .absol-onscreen-window-head-bar-button-minimize,
+.asht-select-row-width-window .absol-onscreen-window-head-bar-button-dock {
+    display: none;
+}
