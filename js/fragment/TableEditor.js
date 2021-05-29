@@ -18,12 +18,17 @@ import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
 import TDRecord from "../viewer/TDRecord";
 import DomSignal from "absol/src/HTML5/DomSignal";
+import {selectRowHeight} from "./dialogs";
+import noop from "absol/src/Code/noop";
+import {copyText, pasteText} from "absol/src/HTML5/Clipboard";
+
+// selectRowHeight()
 
 var _ = SComp._;
 var $ = SComp.$;
 
 /***
- *
+ * @extends EventEmitter
  * @constructor
  */
 function TableEditor() {
@@ -36,6 +41,8 @@ function TableEditor() {
             this[key] = this[key].bind(this);
         }
     }
+
+    this.$indexColRows = [];
 }
 
 OOP.mixClass(TableEditor, EventEmitter);
@@ -144,6 +151,7 @@ TableEditor.prototype.setData = function (data) {
     tableData.import(data);
     this.tableData = tableData;
     this.domSignal.emit('request_load_foreground_content');
+    tableData.on('new_row_property_change', this.ev_newRowPropertyChange);
 };
 
 TableEditor.prototype.loadForegroundContent = function () {
@@ -257,9 +265,12 @@ TableEditor.prototype.ev_indexColMouseDown = function (ev) {
 TableEditor.prototype.ev_indexColContextMenu = function (ev) {
     var thisTE = this;
     var row = this.tableData.findRowByClientY(ev.clientY);
-    ev.showContextMenu({
-        items: [
-            {
+    var items = [];
+    if (row.idx === "*") {
+
+    }
+    else {
+        items.push({
                 cmd: 'insert_before',
                 text: 'Insert Before',
                 icon: 'span.mdi.mdi-table-row-plus-before'
@@ -271,53 +282,116 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
             },
             {
                 cmd: 'remove',
-                text: 'Remove',
+                text: 'Delete',
                 icon: 'span.mdi.mdi-table-row-remove'
-            },
-        ]
+            })
+    }
+    if (items.length > 0 && items[items.length - 1] !== '===') {
+        items.push("===");
+    }
+    if (row.idx !== "*") {
+        items.push({
+            cmd: 'copy',
+            text: "Copy",
+            icon: "span.mdi.mdi-content-copy"
+        });
+    }
+    items.push({
+        cmd: 'paste',
+        text: "Paste",
+        icon: 'span.mdi.mdi-content-paste'
+    });
+    items.push('===', {
+        cmd: 'row_height',
+        text: 'Row Height',
+        icon: 'span.mdi.mdi-table-row-height'
+    });
+
+    ev.showContextMenu({
+        extendStyle: { fontSize: '14px' },
+        items: items
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
         var eventData = { cmd: cmd };
-        if (cmd === 'remove') {
-            eventData.type = 'cmd_remove_row';
-            eventData.rowIdx = row.idx;
-            eventData.accepted = true;
-            eventData.accept = function (isAccepted) {
-                this.accepted = isAccepted;
-            };
-            thisTE.emit(eventData.type, eventData, thisTE);
-            if (eventData.accepted && eventData.accepted.then) {
-                eventData.accepted.then(function (isAccept) {
-                    if (isAccept)
-                        thisTE.removeRow(eventData.rowIdx);
-                });
-            }
-            else if (eventData.accepted) {
-                thisTE.removeRow(eventData.rowIdx);
-            }
-        }
-        else {
-            eventData.type = 'cmd_insert_row';
-            eventData.rowIdx = row.idx + (cmd === 'insert_after' ? 1 : 0);
-            eventData.result = {};
-            eventData.resolve = function (result) {
-                this.result = result;
-            };
-
-            thisTE.emit(eventData.type, eventData, thisTE);
-            if (eventData.result) {
-                if (eventData.result.then) {
-                    eventData.result.then(function (result) {
-                        if (result) {
-                            thisTE.insertRow(eventData.rowIdx, result);
-                        }
+        switch (cmd) {
+            case 'row_height':
+                selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
+                    .then(function (result) {
+                        thisTE.tableData.config.rowHeight = result;
+                        ResizeSystem.update();
+                    }, noop);
+                break;
+            case 'remove':
+                eventData.type = 'cmd_remove_row';
+                eventData.rowIdx = row.idx;
+                eventData.accepted = true;
+                eventData.accept = function (isAccepted) {
+                    this.accepted = isAccepted;
+                };
+                thisTE.emit(eventData.type, eventData, thisTE);
+                if (eventData.accepted && eventData.accepted.then) {
+                    eventData.accepted.then(function (isAccept) {
+                        if (isAccept)
+                            thisTE.removeRow(eventData.rowIdx);
                     });
                 }
-                else {
-                    thisTE.insertRow(eventData.rowIdx, eventData.result);
+                else if (eventData.accepted) {
+                    thisTE.removeRow(eventData.rowIdx);
                 }
-            }
+                break;
+            case 'insert_before':
+            case 'insert_after':
+                eventData.type = 'cmd_insert_row';
+                eventData.rowIdx = row.idx + (cmd === 'insert_after' ? 1 : 0);
+                eventData.result = {};
+                eventData.resolve = function (result) {
+                    this.result = result;
+                };
 
+                thisTE.emit(eventData.type, eventData, thisTE);
+                if (eventData.result) {
+                    if (eventData.result.then) {
+                        eventData.result.then(function (result) {
+                            if (result) {
+                                thisTE.insertRow(eventData.rowIdx, result);
+                            }
+                        });
+                    }
+                    else {
+                        thisTE.insertRow(eventData.rowIdx, eventData.result);
+                    }
+                }
+                break;
+
+            case "copy":
+                copyText(JSON.stringify(row.record));
+                break;
+            case "paste":
+                pasteText().then(function (result) {
+                    try {
+                        var obj = JSON.parse(result, function (key, value) {
+                            var reISO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/;
+                            if (typeof value === 'string') {
+                                var a = reISO.exec(value);
+                                if (a)
+                                    return new Date(value);
+                            }
+                            return value;
+                        });
+                        thisTE.tableData.propertyNames.forEach(function (cr) {
+                                row.propertyByName[cr].value = obj[cr];
+                            },
+                            {});
+                        if (thisTE.currentCellEditor) {
+                            thisTE.currentCellEditor.reload();
+                        }
+                        ResizeSystem.update();
+
+                    } catch (e) {
+                        console.error(e);
+                    }
+                })
+                break;
         }
     });
 };
@@ -371,6 +445,11 @@ TableEditor.prototype.ev_rootCellContextMenu = function (ev) {
 
 TableEditor.prototype.ev_resize = function (event) {
     this.updateFixedTableEltPosition();
+};
+
+TableEditor.prototype.ev_newRowPropertyChange = function (event) {
+    this.tableData.flushNewRow({});
+    this.loadIndexCol();
 };
 
 
@@ -585,7 +664,7 @@ TableEditor.prototype.updateHeaderPosition = function () {
 
 TableEditor.prototype.loadIndexCol = function () {
     this.$indexCol.clearChild();
-    this.$indexColRows = this.tableData.bodyRow.map(function (row) {
+    this.$indexColRows = this.tableData.bodyRow.concat([this.tableData.newRow]).map(function (row) {
         var trElt = $(row.elt.cloneNode(false));
         trElt.$originElt = row.elt;
         var tdElt = $(row.elt.firstChild.cloneNode(true));
@@ -621,7 +700,14 @@ TableEditor.prototype.updateForegroundPosition = function () {
         '--body-scroll-width': this.$body.offsetWidth - this.$body.clientWidth + 'px',
         '--body-scroll-height': this.$body.offsetHeight - this.$body.clientHeight + 'px',
     });
+    if (this.$body.scrollWidth > this.$body.clientWidth) {
+        this.$view.addClass('as-overflow-x');
+    }
+    else {
+        this.$view.removeClass('as-overflow-x');
+    }
 };
+
 
 TableEditor.prototype.updateFixedTableEltPosition = function () {
     if (!this.tableData) return;
@@ -636,6 +722,7 @@ TableEditor.prototype.updateFixedTableEltPosition = function () {
     this.updateEditingBoxPosition();
     this.updateSelectedPosition();
 };
+
 
 TableEditor.prototype.scrollIntoRow = function (row) {
     var headerBound = this.$header.getBoundingClientRect();
