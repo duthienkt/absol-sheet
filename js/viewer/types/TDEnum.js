@@ -26,7 +26,7 @@ TDEnum.prototype.attachView = function () {
 TDEnum.prototype.loadDescriptor = function () {
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
-    if (!descriptor.__val2Item__) {
+    if (!descriptor.items.__val2Item__) {
         Object.defineProperty(descriptor.items, '__val2Item__', {
             configurable: true,
             enumerable: false,
@@ -53,9 +53,10 @@ TDEnum.prototype.loadDescriptor = function () {
 TDEnum.prototype.implicit = function (value) {
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
-    if (value !== null && value !== undefined) {
+    if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
         return descriptor.items.length > 0 ? descriptor.items[0].value : null;
     }
+    else if (descriptor.items.__val2Item__[value]) return value;
     return null;
 };
 

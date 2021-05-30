@@ -28,7 +28,7 @@ TDTreeEnum.prototype.attachView = function () {
 TDTreeEnum.prototype.loadDescriptor = function () {
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
-    if (!descriptor.__val2Item__) {
+    if (!descriptor.items.__val2Item__) {
         Object.defineProperty(descriptor.items, '__val2Item__', {
             configurable: true,
             enumerable: false,
