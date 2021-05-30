@@ -13,7 +13,12 @@ function TDText() {
 
 OOP.mixClass(TDText, TDBase);
 
-TDText.prototype.loadValue = function (){
+TDText.prototype.implicit = function (value) {
+    if (typeof value === "object") return JSON.stringify(value);
+    return value + '';
+};
+
+TDText.prototype.loadValue = function () {
     this.elt.clearChild();
     var value = (this.value || '') + '';
     this.$lines = value.split(/\r?\n/).reduce(function (ac, line) {
