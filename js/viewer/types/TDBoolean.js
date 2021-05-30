@@ -15,7 +15,7 @@ function TDBoolean() {
 OOP.mixClass(TDBoolean, TDBase);
 
 TDBoolean.prototype.implicit = function (value) {
-    if (['false', '0', 'no'].indexOf(value)) return false;
+    if (['false', '0', 'no'].indexOf(value) >=0) return false;
     return !!value;
 };
 
