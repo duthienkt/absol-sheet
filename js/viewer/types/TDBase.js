@@ -1,12 +1,13 @@
+
+import {_} from "../../dom/SCore";
+import noop from "absol/src/Code/noop";
+
 /***
  *
  * @param {TDRecord} row
  * @param {string} pName
  * @constructor
  */
-import {_} from "../../dom/SCore";
-import noop from "absol/src/Code/noop";
-
 function TDBase(row, pName) {
     this.elt = _('td');
     this.row = row;
@@ -19,13 +20,12 @@ function TDBase(row, pName) {
 }
 
 TDBase.prototype.renewDescriptor = function () {
-    var descriptor = (this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName]) || { type: 'text' };
+    var descriptor = Object.assign({}, (this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName]) || { type: 'text' });
     var defaultCase;
     var selectedCase;
     var cCase;
     var matched;
     if (descriptor.switch) {
-        descriptor = Object.assign({}, descriptor);
         for (var i = 0; i < descriptor.switch.length; ++i) {
             cCase = descriptor.switch[i];
             if (cCase.case === "DEFAULT") {
@@ -45,6 +45,11 @@ TDBase.prototype.renewDescriptor = function () {
     selectedCase = selectedCase || defaultCase;
     if (selectedCase) {
         Object.assign(descriptor, selectedCase);
+    }
+    for (var key in descriptor) {
+        if (key !== 'type' && key !== 'switch' && this.isExpression(descriptor[key])) {
+            descriptor[key] = this.invokeExpression(descriptor[key]);
+        }
     }
     this.descriptor = descriptor;
     return descriptor;
