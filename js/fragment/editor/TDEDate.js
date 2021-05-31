@@ -5,7 +5,7 @@ import SelectMenu from "absol-acomp/js/SelectMenu2";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
 import TDEText from "./TDEText";
-import {parseDateString} from "absol/src/Time/datetime";
+import {LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
 
 
 /***
@@ -35,20 +35,24 @@ TDEDate.prototype.prepareInput = function () {
 };
 
 
-TDEDate.prototype.reload = function (){
+TDEDate.prototype.reload = function () {
     var value = this.cell.value;
     var descriptor = this.cell.descriptor;
-    var dateValue;
-    if (typeof value === "string"){
+    var dateValue = this.cell.implicit(value);
+    if (typeof value === "string") {
         dateValue = new Date(value);
-        if (isNaN(dateValue.getTime())){
+        if (isNaN(dateValue.getTime())) {
             dateValue = parseDateString(value, descriptor.format || 'dd/mm/yyyy');
         }
-        if (isNaN(dateValue.getTime())){
+        if (isNaN(dateValue.getTime())) {
             dateValue = null;
         }
     }
+
+    this.$input.format = descriptor.format || LOCAL_DATE_FORMAT;
     this.$input.value = dateValue;
+    this.$input.min = descriptor.min || new Date(1890, 0, 1);
+    this.$input.max = descriptor.max || new Date(2090, 0, 1);
 };
 
 TDEDate.prototype._loadCellStyle = function () {
