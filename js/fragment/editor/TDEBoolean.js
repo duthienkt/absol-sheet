@@ -43,6 +43,7 @@ TDEBoolean.prototype.prepareInput = function () {
 };
 
 TDEBoolean.prototype.reload = function () {
+    this.$checkbox.disabled = !!this.cell.descriptor.readOnly;
     this.$checkbox.checked = this.cell.value;
 };
 
