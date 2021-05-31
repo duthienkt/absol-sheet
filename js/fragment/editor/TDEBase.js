@@ -12,7 +12,7 @@ var STATE_DESTROYED = 3;
 /***
  * @extends EventEmitter
  * @param {TableEditor} tableEditor
- * @param {TDEBase} cell
+ * @param {TDBase} cell
  * @constructor
  */
 function TDEBase(tableEditor, cell) {
