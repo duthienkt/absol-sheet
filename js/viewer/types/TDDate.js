@@ -1,6 +1,6 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import { formatDateTime, LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
+import {formatDateTime, LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
 import {_} from "../../dom/SCore";
 
 
@@ -63,12 +63,15 @@ TDDate.prototype.loadValue = function () {
 
 TDDate.prototype._dateFromString = function (dateString) {
     var format = this.descriptor.format || LOCAL_DATE_FORMAT;
-    if (format) {
-        return parseDateString(dateString, format);
+    var value;
+    try {
+        value = parseDateString(dateString, format);
+    } catch (error) {
+        value = new Date(dateString);
     }
-    else {
-        return new Date(dateString);
-    }
+
+    if (isNaN(value.getTime())) return null;
+    return value;
 };
 
 
