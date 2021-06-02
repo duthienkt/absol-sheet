@@ -7,7 +7,7 @@ import {_, $} from '../../dom/SCore';
 /***
  * @extends TDEText
  * @param {TableEditor} tableEditor
- * @param {TSCell} cell
+ * @param {TDEBase} cell
  * @constructor
  */
 function TDENumber(tableEditor, cell) {
@@ -51,22 +51,33 @@ TDENumber.prototype._loadCellStyle = function () {
     };
 };
 
-TDENumber.prototype.load = function () {
+TDENumber.prototype.reload = function () {
     var descriptor = this.cell.descriptor;
     if (descriptor.step) this.$input.step = descriptor.step;
+    var min = -Infinity;
+    var max = Infinity;
+    if (!isNaN(descriptor.min) && isFinite(descriptor.min)) {
+        min = descriptor.min;
+    }
+    if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
+        max = descriptor.max;
+    }
+
+
     this.$input.value = this.cell.value;
+    this.$input.min = min;
+    this.$input.max = max;
 };
 
-TDENumber.prototype.onStart = function (){
+
+
+TDENumber.prototype.onStart = function () {
     setTimeout(function () {
         this.$input.focus();
         this.$input.value = this.cell.value;
         this.$input.select();
     }.bind(this), 5);
 };
-
-
-
 
 
 TDENumber.prototype.ev_keydown = function (event) {
