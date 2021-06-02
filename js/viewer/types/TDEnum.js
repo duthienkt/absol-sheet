@@ -45,14 +45,13 @@ TDEnum.prototype.loadDescriptor = function () {
     }
     this.elt.addStyle('min-width', (descriptor.items.__width14__ + 50) / 14 + 'em');
     var value = this.record[this.pName];
-    if (value !== null && value !== undefined) {
-        this.record[this.pName] = descriptor.items.length > 0 ? descriptor.items[0].value : null;
-    }
+    this.record[this.pName] = this.implicit(value);
 };
 
 TDEnum.prototype.implicit = function (value) {
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
+
     if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
         return descriptor.items.length > 0 ? descriptor.items[0].value : null;
     }

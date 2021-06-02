@@ -49,9 +49,7 @@ TDTreeEnum.prototype.loadDescriptor = function () {
     }
     this.elt.addStyle('min-width', (descriptor.items.__width14__ + 50) / 14 + 'em');
     var value = this.record[this.pName];
-    if (value !== null && value !== undefined) {
-        this.record[this.pName] = descriptor.items.length > 0 ? descriptor.items[0].value : null;
-    }
+    this.record[this.pName] = this.implicit(value);
 };
 
 TDTreeEnum.prototype.implicit = TDEnum.prototype.implicit;
@@ -59,6 +57,7 @@ TDTreeEnum.prototype.implicit = TDEnum.prototype.implicit;
 TDTreeEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;
+    console.log(value)
     if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
         this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
     }
