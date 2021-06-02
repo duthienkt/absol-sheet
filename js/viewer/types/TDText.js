@@ -14,13 +14,14 @@ function TDText() {
 OOP.mixClass(TDText, TDBase);
 
 TDText.prototype.implicit = function (value) {
+    if (value === undefined || value === null) return null;
     if (typeof value === "object") return JSON.stringify(value);
     return value + '';
 };
 
 TDText.prototype.loadValue = function () {
     this.elt.clearChild();
-    var value = (this.value || '') + '';
+    var value = this.implicit(this.value) || '';
     this.$lines = value.split(/\r?\n/).reduce(function (ac, line) {
         line = line.replace(/\s\s/g, ' \u00A0');
         ac.push(_({
