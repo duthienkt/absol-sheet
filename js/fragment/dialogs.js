@@ -24,7 +24,7 @@ export function selectRowHeight(opt) {
         tag: 'input',
         attr: {
             type: 'number',
-            step: '0.1',
+            step: '0.5',
             min: '0',
             value: opt.value + ''
         },
