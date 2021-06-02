@@ -45,9 +45,10 @@ TDENumber.prototype._loadCellStyle = function () {
         'font-style': cellElt.getComputedStyleValue('font-style'),
         'line-height': cellElt.getComputedStyleValue('line-height'),
         'padding-left': cellElt.getComputedStyleValue('padding-left'),
+        'padding-right': cellElt.getComputedStyleValue('padding-right'),
         'padding-top': cellElt.getComputedStyleValue('padding-top'),
         'padding-bottom': cellElt.getComputedStyleValue('padding-bottom'),
-        'text-align': cellElt.getComputedStyleValue('text-align'),
+        'text-align': cellElt.getComputedStyleValue('text-align')
     };
 };
 

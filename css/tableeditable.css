@@ -160,7 +160,16 @@ asht-cell-editor-input.as-preinput {
 input.asht-cell-editor-input[type="number"] {
     width: var(--cell-width);
     text-align: right;
+    -moz-appearance: textfield;
+
 }
+
+input.asht-cell-editor-input[type="number"]::-webkit-outer-spin-button,
+input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 
 .asht-boolean-cell-editor-input.asht-state-wait-action > .as-checkbox-input {
     visibility: hidden;
@@ -232,37 +241,6 @@ input.asht-cell-editor-input[type="number"] {
 
 /*.asht-date-cell-editor-input */
 
-td.asht-type-number {
-    text-align: right;
-    padding-left: calc(0.35em + 18px);
-}
-
-td.asht-type-boolean {
-    text-align: center;
-}
-
-table.asht-table-data > tbody > tr > td.asht-type-date {
-    text-align: left;
-    padding-right: 1.35em;
-    min-width: calc(6em + 50px);
-    box-sizing: border-box;
-}
-
-table.asht-table-data > tbody > tr > td.asht-type-date-time {
-    text-align: left;
-    padding-right: 1.35em;
-    min-width: calc(10em + 50px);
-    box-sizing: border-box;
-}
-
-td.asht-row-idx {
-    text-align: right;
-}
-
-table.asht-table-data > tbody > tr > td.asht-type-enum {
-    text-align: left;
-    padding-right: calc(0.35em + 18px);
-}
 
 
 .asht-cell-editor-input.as-select-menu {
