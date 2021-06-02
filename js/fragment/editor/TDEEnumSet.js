@@ -39,6 +39,6 @@ TDEEnumSet.prototype.ev_inputChange = function () {
 };
 
 TDEBase.typeClasses['{enum}'] = TDEEnumSet;
-TDEBase.typeClasses.NumSet = TDEEnumSet;
+TDEBase.typeClasses.EnumSet = TDEEnumSet;
 
 export default TDEEnumSet;
