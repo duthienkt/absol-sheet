@@ -57,7 +57,6 @@ TDTreeEnum.prototype.implicit = TDEnum.prototype.implicit;
 TDTreeEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;
-    console.log(value)
     if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
         this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
     }

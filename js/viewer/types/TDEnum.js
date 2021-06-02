@@ -51,7 +51,6 @@ TDEnum.prototype.loadDescriptor = function () {
 TDEnum.prototype.implicit = function (value) {
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
-
     if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
         return descriptor.items.length > 0 ? descriptor.items[0].value : null;
     }
