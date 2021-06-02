@@ -35,11 +35,28 @@ TDEnumSet.prototype.loadDescriptor = function () {
                 }, {})
         });
     }
+    this.record[this.pName] = this.implicit(this.record[this.pName]);
+};
+
+TDEnumSet.prototype.implicit = function (value) {
+    if (typeof value === 'string') {
+        value = value.split(/\s*,\s*/);
+    }
+    if (!(value instanceof Array)) {
+        value = [];
+    }
+    var descriptor = this.descriptor;
+    var items = descriptor.items;
+    value = value.filter(function (value) {
+        return items.__val2Item__ === undefined
+            || items.__val2Item__[value];
+    });
+    return value;
 };
 
 TDEnumSet.prototype.loadValue = function () {
     var descriptor = this.descriptor;
-    var value = this.value || [];
+    var value = this.implicit(this.value || []);
     var text = value.map(function (iVal) {
         var item = descriptor.items.__val2Item__[iVal];
         if (item) return item.text;
