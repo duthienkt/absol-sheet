@@ -34,7 +34,8 @@ TDEEnum.prototype.reload = function () {
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
-
+    this.$input.disabled = descriptor.readOnly;
+    this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
 }
 
 TDEEnum.prototype._loadCellStyle = function () {

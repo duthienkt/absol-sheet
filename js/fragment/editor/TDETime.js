@@ -42,44 +42,6 @@ TDEDate.prototype._loadCellStyle = function () {
     };
 };
 
-TDEDate.prototype.waitAction = function () {
-    TDEBase.prototype.waitAction.call(this);
-    setTimeout(function () {
-        this.$input.$input.focus();
-    }.bind(this), 100);
-    this.$input.removeClass('asht-state-editing')
-        .addClass('asht-state-wait-action');
-    this.$input.$input.on('keydown', this.ev_firstKey)
-        .off('keydown', this.ev_finishKey)
-        .on('dblclick', this.ev_dblClick);
-};
-
-TDEDate.prototype.startEditing = function () {
-    TDEBase.prototype.startEditing.call(this);
-    this.$input.addClass('asht-state-editing')
-        .removeClass('asht-state-wait-action');
-    this.$input.$input.off('keydown', this.ev_firstKey)
-        .off('dblclick', this.ev_dblClick);
-    this.$input.value = this.cell.dateValue;
-    setTimeout(function () {
-        this.$input.$input.focus();
-        this.$input.$input.select();
-    }.bind(this), 10);
-    this.$input.$input.on('keydown', this.ev_finishKey);
-};
-
-TDEDate.prototype.finish = function () {
-    if (this.state === "FINISHED") return;
-    if (this._waitBlurTimeout > 0)
-        clearTimeout(this._waitBlurTimeout);
-    this.$input.$input.off('keydown', this.ev_finishKey)
-        .off('keydown', this.ev_firstKey)
-        .off('dblclick', this.ev_dblClick)
-        .off('blur', this.ev_blur);
-    TDEBase.prototype.finish.call(this);
-};
-
-
 /***
  *
  * @param {KeyboardEvent} event
@@ -119,17 +81,7 @@ TDEDate.prototype.ev_firstKey = function (event) {
     }
 };
 
-TDEDate.prototype.ev_finishKey = function (event) {
-    if (event.key === "Tab") {
-        this.editCellNext();
-        event.preventDefault();
-    }
-};
 
-TDEDate.prototype.ev_dblClick = function (event) {
-    event.preventDefault();
-    this.startEditing();
-};
 
 // TODO: handle enter key, blur
 

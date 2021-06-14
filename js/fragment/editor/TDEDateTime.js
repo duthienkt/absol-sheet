@@ -49,6 +49,8 @@ TDEDateTime.prototype.reload = function () {
         dateValue = value;
     }
     this.$input.value = dateValue;
+    this.$input.disabled = descriptor.readOnly;
+    //todo: min, max
 };
 
 

@@ -55,6 +55,7 @@ TDEText.prototype.onStart = function () {
 
 TDEText.prototype.reload = function () {
     this.$input.value = this.cell.value;
+    this.$input.disabled = this.cell.descriptor.readOnly;
 };
 
 TDEText.prototype.onStart = function () {

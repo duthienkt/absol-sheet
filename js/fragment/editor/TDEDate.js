@@ -1,8 +1,5 @@
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
-import {getScreenSize, traceOutBoundingClientRect} from "absol/src/HTML5/Dom";
-import SelectMenu from "absol-acomp/js/SelectMenu2";
-import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
 import TDEText from "./TDEText";
 import {LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
@@ -53,6 +50,7 @@ TDEDate.prototype.reload = function () {
     this.$input.value = dateValue;
     this.$input.min = descriptor.min || new Date(1890, 0, 1);
     this.$input.max = descriptor.max || new Date(2090, 0, 1);
+    this.$input.disabled = descriptor.readOnly;
 };
 
 TDEDate.prototype._loadCellStyle = function () {

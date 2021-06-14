@@ -33,6 +33,14 @@ TDEEnumSet.prototype.prepareInput = function () {
 };
 
 
+TDEEnumSet.prototype.reload = function (){
+    var descriptor = this.cell.descriptor;
+    this.$input.items = descriptor.items;
+    this.$input.values = this.cell.value;
+    this.$input.disabled = descriptor.readOnly;
+    this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
+};
+
 TDEEnumSet.prototype.ev_inputChange = function () {
     this.cell.value = this.$input.values.slice();
     ResizeSystem.update();

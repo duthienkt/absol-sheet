@@ -7,7 +7,7 @@ import ResizeSystem from 'absol/src/HTML5/ResizeSystem';
 /***
  * @extends TDEBase
  * @param {TableEditor} tableEditor
- * @param {TSCell} cell
+ * @param {TDBase} cell
  * @constructor
  */
 function TDETreeEnum(tableEditor, cell) {
@@ -20,7 +20,7 @@ TDETreeEnum.prototype.prepareInput = function () {
     this.$input = _({
         tag: 'selecttreemenu',
         class: 'asht-cell-editor-input',
-        on:{
+        on: {
             change: this.ev_inputChange
         }
     });
@@ -34,8 +34,8 @@ TDETreeEnum.prototype.reload = function () {
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
-
-}
+    this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
+};
 
 TDETreeEnum.prototype._loadCellStyle = function () {
     var cellElt = this.cell.elt;
@@ -46,7 +46,7 @@ TDETreeEnum.prototype._loadCellStyle = function () {
     };
 };
 
-TDETreeEnum.prototype.ev_inputChange = function (){
+TDETreeEnum.prototype.ev_inputChange = function () {
     this.cell.value = this.$input.value;
     ResizeSystem.update();
 };

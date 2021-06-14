@@ -68,6 +68,7 @@ TDENumber.prototype.reload = function () {
     this.$input.value = this.cell.value;
     this.$input.min = min;
     this.$input.max = max;
+    this.$input.disabled = descriptor.readOnly;
 };
 
 
