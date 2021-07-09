@@ -18,6 +18,8 @@ import "./types/TDDateTime";
 import {_} from '../dom/SCore';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
+import {randomIdent} from "absol/src/String/stringGenerate";
+import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 /***
  * @extends EventEmitter
@@ -28,10 +30,13 @@ import OOP from "absol/src/HTML5/OOP";
  */
 export function TDRecord(table, record, idx) {
     EventEmitter.call(this);
+    this.id = randomIdent(24);
+    this.changedPNames = [];
     this.table = table;
     this.elt = _('tr');
     this.$idx = _('td');
     this.elt.addChild(this.$idx);
+    this.table.domSignal.on(this.id + '_property_change', this.ev_propertyChange.bind(this));
     /***
      *
      * @type {TDBase[]}
@@ -112,17 +117,27 @@ TDRecord.prototype.loadCells = function () {
 };
 
 TDRecord.prototype.notifyPropertyChange = function (pName) {
-    var descriptor = this.propertyDescriptors[pName];
-    var dependents = descriptor.__dependents__;
-    var propertyTD;
-    if (dependents && dependents.length > 0) {
-        for (var i = 0; i < dependents.length; ++i) {
-            propertyTD = this.propertyByName[dependents[i]];
-            propertyTD.renewDescriptor();
-            propertyTD.reload();
-        }
+    if (this.changedPNames.indexOf(pName) < 0) {
+        this.changedPNames.push(pName);
+        this.table.domSignal.emit(this.id + '_property_change');
+        this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
     }
-    this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
 };
+
+TDRecord.prototype.ev_propertyChange = function () {
+    var changedPNames = this.changedPNames.splice(0, this.changedPNames.length);
+    var self = this;
+    var needUpdatePNames = this.propertyNames.filter(function (name){
+        if (changedPNames.indexOf(name)>=0) return false;
+        var dp = self.table.propertyDescriptors[name].__dependencies__;
+        return changedPNames.some(function (cN){
+            return !!dp[cN];
+        });
+    });
+    needUpdatePNames.forEach(function (name){
+       self.propertyByName[name].reload();
+    });
+    ResizeSystem.update();
+}
 
 export default TDRecord;
