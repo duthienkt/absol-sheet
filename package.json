@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack serve --config webpack.config.js --public https://frame.absol.cf",
-    "dist": "webpack --config webpack.config.js  --progress --profile --colors --mode production "
+    "dist": "webpack --config webpack.config.js  --progress --profile  --mode production "
   },
   "author": "Pham Quoc Du Thien",
   "license": "ISC",
