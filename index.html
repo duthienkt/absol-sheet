@@ -20,6 +20,15 @@
             width: 100%;
             border: none;
         }
+
+        .simple-table {
+            height: var(--table-data-height);
+        }
+
+        .simple-table.as-overflow-x {
+            height: calc(var(--table-data-height) + 17px);
+        }
+
     </style>
     <script src="./absol/absol_sheet.js?date=<?php  echo stat('./absol/absol_sheet.js')['mtime'];?>"></script>
 </head>
@@ -27,46 +36,94 @@
 <body>
 
 <script>
-    var _ = absol._;
-    var $ = absol.$;
-    var mSE = new absol.sheet.TableEditor();
-    mSE.getView().addTo(document.body);
+    (function () {
+        var _ = absol._;
+        var $ = absol.$;
+        window.data_module = {};
 
-    mSE.on('cmd_insert_row', function (event) {
-        //cần gọi resolve 1 promise chứa dữ liệu trả về(trường hợp hiện ra cửa sổ, bất động bộ)
-        // hoặc trực tiếp kết quả
-        event.resolve(new Promise(function (resolve) {
-            setTimeout(function () {
-                resolve({
-                    sid: 123355 * Math.random() >> 0, name: "Dòng mới", class: "NEW_CLASS",
-                    position: Math.random() * 2 >> 0, desc: "Đây là dòng mơi", off: false
-                });
-                // hoặc nếu hủy thì gọi resolve null
-            }, 1000);
-        }));
-    });
-
-    mSE.on('cmd_remove_row', function (event) {
-        event.accept(new Promise(function (resolve) {
-            if (confirm("Bạn có thực sự muốn xóa không")) {
-                // Save it!
-                resolve(true);
-            } else {
-                // Do nothing!
-                resolve(false);
+        data_module.load_dataBase = function (fragment) {
+            if (!fragment.dataSync) {// chỉ load 1 lần
+                fragment.dataSync = fetch('https://absol.cf/libs/absol-sheet/demo_data.json').then(function (res) {
+                    return res.json()
+                })
             }
-        }));
-    });
+        }
+
+        data_module.load_kpi_list = function (fragment) {
+            //load data đồng bộ 1 lần thôi
+            data_module.load_dataBase(fragment);//có thể coi fragment như host
+            return fragment.dataSync.then(function (result) {
+                return result.propertyDescriptors.kpiList.items
+            })
+        };
+
+        data_module.load_department = function (fragment) {
+            data_module.load_dataBase(fragment);
+            return fragment.dataSync.then(function (result) {
+                return result.propertyDescriptors.org.items;
+            })
+        };
 
 
-    var ct = _('contextcaptor').addTo(document.body);
-    ct.attachTo(document.body)
+        data_module.load_staff_by_org = function (fragment, orgId) {
+            data_module.load_dataBase(fragment);
+            return fragment.dataSync.then(function (result) {
+                var res = result.propertyDescriptors.staff.switch.find(function (caseO) {
+                    return caseO.case.org === orgId
+                }) || result.propertyDescriptors.staff.switch.find(function (caseO) {
+                    return caseO.case === 'DEFAULT';
+                });
+                return res.items;
+            })
+        };
 
-    fetch('https://absol.cf/libs/absol-sheet/demo_data.json?date='+new Date().getTime()).then(function (res) {
-        return res.json();
-    }).then(function (json) {
-        mSE.setData(json);
-    })
+
+        exemples.forEach(function (data, i) {
+            var fragment = new absol.Fragment();
+            _({
+                tag: 'h3',
+                child: { text: data.exampleTitle }
+            }).addTo(document.body);
+            var editor = new absol.sheet.TableEditor({ fragment: fragment });
+            editor.getView().addClass("simple-table")
+                .addStyle({
+                    maxHeight: '50vh'
+                })
+                .addTo(document.body);
+            editor.setData(JSON.parse(JSON.stringify(data)));
+            _({
+                tag: 'flexiconbutton',
+                props: {
+                    icon: 'span.mdi.mdi-download',
+                    text: `Download(ex_${i}.json)`
+                },
+                on: {
+                    click: function () {
+                        absol.FileSaver.saveTextAs(JSON.stringify(data, null, 4),`Download(ex_${i}.json)` )
+                    }
+                }
+            }).addTo(document.body);
+
+            _({
+                tag: 'flexiconbutton',
+                style: { margin: '5px' },
+                props: {
+                    icon: 'span.mdi.mdi-download',
+                    text: `Export`
+                },
+                on: {
+                    click: function () {
+                        var json = editor.getData();
+                        var code = JSON.stringify(json, null, 4);
+                        absol.FileSaver.saveTextAs(code, absol.string.nonAccentVietnamese(data.exampleTitle.replace(/\s/g, '_')));
+                    }
+                }
+            }).addTo(document.body);
+            _('br').addTo(document.body);
+            _('br').addTo(document.body);
+        });
+
+    })();
 </script>
 </body>
 
