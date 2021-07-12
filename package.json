@@ -5,26 +5,34 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server --config webpack.config.js --publicx https://frame.absol.cf",
+    "dev": "webpack serve --config webpack.config.js --public https://frame.absol.cf",
     "dist": "webpack --config webpack.config.js  --progress --profile --colors --mode production "
   },
   "author": "Pham Quoc Du Thien",
   "license": "ISC",
   "dependencies": {
-    "absol": "^1.17.2",
-    "absol-acomp": "^0.9.58"
+    "@babel/generator": "^7.14.5",
+    "absol": "^1.17.4",
+    "absol-acomp": "^0.9.58",
+    "jszip": "^3.6.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
+    "util": "^0.12.4",
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.7",
+    "assert": "^2.0.0",
     "babel-loader": "^8.0.6",
     "babel-minify-webpack-plugin": "^0.3.1",
+    "buffer": "^6.0.3",
     "css-loader": "^2.1.1",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
     "raw-loader": "^2.0.0",
+    "semver": "^6.3.0",
     "style-loader": "^0.23.1",
-    "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7",
-    "webpack-dev-server": "^3.8.0"
+    "webpack": "^5.43.0",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
   },
   "private": true
 }
