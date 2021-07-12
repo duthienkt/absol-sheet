@@ -36,7 +36,7 @@ TDDateTime.prototype.loadValue = function () {
             text = "?[" + JSON.stringify(value) + ']';
         }
         else if (dateValue) {
-            text = formatDateTime(dateValue, this.descriptor.format || LOCAL_DATE_FORMAT);
+            text = formatDateTime(dateValue, this.descriptor.format || 'dd/MM/yyyy hh:mm a');
         }
     }
     else {
