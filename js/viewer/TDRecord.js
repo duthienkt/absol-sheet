@@ -61,6 +61,12 @@ Object.defineProperty(TDRecord.prototype, 'record', {
 });
 
 
+Object.defineProperty(TDRecord.prototype, 'fragment', {
+    get: function () {
+        return this.table.fragment;
+    }
+});
+
 Object.defineProperty(TDRecord.prototype, 'propertyNames', {
     get: function () {
         return this.table.propertyNames;
@@ -127,17 +133,25 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
 TDRecord.prototype.ev_propertyChange = function () {
     var changedPNames = this.changedPNames.splice(0, this.changedPNames.length);
     var self = this;
-    var needUpdatePNames = this.propertyNames.filter(function (name){
-        if (changedPNames.indexOf(name)>=0) return false;
+    var needUpdatePNames = this.propertyNames.filter(function (name) {
+        if (changedPNames.indexOf(name) >= 0) return false;
         var dp = self.table.propertyDescriptors[name].__dependencies__;
-        return changedPNames.some(function (cN){
+        return changedPNames.some(function (cN) {
             return !!dp[cN];
         });
     });
-    needUpdatePNames.forEach(function (name){
-       self.propertyByName[name].reload();
+
+    var sync = needUpdatePNames.map(function (name) {
+        return self.propertyByName[name].reload();
+    }).filter(function (p) {
+        return !!p
     });
-    ResizeSystem.update();
-}
+    if (sync.length > 0) {
+        Promise.all(sync).then(ResizeSystem.update.bind(ResizeSystem));
+    }
+    else {
+        ResizeSystem.update();
+    }
+};
 
 export default TDRecord;
