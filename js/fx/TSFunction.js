@@ -1,3 +1,5 @@
+import * as ExcelFx from './ExcelFx';
+
 var types = babel.types;
 
 function TSFunction(propertyNames, body) {
@@ -10,9 +12,10 @@ function TSFunction(propertyNames, body) {
 }
 
 
-TSFunction.prototype.localConstants = {
-    MAX: Math.max.bind(Math)
-};
+TSFunction.prototype.localConstants = {};
+
+Object.assign(TSFunction.prototype.localConstants, ExcelFx);
+console.log(TSFunction.prototype.localConstants)
 
 TSFunction.prototype._isAsync = function (jsCode) {
     if (!window.babel) return false;
@@ -50,7 +53,7 @@ TSFunction.prototype._compile = function () {
     }, {});
     try {
         var isAsync = this._isAsync(scriptCode);
-        scriptCode = (isAsync ? 'async ' : '') + 'function fx(record){\n'
+        scriptCode = (isAsync ? 'async ' : '') + 'function fx(RC){\n'
             + 'var RET;\n'
             + scriptCode
             + '\nreturn RET;'
@@ -64,13 +67,12 @@ TSFunction.prototype._compile = function () {
             Identifier: function (path) {
                 var node = path.node;
                 var name = node.name;
-                if (path.container && path.container.length) return;
                 if (path.container.type === "MemberExpression" && path.container.object !== node) return;
                 var newNode;
                 if (variableDict[name]) {
                     variables[name] = true;
                     newNode = types.memberExpression(
-                        types.identifier('record'),
+                        types.identifier('RC'),
                         types.identifier(name)
                     );
                     newNode.ignore = true;
@@ -100,7 +102,12 @@ TSFunction.prototype._compile = function () {
 };
 
 TSFunction.prototype.invoke = function (_this, record) {
-    return this.func.call(this, record);
+    try {
+        return this.func.call(_this, record);
+    } catch (err) {
+        console.error(err);
+        return undefined;
+    }
 };
 
 export default TSFunction;

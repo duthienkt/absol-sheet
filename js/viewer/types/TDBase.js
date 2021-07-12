@@ -1,6 +1,6 @@
-
 import {_} from "../../dom/SCore";
 import noop from "absol/src/Code/noop";
+import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 /***
  *
@@ -12,47 +12,63 @@ function TDBase(row, pName) {
     this.elt = _('td');
     this.row = row;
     this.pName = pName;
-    this.renewDescriptor();
-    this.attachView();
-    this.loadDescriptor();
-    this.loadValue();
+    var sync = this.renewDescriptor();
+    if (sync) {
+        sync = sync.then(function () {
+            this.attachView();
+            this.loadDescriptor();
+            if ('calc' in this.descriptor) {
+                this.record[this.pName] = this.implicit(this.descriptor.calc);
+            }
+            this.loadValue();
+        }.bind(this));
+    }
+    else {
+        this.attachView();
+        this.loadDescriptor();
+        if ('calc' in this.descriptor) {
+            this.record[this.pName] = this.implicit(this.descriptor.calc);
+        }
+        this.loadValue();
+    }
+
 
 }
 
 TDBase.prototype.renewDescriptor = function () {
-    var descriptor = Object.assign({}, (this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName]) || { type: 'text' });
-    var defaultCase;
-    var selectedCase;
-    var cCase;
-    var matched;
-    if (descriptor.switch) {
-        for (var i = 0; i < descriptor.switch.length; ++i) {
-            cCase = descriptor.switch[i];
-            if (cCase.case === "DEFAULT") {
-                defaultCase = cCase;
+    var self = this;
+    var originDescriptor = this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName];
+    var descriptor = Object.assign({}, originDescriptor || { type: 'text' });
+    var fx = originDescriptor && originDescriptor.__fx__;
+    var syncs = [];
+    if (fx) {
+        Object.keys(fx).reduce(function (ac, key) {
+            if (key === 'onchange') {
+                ac.onchange = originDescriptor.__fx__.onchange;
+            }
+            else if (key === 'switch') {
+                Object.assign(descriptor, fx[key].getCase(self.record));
             }
             else {
-                matched = Object.keys(cCase.case).every(function (record, key) {
-                    return this[key] === record[key];
-                }.bind(cCase.case, this.record));
-                if (matched) {
-                    selectedCase = cCase;
-                    break;
+                ac[key] = fx[key].invoke(self, self.record);
+                if (ac[key] && ac[key].then) {
+                    ac[key] = ac[key].then(function (result) {
+                        ac[key] = result;
+                    });
+                    syncs.push(ac[key]);
                 }
             }
-        }
-    }
-    selectedCase = selectedCase || defaultCase;
-    if (selectedCase) {
-        Object.assign(descriptor, selectedCase);
-    }
-    for (var key in descriptor) {
-        if (key !== 'type' && key !== 'switch' && this.isExpression(descriptor[key])) {
-            descriptor[key] = this.invokeExpression(descriptor[key]);
-        }
+            return ac;
+        }, descriptor);
     }
     this.descriptor = descriptor;
-    return descriptor;
+    if ('calc' in descriptor) {
+        this.elt.addClass('asht-calc');
+    }
+    else {
+        this.elt.removeClass('asht-calc');
+    }
+    if (syncs.length > 0) return Promise.all(syncs);
 };
 
 TDBase.prototype.implicit = function (value) {
@@ -72,6 +88,12 @@ Object.defineProperty(TDBase.prototype, 'table', {
     }
 });
 
+Object.defineProperty(TDBase.prototype, 'fragment', {
+    get: function () {
+        return this.row.table.fragment;
+    }
+});
+
 
 Object.defineProperty(TDBase.prototype, 'value', {
     get: function () {
@@ -82,9 +104,10 @@ Object.defineProperty(TDBase.prototype, 'value', {
         if ((value === undefined || value === null)
             && (this.row.record[this.pName] === null || this.row.record[this.pName] === undefined))
             return;
-        if (value !== this.row.record[this.pName]) {
+        if (!this.isEqual(value, this.row.record[this.pName])) {
             this.row.record[this.pName] = value;
             this.loadValue();
+            this.execOnChange();
             this.notifyChange();
         }
     }
@@ -95,46 +118,65 @@ TDBase.prototype.attachView = function () {
     this.elt.addChild(this.$text);
 };
 
+TDBase.prototype.execOnChange = function () {
+    var record = this.record;
+    var newRecord = Object.assign({}, this.record);
+    var sync;
+    if (this.descriptor.onchange) {
+        sync = this.descriptor.onchange.invoke(this, newRecord);
+    }
+    var row = this.row;
+
+    function update() {
+        var needUpdateSize = false;
+        row.properties.forEach(function (prop) {
+            var pName = prop.pName;
+            if (record[pName] !== newRecord[pName]) {
+                prop.value = newRecord[pName];
+                needUpdateSize = true;
+            }
+        });
+        if (needUpdateSize) ResizeSystem.update();
+    }
+
+    if (sync && sync.then) {
+        sync.then(update)
+    }
+    else update();
+};
+
 TDBase.prototype.notifyChange = function () {
     this.row.notifyPropertyChange(this.pName);
 };
 
 
 TDBase.prototype.reload = function () {
-    this.renewDescriptor();
-    this.loadDescriptor();
-    this.loadValue();
+    var sync = this.renewDescriptor();
+    var update = function () {
+        this.loadDescriptor();
+        if ('calc' in this.descriptor) {
+            var value = this.implicit(this.descriptor.calc);
+            if (!this.isEqual(value, this.record[this.pName])) {
+                this.record[this.pName] = value;
+                this.execOnChange();
+                this.notifyChange();
+            }
+        }
+        this.loadValue();
+    }.bind(this);
+    if (sync) {
+        sync.then(update)
+    }
+    else {
+        update();
+    }
+    return sync;
 };
 
-/***
- *
- * @param {string} expString
- */
-TDBase.prototype.invokeExpression = function (expString) {
-    if (expString[0] === '=') {
-        expString = 'var result ' + expString + ';\nreturn result;'
-    }
-    else if (expString[0] === '{' && expString[expString.length - 1] === '}') {
-        expString = expString.substr(1, expString.length - 2);
-    }
-    else throw  new Error("Invalid expression");
-    var record = this.record;
-    var paramNames = this.table.propertyNames;
-    var paramValues = paramNames.map(function (name) {
-        return record[name];
-    });
-    var f = (new Function([
-        'return function(' + paramNames.join(', ') + '){',
-        expString,
-        '}'
-    ].join('\n')))();
-    return f.apply(record, paramValues);
-};
 
-TDBase.prototype.isExpression = function (v) {
-    if (typeof v !== "string") return false;
-    if (v[0] === '=') return true;
-    return v[0] === '{' && v[v.length - 1] === '}';
+TDBase.prototype.isEqual = function (a, b) {
+    return a === b;
+
 };
 
 
