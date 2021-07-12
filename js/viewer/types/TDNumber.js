@@ -16,14 +16,13 @@ OOP.mixClass(TDNumber, TDBase);
 
 TDNumber.prototype.attachView = function () {
     this.elt.clearChild();
-
     this.$number = _({
         tag: 'span', child: { text: '' }
     });
     this.elt.addChild(this.$number);
 };
 
-TDNumber.prototype.loadValue = function (){
+TDNumber.prototype.loadValue = function () {
     var value = this.implicit(this.value);
     value = (value === null || value === undefined) ? '' : (value + '');
     this.$number.firstChild.data = value;
@@ -31,9 +30,10 @@ TDNumber.prototype.loadValue = function (){
 
 
 TDNumber.prototype.implicit = function (value) {
-    if (typeof value === "number") return value;
-    if (typeof value === 'string') return parseFloat(value);
-    return null;
+    if (typeof value === 'string') value = parseFloat(value);
+    if (typeof value !== 'number') value = undefined;
+    if (isNaN(value)) value = undefined;
+    return value;
 };
 
 
