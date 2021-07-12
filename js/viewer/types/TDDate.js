@@ -51,7 +51,7 @@ TDDate.prototype.loadValue = function () {
             text = "?[" + JSON.stringify(value) + ']';
         }
         else if (dateValue) {
-            text = formatDateTime(dateValue, (this.descriptor.format || LOCAL_DATE_FORMAT).replace(/m/g, 'M'));
+            text = formatDateTime(dateValue, (this.descriptor.format || "dd/mm/yyyy").replace(/m/g, 'M'));
         }
     }
     else {
