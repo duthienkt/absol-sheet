@@ -13,7 +13,7 @@ delete package.main;
 
 module.exports = {
     mode: (process.env.MODE && false) || "development",
-    entry: ["./dev.js"],
+    entry: ['./dependents',"./dev.js"],
     output: {
         path: path.join(__dirname, "."),
         filename: "./absol/absol_sheet.js"
@@ -21,7 +21,15 @@ module.exports = {
     resolve: {
         modules: [
             path.join(__dirname, './node_modules')
-        ]
+        ],
+        fallback: {
+            fs: false,
+            path: require.resolve("path-browserify"),
+            buffer: require.resolve("buffer/"),
+            "util": false,
+            semver:false,
+            "assert": require.resolve("assert/")
+        }
     },
     module: {
         rules: [
@@ -56,6 +64,12 @@ module.exports = {
     plugins: [
         new webpack.DefinePlugin({
             PACKAGE: JSON.stringify(package)
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser',
+        }),
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
         })
     ]
 };
