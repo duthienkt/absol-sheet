@@ -37,7 +37,7 @@ TDEEnumSet.prototype.reload = function (){
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.values = this.cell.value;
-    this.$input.disabled = descriptor.readOnly;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
     this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
 };
 

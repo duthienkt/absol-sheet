@@ -45,12 +45,11 @@ TDEDate.prototype.reload = function () {
             dateValue = null;
         }
     }
-
-    this.$input.format = descriptor.format || LOCAL_DATE_FORMAT;
+    this.$input.format = descriptor.format || "dd/mm/yyyy";
     this.$input.value = dateValue;
     this.$input.min = descriptor.min || new Date(1890, 0, 1);
     this.$input.max = descriptor.max || new Date(2090, 0, 1);
-    this.$input.disabled = descriptor.readOnly;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
 };
 
 TDEDate.prototype._loadCellStyle = function () {

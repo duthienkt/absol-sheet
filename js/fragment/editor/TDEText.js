@@ -50,12 +50,13 @@ TDEText.prototype._loadCellStyle = function () {
 };
 
 TDEText.prototype.onStart = function () {
-    console.log('start');
+    // console.log('start');
 };
 
 TDEText.prototype.reload = function () {
+    var descriptor = this.cell.descriptor;
     this.$input.value = this.cell.value;
-    this.$input.disabled = this.cell.descriptor.readOnly;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
 };
 
 TDEText.prototype.onStart = function () {

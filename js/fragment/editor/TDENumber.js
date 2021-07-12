@@ -63,12 +63,12 @@ TDENumber.prototype.reload = function () {
     if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
         max = descriptor.max;
     }
-
-
-    this.$input.value = this.cell.value;
+    var value = this.cell.value;
+    if (typeof value !== "number" || isNaN(value)) value = '';
+    this.$input.value = value;
     this.$input.min = min;
     this.$input.max = max;
-    this.$input.disabled = descriptor.readOnly;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
 };
 
 
@@ -76,7 +76,9 @@ TDENumber.prototype.reload = function () {
 TDENumber.prototype.onStart = function () {
     setTimeout(function () {
         this.$input.focus();
-        this.$input.value = this.cell.value;
+        var value = this.cell.value;
+        if (typeof value !== "number" || isNaN(value)) value = '';
+        this.$input.value = value;
         this.$input.select();
     }.bind(this), 5);
 };

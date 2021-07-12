@@ -35,6 +35,7 @@ TDETreeEnum.prototype.reload = function () {
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
     this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
 };
 
 TDETreeEnum.prototype._loadCellStyle = function () {
