@@ -5,16 +5,25 @@ import '../../css/tabledata.css';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import TSFunction from "../fx/TSFunction";
+import DomSignal from "absol/src/HTML5/DomSignal";
+import TSSwitch from "../fx/TSSwitch";
 
 var _ = SComp._;
 var $ = SComp.$;
 
 
-/**
+/***
+ * /**
  * @extends EventEmitter
+ * @param {TableEditor} editor
+ * @param {object=} opt
  * @constructor
  */
-function TableData() {
+function TableData(editor, opt) {
+    this.editor = editor;
+    this.opt = opt || {};
+    this.fragment = (this.editor && this.editor.fragment) || this.opt.fragment;
     EventEmitter.call(this);
     this.propertyNames = [];
     this.propertyDescriptors = {};
@@ -28,8 +37,8 @@ function TableData() {
      */
     this.config = new Attributes(this);
     this.config.loadAttributeHandlers(this.configHandlers);
-    for (var key in this){
-        if (key.startsWith('ev_')){
+    for (var key in this) {
+        if (key.startsWith('ev_')) {
             this[key] = this[key].bind(this);
         }
     }
@@ -76,58 +85,60 @@ TableData.prototype.import = function (data) {
 TableData.prototype._computeData = function () {
     var descriptors = this.propertyDescriptors;
     var descriptor;
-    var pName;
-    this.propertyNames.forEach(function (name) {
+    var pName;// con 20p
+    var self = this;
+    var propertyNames = this.propertyNames;
+    propertyNames.forEach(function (name) {
         descriptor = descriptors[name];
         if (!descriptor) return;
-        if (descriptor.dependencies) {
-            Object.defineProperty(descriptor, '__dependencies_dict__',
-                {
-                    configurable: true,
-                    enumerable: false,
-                    value: descriptor.dependencies.reduce(function (ac, cr) {
-                        ac[cr] = true;
-                        return ac;
-                    }, {})
-                });
-        }
-    });
-
-    for (var i = 0; i < this.propertyNames.length; ++i) {
-        pName = this.propertyNames[i];
-        descriptor = descriptors[pName];
-        if (!descriptor) continue;
-        Object.defineProperty(descriptor, '__dependents__',
+        self._computeDescriptor(descriptor, propertyNames);
+        var dependencies = {};
+        var fx = descriptor.__fx__;
+        Object.keys(fx).reduce(function (ac, key) {
+            if (fx[key].dependents) {
+                fx[key].dependents.reduce(function (ac1, pName) {
+                    ac1[pName] = true;
+                    return ac1;
+                }, ac);
+            }
+            // ac[];
+            return ac;
+        }, dependencies);
+        delete dependencies[name];
+        Object.defineProperty(descriptor, '__dependencies__',
             {
                 configurable: true,
                 enumerable: false,
-                value: this._findAllDependency(pName)
+                value: dependencies
             });
-    }
+    });
 };
 
-TableData.prototype._findAllDependency = function (pName) {
-    var descriptors = this.propertyDescriptors;
-    var propertyNames = this.propertyNames;
-    var queue = [pName];
-    var visited = { pName: true };
-    var res = [];
-    var i;
-    var u, v;
-    while (queue.length > 0) {
-        u = queue.shift();
-        for (i = 0; i < propertyNames.length; ++i) {
-            v = propertyNames[i];
-            if (!visited[v] && descriptors[v]
-                && descriptors[v].__dependencies_dict__
-                && descriptors[v].__dependencies_dict__[u]) {
-                visited[v] = true;
-                queue.push(v);
-                res.push(v);
+TableData.prototype._computeDescriptor = function (descriptor, propertyNames) {
+    if (descriptor.__fx__) return;
+    Object.defineProperty(descriptor, '__fx__', {
+        configurable: true,
+        enumerable: false,
+        value: {}
+    });
+    Object.keys(descriptor).reduce(function (ac, key) {
+        var val = descriptor[key];
+        if (typeof val === 'string') {
+            if (val.startsWith('=')) {
+                descriptor.__fx__[key] = new TSFunction(propertyNames, val);
+            }
+            else if (val.startsWith('{{') && val.substr(val.length - 2, 2)) {
+                descriptor.__fx__[key] = new TSFunction(propertyNames, val.substr(2, val.length - 4))
+            }
+            else if (key === 'onchange') {
+                descriptor.__fx__[key] = new TSFunction(propertyNames, val);
             }
         }
-    }
-    return res;
+        else if (key === 'switch') {
+            descriptor.__fx__['switch'] = new TSSwitch(descriptor['switch']);
+        }
+        return ac;
+    }, descriptor.__fx__);
 };
 
 
@@ -202,6 +213,8 @@ TableData.prototype.getView = function () {
     this.$headRow = $('tr', this.$thead);
     this.$tbody = $('tbody', this.$view);
     this.$rootCell = _('td.asht-table-data-root-cell');
+    this.$domSignal = _('attachhook').addTo(this.$rootCell);
+    this.domSignal = new DomSignal(this.$domSignal);
     return this.$view;
 };
 
