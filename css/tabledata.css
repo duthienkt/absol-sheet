@@ -50,6 +50,10 @@ td.asht-type-boolean {
     text-align: center;
 }
 
+td.asht-calc {
+    background-color: rgba(255, 255, 0, 0.3);
+}
+
 table.asht-table-data > tbody > tr > td.asht-type-date {
     text-align: left;
     padding-right: 1.35em;
