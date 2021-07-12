@@ -16,6 +16,7 @@ OOP.mixClass(TDText, TDBase);
 TDText.prototype.implicit = function (value) {
     if (value === undefined || value === null) return null;
     if (typeof value === "object") return JSON.stringify(value);
+    if (typeof value !== "string") return '';
     return value + '';
 };
 
@@ -32,6 +33,7 @@ TDText.prototype.loadValue = function () {
     }, []);
     this.elt.addChild(this.$lines);
 };
+
 
 TDBase.typeClasses.text = TDText;
 export default TDText;
