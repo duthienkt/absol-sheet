@@ -31,7 +31,9 @@ var $ = SComp.$;
  * @extends EventEmitter
  * @constructor
  */
-function TableEditor() {
+function TableEditor(opt) {
+    this.opt = opt ||{};
+    this.fragment = this.opt.fragment;
     EventEmitter.call(this);
     this.hoverRow = null;
     this.currentCellEditor = null;
@@ -145,7 +147,7 @@ TableEditor.prototype.getView = function () {
 
 TableEditor.prototype.setData = function (data) {
     if (this.$tableData) this.$tableData.remove();
-    var tableData = new TableData(this);
+    var tableData = new TableData(this, {});
     this.$tableData = tableData.getView();
     this.$content.addChildBefore(this.$tableData, this.$editingLayer);
     tableData.import(data);
