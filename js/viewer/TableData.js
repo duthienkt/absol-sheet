@@ -115,7 +115,6 @@ TableData.prototype._computeData = function () {
 };
 
 TableData.prototype._computeDescriptor = function (descriptor, propertyNames) {
-    if (descriptor.__fx__) return;
     Object.defineProperty(descriptor, '__fx__', {
         configurable: true,
         enumerable: false,
