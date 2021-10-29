@@ -2,6 +2,8 @@ import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import {_} from "../../dom/SCore";
 import {measureListSize} from "absol-acomp/js/SelectList";
+import {isDifferent} from "../../util";
+import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 
 /***
@@ -18,7 +20,7 @@ OOP.mixClass(TDEnum, TDBase);
 TDEnum.prototype.attachView = function () {
     this.elt.clearChild();
     this.$text = _({
-        tag: 'span', child: { text: '' }
+        tag: 'span', child: {text: ''}
     });
     this.elt.addChild(this.$text);
 };
@@ -46,6 +48,15 @@ TDEnum.prototype.loadDescriptor = function () {
     this.elt.addStyle('min-width', (descriptor.items.__width14__ + 50) / 14 + 'em');
     var value = this.record[this.pName];
     this.record[this.pName] = this.implicit(value);
+    if (isDifferent(value, this.record[this.pName])) {
+        setTimeout(function () {
+            if (isDifferent(value, this.record[this.pName])) {
+                this.notifyChange()
+            }
+
+        }.bind(this), 0)
+    }
+    ResizeSystem.update();
 };
 
 TDEnum.prototype.implicit = function (value) {
@@ -53,8 +64,7 @@ TDEnum.prototype.implicit = function (value) {
     descriptor.items = descriptor.items || [];
     if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
         return descriptor.items.length > 0 ? descriptor.items[0].value : null;
-    }
-    else if (descriptor.items.__val2Item__[value]) return value;
+    } else if (descriptor.items.__val2Item__[value]) return value;
     return null;
 };
 
@@ -63,8 +73,7 @@ TDEnum.prototype.loadValue = function () {
     var value = this.value;
     if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
         this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
-    }
-    else {
+    } else {
         this.$text.firstChild.data = '';
     }
 };

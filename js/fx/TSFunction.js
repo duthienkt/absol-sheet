@@ -26,7 +26,6 @@ TSFunction.prototype._isAsync = function (jsCode) {
     var ast = babel.parseSync(scriptCode, {});
     babel.traverse(ast, {
         AwaitExpression: function () {
-            console.log("AW")
             result = true;
         }
     });
@@ -60,7 +59,6 @@ TSFunction.prototype._compile = function () {
             + '\n}';
         this.ast = babel.parseSync(scriptCode, {});
         var variables = {};
-        var asyncFlag = '';
         babel.traverse(this.ast, {
             Program: function (path) {
             },
