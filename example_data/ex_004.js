@@ -7,7 +7,8 @@ export default {
     propertyDescriptors: {
         date_time_type: {
             type: "DateTime",
-            text: "Ngày giờ"
+            text: "Ngày giờ",
+            onchange:"{{console.log(this,date_time_type)}}"
         },
         date_time_text: {
             type: 'text',
