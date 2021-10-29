@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const os = require('os');
+const fs = require('fs');
 
 var package = Object.assign({}, require("./package.json"));
 package.buildPCName = os.hostname();
@@ -11,12 +12,25 @@ delete package.scripts;
 delete package.devDependencies;
 delete package.main;
 
+
+var https;
+try {
+    https = {
+        key: fs.readFileSync('D:/Certs/absol.ddns.net/privkey.pem'),
+        cert: fs.readFileSync('D:/Certs/absol.ddns.net/cert.pem'),
+        cacert: fs.readFileSync('D:/Certs/absol.ddns.net/fullchain.pem'),
+    }
+}
+catch (e){
+    https = undefined;
+}
+
 module.exports = {
     mode: (process.env.MODE && false) || "development",
     entry: ['./dependents',"./dev.js"],
     output: {
         path: path.join(__dirname, "."),
-        filename: "./absol/absol_sheet.js"
+        filename: "./absol/absol_sheet.js",
     },
     resolve: {
         modules: [
@@ -55,8 +69,10 @@ module.exports = {
     },
     devServer: {
         compress: false,
-        disableHostCheck: true,
-        host: '0.0.0.0'
+        host: '0.0.0.0',
+        static: __dirname,
+        allowedHosts:["localhost", "absol.ddns.net"],
+        https: https
     },
     performance: {
         hints: false
