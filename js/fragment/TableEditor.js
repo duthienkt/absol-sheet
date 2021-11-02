@@ -802,6 +802,9 @@ Object.defineProperty(TableEditor.prototype, 'records', {
 Object.defineProperty(TableEditor.prototype, 'fragment', {
     get: function () {
         return this.opt.fragment;
+    },
+    set: function (value){
+        this.opt.fragment = value;
     }
 });
 
