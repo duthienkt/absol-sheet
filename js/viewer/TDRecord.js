@@ -87,8 +87,10 @@ Object.defineProperty(TDRecord.prototype, 'idx', {
         this._idx = value;
         if (value === "*") {
             this.$idx.clearChild().addChild(_({text: '*'}));
+            this.elt.addClass('asht-new-row');
         } else {
             this.$idx.clearChild().addChild(_({text: value + 1 + ''}));
+            this.elt.removeClass('asht-new-row');
         }
     },
     get: function () {

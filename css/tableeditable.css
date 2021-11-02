@@ -42,6 +42,16 @@
     overflow: hidden;
 }
 
+.asht-table-editor.asht-read-only .asht-table-editor-editing-layer,
+.asht-table-editor.asht-read-only .asht-table-editor-foreground
+{
+    display: none;
+}
+
+.asht-table-editor.asht-read-only .asht-new-row{
+    display: none;
+}
+
 
 .asht-table-editor-body {
     position: relative;
