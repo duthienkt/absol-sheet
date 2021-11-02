@@ -15,7 +15,6 @@ function TSFunction(propertyNames, body) {
 TSFunction.prototype.localConstants = {};
 
 Object.assign(TSFunction.prototype.localConstants, ExcelFx);
-console.log(TSFunction.prototype.localConstants)
 
 TSFunction.prototype._isAsync = function (jsCode) {
     if (!window.babel) return false;

@@ -30,6 +30,7 @@ import ResizeSystem from "absol/src/HTML5/ResizeSystem";
  */
 export function TDRecord(table, record, idx) {
     EventEmitter.call(this);
+    this.busy = false;
     this.id = randomIdent(24);
     this.changedPNames = [];
     this.table = table;
@@ -52,8 +53,10 @@ OOP.mixClass(TDRecord, EventEmitter);
 
 Object.defineProperty(TDRecord.prototype, 'record', {
     set: function (value) {
+        this.busy = true;
         this._record = value;
         this.loadCells();
+        this.busy = false;
     },
     get: function () {
         return this._record;
@@ -83,10 +86,9 @@ Object.defineProperty(TDRecord.prototype, 'idx', {
     set: function (value) {
         this._idx = value;
         if (value === "*") {
-            this.$idx.clearChild().addChild(_({ text: '*' }));
-        }
-        else {
-            this.$idx.clearChild().addChild(_({ text: value + 1 + '' }));
+            this.$idx.clearChild().addChild(_({text: '*'}));
+        } else {
+            this.$idx.clearChild().addChild(_({text: value + 1 + ''}));
         }
     },
     get: function () {
@@ -111,7 +113,7 @@ TDRecord.prototype.loadCells = function () {
     });
     this.propertyByName = {};
     this.properties = propertyNames.map(function (pName) {
-        var descriptor = propertyDescriptors[pName] || { type: 'notSupport' };
+        var descriptor = propertyDescriptors[pName] || {type: 'notSupport'};
         var td = new (TDBase.typeClasses[descriptor.type] || TDBase.typeClasses.notSupport)(tdRow, pName);
         tdRow.propertyByName[pName] = td;
         return td;
@@ -126,7 +128,7 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
     if (this.changedPNames.indexOf(pName) < 0) {
         this.changedPNames.push(pName);
         this.table.domSignal.emit(this.id + '_property_change');
-        this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
+        this.emit('property_change', {target: this, record: this.record, pName: pName}, this);
     }
 };
 
@@ -148,8 +150,7 @@ TDRecord.prototype.ev_propertyChange = function () {
     });
     if (sync.length > 0) {
         Promise.all(sync).then(ResizeSystem.update.bind(ResizeSystem));
-    }
-    else {
+    } else {
         ResizeSystem.update();
     }
 };

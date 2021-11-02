@@ -60,6 +60,7 @@ TDEnum.prototype.loadDescriptor = function () {
 };
 
 TDEnum.prototype.implicit = function (value) {
+    if (this.row.busy) return value;
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
     if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
