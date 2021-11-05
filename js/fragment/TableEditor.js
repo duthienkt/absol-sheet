@@ -546,6 +546,15 @@ TableEditor.prototype.selectAll = function () {
     this.updateSelectedPosition();
 };
 
+TableEditor.prototype.focusIncompleteCell = function (){
+    if (!this.tableData) return false;
+    var incompleteCell = this.tableData.findFirsIncompleteCell();
+    if (!incompleteCell) return false;
+    var col = this.tableData.findColByName(incompleteCell.pName)
+    this.editCell(incompleteCell.row, col);
+};
+
+
 TableEditor.prototype.insertRow = function (atIdx, record) {
     var tableData = this.tableData;
     atIdx = Math.min(atIdx, tableData.bodyRow.length);

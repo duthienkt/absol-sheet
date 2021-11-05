@@ -63,6 +63,7 @@ TDTreeEnum.prototype.loadDescriptor = function () {
 };
 
 TDTreeEnum.prototype.implicit = TDEnum.prototype.implicit;
+TDTreeEnum.prototype.isEmpty = TDEnum.prototype.isEmpty;
 
 TDTreeEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;

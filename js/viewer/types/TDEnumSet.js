@@ -16,7 +16,7 @@ OOP.mixClass(TDEnumSet, TDBase);
 TDEnumSet.prototype.attachView = function () {
     this.elt.clearChild();
     this.$text = _({
-        tag: 'span', child: { text: '' }
+        tag: 'span', child: {text: ''}
     });
     this.elt.addChild(this.$text);
 };
@@ -52,6 +52,11 @@ TDEnumSet.prototype.implicit = function (value) {
             || items.__val2Item__[value];
     });
     return value;
+};
+
+TDEnumSet.prototype.isEmpty = function () {
+    var value = this.value;
+    return !value || value.length === 0;
 };
 
 TDEnumSet.prototype.loadValue = function () {

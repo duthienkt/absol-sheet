@@ -262,6 +262,16 @@ TableData.prototype.findRowByClientY = function (y) {
     return null;
 };
 
+TableData.prototype.findFirsIncompleteCell = function (){
+    var cells;
+    for (var i = 0; i < this.bodyRow.length; ++i){
+        cells = this.bodyRow[i].getIncompleteCells();
+        if (cells.length > 0){
+            return cells[0];
+        }
+    }
+};
+
 
 /**
  * @param {Number} x

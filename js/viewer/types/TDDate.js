@@ -18,7 +18,7 @@ OOP.mixClass(TDDate, TDBase);
 TDDate.prototype.attachView = function () {
     this.elt.clearChild();
     this.$date = _({
-        tag: 'span', child: { text: '' }
+        tag: 'span', child: {text: ''}
     });
     this.elt.addChild(this.$date);
 };
@@ -28,11 +28,9 @@ TDDate.prototype.implicit = function (value) {
     var dateValue;
     if (vType === "string") {
         dateValue = this._dateFromString(value);
-    }
-    else if (vType === 'number') {
+    } else if (vType === 'number') {
         dateValue = new Date(value);
-    }
-    else if (value && value.getTime) {
+    } else if (value && value.getTime) {
         dateValue = value;
     }
 
@@ -49,12 +47,10 @@ TDDate.prototype.loadValue = function () {
     if (value) {
         if (!dateValue) {
             text = "?[" + JSON.stringify(value) + ']';
-        }
-        else if (dateValue) {
+        } else if (dateValue) {
             text = formatDateTime(dateValue, (this.descriptor.format || "dd/mm/yyyy").replace(/m/g, 'M'));
         }
-    }
-    else {
+    } else {
         text = '';
     }
 
@@ -74,6 +70,11 @@ TDDate.prototype._dateFromString = function (dateString) {
     return value;
 };
 
+TDDate.prototype.isEmpty = function () {
+    var value = this.implicit(this.value);
+    return value instanceof Date;
+};
+
 
 Object.defineProperty(TDDate.prototype, 'dateValue', {
     get: function () {
@@ -82,8 +83,7 @@ Object.defineProperty(TDDate.prototype, 'dateValue', {
         var dateValue;
         if (vType === 'string') {
             dateValue = this._dateFromString(value);
-        }
-        else if (vType === 'number') {
+        } else if (vType === 'number') {
             dateValue = new Date(value);
         }
         if (dateValue && dateValue.getTime() > 0) return dateValue;

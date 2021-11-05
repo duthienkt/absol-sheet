@@ -1,6 +1,7 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import {_} from "../../dom/SCore";
+import {valid} from "semver";
 
 
 /***
@@ -32,6 +33,11 @@ TDBoolean.prototype.loadValue = function () {
     else
         this.$check.addStyle('display', 'none');
 };
+
+TDBoolean.prototype.isEmpty = function (){
+    var value;
+    return typeof value === 'boolean';
+}
 
 TDBase.typeClasses.bool = TDBoolean;
 TDBase.typeClasses.boolean = TDBoolean;

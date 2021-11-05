@@ -22,8 +22,7 @@ function TDBase(row, pName) {
             }
             this.loadValue();
         }.bind(this));
-    }
-    else {
+    } else {
         this.attachView();
         this.loadDescriptor();
         if ('calc' in this.descriptor) {
@@ -31,25 +30,21 @@ function TDBase(row, pName) {
         }
         this.loadValue();
     }
-
-
 }
 
 TDBase.prototype.renewDescriptor = function () {
     var self = this;
     var originDescriptor = this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName];
-    var descriptor = Object.assign({}, originDescriptor || { type: 'text' });
+    var descriptor = Object.assign({}, originDescriptor || {type: 'text'});
     var fx = originDescriptor && originDescriptor.__fx__;
     var syncs = [];
     if (fx) {
         Object.keys(fx).reduce(function (ac, key) {
             if (key === 'onchange') {
                 ac.onchange = originDescriptor.__fx__.onchange;
-            }
-            else if (key === 'switch') {
+            } else if (key === 'switch') {
                 Object.assign(descriptor, fx[key].getCase(self.record));
-            }
-            else {
+            } else {
                 ac[key] = fx[key].invoke(self, self.record);
                 if (ac[key] && ac[key].then) {
                     ac[key] = ac[key].then(function (result) {
@@ -64,8 +59,7 @@ TDBase.prototype.renewDescriptor = function () {
     this.descriptor = descriptor;
     if ('calc' in descriptor) {
         this.elt.addClass('asht-calc');
-    }
-    else {
+    } else {
         this.elt.removeClass('asht-calc');
     }
     if (syncs.length > 0) return Promise.all(syncs);
@@ -75,6 +69,10 @@ TDBase.prototype.implicit = function (value) {
     return value;
 };
 
+TDBase.prototype.isEmpty = function () {
+    var value = this.value;
+    return value !== null && value !== undefined;
+};
 
 Object.defineProperty(TDBase.prototype, 'record', {
     get: function () {
@@ -114,7 +112,7 @@ Object.defineProperty(TDBase.prototype, 'value', {
 });
 
 TDBase.prototype.attachView = function () {
-    this.$text = _({ text: '?[' + JSON.stringify(this.value) + ']' });
+    this.$text = _({text: '?[' + JSON.stringify(this.value) + ']'});
     this.elt.addChild(this.$text);
 };
 
@@ -141,8 +139,7 @@ TDBase.prototype.execOnChange = function () {
 
     if (sync && sync.then) {
         sync.then(update)
-    }
-    else update();
+    } else update();
 };
 
 TDBase.prototype.notifyChange = function () {
@@ -166,8 +163,7 @@ TDBase.prototype.reload = function () {
     }.bind(this);
     if (sync) {
         sync.then(update)
-    }
-    else {
+    } else {
         update();
     }
     return sync;

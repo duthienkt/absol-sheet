@@ -69,6 +69,12 @@ TDEnum.prototype.implicit = function (value) {
     return null;
 };
 
+TDEnum.prototype.isEmpty = function () {
+    var value = this.value;
+    return value !== null && value !== this.descriptor.emptyValue;
+}
+
+
 TDEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;

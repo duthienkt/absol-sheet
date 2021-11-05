@@ -26,7 +26,7 @@ TDText.prototype.loadValue = function () {
     this.$lines = value.split(/\r?\n/).reduce(function (ac, line) {
         line = line.replace(/\s\s/g, ' \u00A0');
         ac.push(_({
-            tag: 'span', child: { text: line }
+            tag: 'span', child: {text: line}
         }));
         ac.push(_('br'));
         return ac;
@@ -34,6 +34,11 @@ TDText.prototype.loadValue = function () {
     this.elt.addChild(this.$lines);
 };
 
+
+TDText.prototype.isEmpty = function () {
+    var value = this.value;
+    return !value || value.length === 0;
+};
 
 TDBase.typeClasses.text = TDText;
 export default TDText;

@@ -134,6 +134,13 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
     }
 };
 
+TDRecord.prototype.getIncompleteCells = function () {
+   return this.properties.filter(function (cell) {
+        return !!(cell.descriptor && cell.descriptor.required && !cell.isEmpty());
+    });
+};
+
+
 TDRecord.prototype.ev_propertyChange = function () {
     var changedPNames = this.changedPNames.splice(0, this.changedPNames.length);
     var self = this;
@@ -156,5 +163,6 @@ TDRecord.prototype.ev_propertyChange = function () {
         ResizeSystem.update();
     }
 };
+
 
 export default TDRecord;

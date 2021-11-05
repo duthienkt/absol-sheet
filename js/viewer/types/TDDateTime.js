@@ -25,6 +25,7 @@ TDDateTime.prototype.attachView = function () {
 };
 
 TDDateTime.prototype.implicit = TDDate.prototype.implicit;
+TDDateTime.prototype.isEmpty = TDDate.prototype.isEmpty;
 
 TDDateTime.prototype.loadValue = function () {
     var value = this.value;

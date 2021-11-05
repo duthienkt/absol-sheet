@@ -36,6 +36,10 @@ TDNumber.prototype.implicit = function (value) {
     return value;
 };
 
+TDNumber.prototype.isEmpty = function (){
+    var value= this.value;
+    return typeof value !== "number" || value === this.descriptor.emptyValue;
+}
 
 TDBase.typeClasses.number = TDNumber;
 export default TDNumber;
