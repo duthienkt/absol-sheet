@@ -96,6 +96,9 @@ TDENumber.prototype.ev_keydown = function (event) {
 
 TDEBase.typeClasses.number = TDENumber;
 TDEBase.typeClasses.Number = TDENumber;
+TDEBase.typeClasses.UniqueNumber = TDENumber;
+TDEBase.typeClasses.unique_number = TDENumber;
+TDEBase.typeClasses['unique<number>'] = TDENumber;
 
 
 export default TDENumber;
