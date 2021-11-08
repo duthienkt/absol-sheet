@@ -1,23 +1,30 @@
 export default {
     exampleTitle: "Min max ngày tháng",
     propertyNames: [
+        "id",
         'start_date',
         'end_date',
         'duration',
         'status'
     ],
     propertyDescriptors: {
+        id:{
+          type:'unique<string>',
+          text:"Mã"
+        },
         start_date: {
             text: "Ngày bắt đầu",
             type: 'Date',
             max: '= end_date',
-            readOnly:'= status > 0'
+            readOnly:'= status > 0',
+            required: true
         },
         end_date: {
             type: 'Date',
             text: "Ngày kết thúc",
             min: '= start_date',
-            readOnly:'= status > 1'
+            readOnly:'= status > 1',
+            required: true
         },
         duration: {
             type: 'number',

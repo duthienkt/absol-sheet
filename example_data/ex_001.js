@@ -1,5 +1,6 @@
 export default {
     exampleTitle: "Sử dụng công thức",
+    opt: {readOnly: false},
     propertyNames: [
         'full_name',
         'last_name',
@@ -37,7 +38,8 @@ export default {
         birthday: {
             type: 'Date',
             text: 'Ngày sinh',
-            max: '= TODAY()'
+            max: '= TODAY()',
+            required: true
         }
         ,
         this_year_birthday: {
@@ -84,8 +86,8 @@ export default {
         }
     },
     records: [
-        { full_name: 'Nguyễn Văn An', birthday: new Date(1996, 5, 19) },
-        { full_name: 'Trần Đức Tân' },
-        { full_name: 'Phan Bá Quân', married: true }
+        {full_name: 'Nguyễn Văn An', birthday: new Date(1996, 5, 19)},
+        {full_name: 'Trần Đức Tân'},
+        {full_name: 'Phan Bá Quân', married: true}
     ]
 }

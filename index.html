@@ -84,7 +84,7 @@
                 tag: 'h3',
                 child: { text: data.exampleTitle }
             }).addTo(document.body);
-            var editor = new absol.sheet.TableEditor({ fragment: fragment });
+            var editor = new absol.sheet.TableEditor(Object.assign({ fragment: fragment }, data.opt));
             editor.getView().addClass("simple-table")
                 .addStyle({
                     maxHeight: '50vh'
@@ -119,6 +119,21 @@
                     }
                 }
             }).addTo(document.body);
+
+            _({
+                tag: 'flexiconbutton',
+                style: { margin: '5px' },
+                props: {
+                    icon: 'span.mdi.mdi-download',
+                    text: `Focus Incomplete Cell`
+                },
+                on: {
+                    click: function () {
+                        editor.focusIncompleteCell();
+                    }
+                }
+            }).addTo(document.body);
+
             _('br').addTo(document.body);
             _('br').addTo(document.body);
         });
