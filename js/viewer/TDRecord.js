@@ -15,6 +15,8 @@ import "./types/TDArrayOfText";
 import "./types/TDEnumSet";
 import "./types/TDDate";
 import "./types/TDDateTime";
+import "./types/TDUniqueString";
+import "./types/TDUniqueNumber";
 import {_} from '../dom/SCore';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
