@@ -74,25 +74,47 @@ TDBase.prototype.isEmpty = function () {
     return value !== null && value !== undefined;
 };
 
+
+/**
+ * @name record
+ * @memberOf TDBase
+ * @type Object
+ */
 Object.defineProperty(TDBase.prototype, 'record', {
     get: function () {
         return this.row.record;
     }
 });
 
+
+/**
+ * @name table
+ * @memberOf TDBase
+ * @type TableData
+ */
 Object.defineProperty(TDBase.prototype, 'table', {
     get: function () {
         return this.row.table;
     }
 });
 
+
+/***
+ * @name fragment
+ * @memberOf TDBase
+ * @type FmFragment|null
+ */
 Object.defineProperty(TDBase.prototype, 'fragment', {
     get: function () {
         return this.row.table.fragment;
     }
 });
 
-
+/***
+ * @name value
+ * @memberOf TDBase
+ * @type any
+ */
 Object.defineProperty(TDBase.prototype, 'value', {
     get: function () {
         return this.row.record[this.pName];
