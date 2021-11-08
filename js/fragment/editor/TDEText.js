@@ -99,5 +99,9 @@ TDEText.prototype.ev_inputChange = function () {
 
 TDEBase.typeClasses.string = TDEText;
 TDEBase.typeClasses.text = TDEText;
+TDEBase.typeClasses.unique_string = TDEText;
+TDEBase.typeClasses.UniqueString = TDEText;
+TDEBase.typeClasses['unique<string>'] = TDEText;
+
 
 export default TDEText;
