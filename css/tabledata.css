@@ -59,6 +59,10 @@ td.asht-duplicated {
 }
 
 
+td.asht-type-time {
+    min-width: 110px;
+}
+
 table.asht-table-data > tbody > tr > td.asht-type-date {
     text-align: left;
     padding-right: 1.35em;

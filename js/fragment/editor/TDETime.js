@@ -5,6 +5,8 @@ import SelectMenu from "absol-acomp/js/SelectMenu2";
 import AElement from "absol/src/HTML5/AElement";
 import {_, $} from '../../dom/SCore';
 import TDEText from "./TDEText";
+import {parseDateString} from "absol/src/Time/datetime";
+import TDEDate from "./TDEDate";
 
 
 /***
@@ -13,16 +15,19 @@ import TDEText from "./TDEText";
  * @param {TDBase} cell
  * @constructor
  */
-function TDEDate(tableEditor, cell) {
+function TDETime(tableEditor, cell) {
     TDEBase.call(this, tableEditor, cell);
 }
 
-OOP.mixClass(TDEDate, TDEBase);
+OOP.mixClass(TDETime, TDEBase);
 
-TDEDate.prototype.prepareInput = function () {
+TDETime.prototype.prepareInput = function () {
     this.$input = _({
-        tag: 'dateinput',
+        tag: 'timeinput',
         class: 'asht-date-cell-editor-input',
+        props:{
+          format: 'hh:mm a'
+        },
         on: {
             change: this.ev_inputChange
         }
@@ -33,7 +38,19 @@ TDEDate.prototype.prepareInput = function () {
     this.$input.addStyle(this._cellStyle);
 };
 
-TDEDate.prototype._loadCellStyle = function () {
+
+
+TDETime.prototype.reload = function () {
+    var value = this.cell.value;
+    var descriptor = this.cell.descriptor;
+    var timeValue = this.cell.implicit(value);
+    if (typeof timeValue !== "number") timeValue = 0;
+
+    this.$input.dayOffset = timeValue;
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
+};
+
+TDETime.prototype._loadCellStyle = function () {
     var cellElt = this.cell.elt;
     this._cellStyle = {
         'font-size': cellElt.getComputedStyleValue('font-size'),
@@ -46,7 +63,7 @@ TDEDate.prototype._loadCellStyle = function () {
  *
  * @param {KeyboardEvent} event
  */
-TDEDate.prototype.ev_firstKey = function (event) {
+TDETime.prototype.ev_firstKey = function (event) {
     if (event.key === "Delete") {
         this.cell.value = "";
     }
@@ -85,27 +102,27 @@ TDEDate.prototype.ev_firstKey = function (event) {
 
 // TODO: handle enter key, blur
 
-TDEDate.prototype.ev_blur = function (event) {
+TDETime.prototype.ev_blur = function (event) {
     this.$editingbox.removeClass('as-status-focus');
     if (this._waitBlurTimeout >= 0) clearTimeout(this._waitBlurTimeout);
     this._waitBlurTimeout = setTimeout(function () {
         this._waitBlurTimeout = -1;
         if (!document.activeElement
-            || (this.$input.$input !== document.activeElement
+            || (this.$input.$text !== document.activeElement
                 && !AElement.prototype.isDescendantOf.call(document.activeElement, this.$input))) {
             //blur before finished
         }
     }.bind(this), 100);
 };
 
-TDEDate.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.value;
-    this.$input.$input.focus();
-    this.$input.$input.select();
+TDETime.prototype.ev_inputChange = function () {
+    this.cell.value = this.$input.dayOffset;
+    this.$input.$text.focus();
+    this.$input.$text.select();
 };
 
-TDEDate.prototype.ev_focus = TDEText.prototype.ev_focus;
-TDEBase.typeClasses.time = TDEDate;
-TDEBase.typeClasses.time = TDEDate;
+TDETime.prototype.ev_focus = TDEText.prototype.ev_focus;
+TDEBase.typeClasses.time = TDETime;
+TDEBase.typeClasses.time = TDETime;
 
-export default TDEDate;
+export default TDETime;
