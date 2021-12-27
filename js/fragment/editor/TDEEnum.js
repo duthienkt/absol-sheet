@@ -35,15 +35,18 @@ TDEEnum.prototype.prepareInput = function () {
 };
 
 TDEEnum.prototype.reload = function () {
+    this.cell.loadDescriptor();
     var prevValue = this.cell.value;
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
     this.$input.disabled = descriptor.readOnly;
     this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
-    if (this.$input.items && this.$input.items.length > 0 && isDifferent(prevValue , this.$input.value)) {
+
+
+    if (this.$input.items && this.$input.items.length > 0 && isDifferent(prevValue, this.$input.value)) {
         setTimeout(function () {
-            if (isDifferent(prevValue , this.$input.value)) {
+            if (isDifferent(prevValue, this.$input.value)) {
                 this.ev_inputChange();
             }
         }.bind(this), 0);
