@@ -94,7 +94,9 @@ TSFunction.prototype._compile = function () {
         (new Function('module', 'regeneratorRuntime', 'localConstants', this._makeConstCode(this.localConstants) + this.transformedCode))(mdl, babel.regeneratorRuntime, this.localConstants);
         this.func = mdl.exports;
     } catch (err) {
-        console.error(err);
+        setTimeout(function () {
+            throw  err;
+        }, 0);
     }
 };
 
@@ -102,7 +104,9 @@ TSFunction.prototype.invoke = function (_this, record) {
     try {
         return this.func.call(_this, record);
     } catch (err) {
-        console.error(err);
+        setTimeout(function () {
+            throw err;
+        }, 0);
         return undefined;
     }
 };

@@ -392,7 +392,9 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
                         ResizeSystem.update();
 
                     } catch (e) {
-                        console.error(e);
+                        setTimeout(function (){
+                            throw e;
+                        }, 0);
                     }
                 })
                 break;
