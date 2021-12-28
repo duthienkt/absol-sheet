@@ -35,7 +35,6 @@ TDEEnum.prototype.prepareInput = function () {
 };
 
 TDEEnum.prototype.reload = function () {
-    this.cell.loadDescriptor();
     var prevValue = this.cell.value;
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;

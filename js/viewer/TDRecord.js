@@ -148,17 +148,18 @@ TDRecord.prototype.ev_propertyChange = function () {
     var changedPNames = this.changedPNames.splice(0, this.changedPNames.length);
     var self = this;
     var needUpdatePNames = this.propertyNames.filter(function (name) {
-        if (changedPNames.indexOf(name) >= 0) return false;
+        if (changedPNames.indexOf(name) >= 0) return true;
         var dp = self.table.propertyDescriptors[name].__dependencies__;
         return changedPNames.some(function (cN) {
             return !!dp[cN];
         });
     });
 
+
     var sync = needUpdatePNames.map(function (name) {
         return self.propertyByName[name].reload();
     }).filter(function (p) {
-        return !!p
+        return !!p && p.then;
     });
     if (sync.length > 0) {
         Promise.all(sync).then(ResizeSystem.update.bind(ResizeSystem));
