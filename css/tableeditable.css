@@ -161,8 +161,9 @@ td.asht-table-data-root-cell {
     outline: none;
 }
 
-asht-cell-editor-input.as-preinput {
+.asht-cell-editor-input.as-preinput {
     min-width: calc(var(--cell-width) + 1px);
+    background: white;
 }
 
 
