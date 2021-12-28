@@ -1,7 +1,8 @@
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
 import TDEText from "./TDEText";
-import {_, $} from '../../dom/SCore';
+import { _, $ } from '../../dom/SCore';
+import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 
 /***
@@ -72,7 +73,6 @@ TDENumber.prototype.reload = function () {
 };
 
 
-
 TDENumber.prototype.onStart = function () {
     setTimeout(function () {
         this.$input.focus();
@@ -87,11 +87,46 @@ TDENumber.prototype.onStart = function () {
 TDENumber.prototype.ev_keydown = function (event) {
     if (event.key === "Enter" || event.key === "Tab") {
         var text = this.$input.value;
-        this.cell.value = parseFloat(text) || this.cell.value;
+        var min = -Infinity;
+        var max = Infinity;
+        var descriptor = this.cell.descriptor;
+        if (!isNaN(descriptor.min) && isFinite(descriptor.min)) {
+            min = descriptor.min;
+        }
+        if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
+            max = descriptor.max;
+        }
+        var value = parseFloat(text);
+        if (!isNaN(value)) {
+            value = Math.max(min, Math.min(max, value));
+            this.cell.value = value;
+        }
+
         this.tableEditor.updateFixedTableEltPosition();
         event.preventDefault();
         this.editCellNext();
     }
+};
+
+
+TDENumber.prototype.ev_inputChange = function () {
+    var text = this.$input.value;
+    var min = -Infinity;
+    var max = Infinity;
+    var descriptor = this.cell.descriptor;
+    if (!isNaN(descriptor.min) && isFinite(descriptor.min)) {
+        min = descriptor.min;
+    }
+    if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
+        max = descriptor.max;
+    }
+    var value = parseFloat(text);
+    if (!isNaN(value)) {
+        value = Math.max(min, Math.min(max, value));
+        this.cell.value = value;
+    }
+
+    ResizeSystem.update();
 };
 
 TDEBase.typeClasses.number = TDENumber;
