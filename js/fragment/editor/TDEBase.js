@@ -145,10 +145,20 @@ TDEBase.prototype.editCellNext = function () {
     }
 };
 
+
+
 TDEBase.prototype.finish = function () {
     if (this.state !== "FINISHED") {
         this.state = "FINISHED";
         this.emit('finish', { type: 'finish', target: this });
+    }
+};
+
+TDEBase.prototype.flushValue = function (value){
+    var prev = this.cell.value;
+    if (value!== prev){
+        this.cell.value = value;
+        this.tableEditor.emit('change', {target: this.tableEditor, cell: this.cell, cellEditor: this},  this.tableEditor);
     }
 };
 
