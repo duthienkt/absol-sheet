@@ -85,6 +85,9 @@
                 child: { text: data.exampleTitle }
             }).addTo(document.body);
             var editor = new absol.sheet.TableEditor(Object.assign({ fragment: fragment }, data.opt));
+            editor.on('change', function (){
+                console.log(this.getData().records)
+            })
             editor.getView().addClass("simple-table")
                 .addStyle({
                     maxHeight: '50vh'

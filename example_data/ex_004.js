@@ -2,7 +2,8 @@ export default {
     exampleTitle: "Các loại khác",
     propertyNames: [
         'date_time_type',
-        'date_time_text'
+        'date_time_text',
+        'time'
     ],
     propertyDescriptors: {
         date_time_type: {
@@ -14,11 +15,19 @@ export default {
             type: 'text',
             text: "Ngày giờ trong JSON",
             calc: "= JSON.stringify(date_time_type)"
+        },
+        time:{
+            type:'time',
+            text:"Giờ"
         }
     },
     records: [
         {
-            date_time_type: new Date()
+            date_time_type: new Date(),
+            time: new Date(2021, 1, 1)
+        },
+        {
+            time: new Date()
         }
     ]
 }

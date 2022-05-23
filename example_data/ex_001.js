@@ -1,6 +1,6 @@
 export default {
     exampleTitle: "Sử dụng công thức",
-    opt: {readOnly: false},
+    opt: { readOnly: false },
     propertyNames: [
         'full_name',
         'last_name',
@@ -12,7 +12,8 @@ export default {
         'old_after',
         'is_young',
         'married',
-        'note'
+        // 'note',
+        'salary'
     ],
     propertyDescriptors: {
         full_name: {
@@ -69,8 +70,16 @@ export default {
             text: "Đã lập gia đình",
             type:
                 'bool'
-        }
-        ,
+        },
+        salary: {
+            type: 'number',
+            text: 'Lương',
+            format: {
+                locales: 'vi-VN',
+                style: 'currency',
+                currency: 'VND'
+            }
+        },
         note: {
             type: 'text',
             text:
@@ -86,8 +95,8 @@ export default {
         }
     },
     records: [
-        {full_name: 'Nguyễn Văn An', birthday: new Date(1996, 5, 19)},
-        {full_name: 'Trần Đức Tân'},
-        {full_name: 'Phan Bá Quân', married: true}
+        { full_name: 'Nguyễn Văn An', birthday: new Date(1996, 5, 19), salary: 30000000 },
+        { full_name: 'Trần Đức Tân' , salary: 25000000},
+        { full_name: 'Phan Bá Quân', married: true , salary: 32000000}
     ]
 }
