@@ -52,6 +52,7 @@ export function DATEDIF(d1, d2, df) {
     if (typeof d2 === "number" ||typeof d2 === "string" ) d2 = new Date(d2);
     if (!d1.getFullYear || isNaN(d1.getFullYear())) return undefined;
     if (!d2.getFullYear || isNaN(d2.getFullYear())) return undefined;
+    df = df ||'D';
     switch (df) {
         case 'D':
             return compareDate(d2, d1);
