@@ -174,6 +174,10 @@ TableEditor.prototype.getData = function () {
     return this.tableData && this.tableData.export();
 };
 
+TableEditor.prototype.getRecords = function (){
+    return this.tableData && this.tableData.records;
+}
+
 TableEditor.prototype.scrollYBy = function (dy, dx) {
     dx = dx || 0;
     if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.clientHeight) {
