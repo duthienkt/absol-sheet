@@ -62,7 +62,7 @@ TDEDate.prototype._loadCellStyle = function () {
 };
 
 TDEDate.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.value;
+    this.flushValue(this.$input.value);
     this.$input.$input.focus();
     this.$input.$input.select();
 };

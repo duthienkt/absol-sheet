@@ -43,7 +43,7 @@ TDEBoolean.prototype.prepareInput = function () {
 };
 
 TDEBoolean.prototype.reload = function () {
-    this.$checkbox.disabled = !!this.cell.descriptor.readOnly;
+    this.$checkbox.disabled = !!this.cell.descriptor.readOnly|| ('calc' in this.cell.descriptor);
     this.$checkbox.checked = this.cell.value;
 };
 
@@ -51,7 +51,7 @@ TDEBoolean.prototype.reload = function () {
 
 
 TDEBoolean.prototype.ev_checkboxChange = function (event) {
-    this.cell.value = this.$checkbox.checked;
+    this.flushValue(this.$checkbox.checked);
 };
 
 TDEBase.typeClasses.bool = TDEBoolean;

@@ -42,7 +42,7 @@ TDEEnumSet.prototype.reload = function (){
 };
 
 TDEEnumSet.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.values.slice();
+    this.flushValue(this.$input.values.slice())
     ResizeSystem.update();
 };
 

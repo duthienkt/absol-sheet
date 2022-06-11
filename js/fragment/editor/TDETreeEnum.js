@@ -57,7 +57,7 @@ TDETreeEnum.prototype._loadCellStyle = function () {
 };
 
 TDETreeEnum.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.value;
+    this.flushValue(this.$input.value);
     ResizeSystem.update();
 };
 

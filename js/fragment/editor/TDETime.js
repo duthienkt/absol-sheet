@@ -116,7 +116,7 @@ TDETime.prototype.ev_blur = function (event) {
 };
 
 TDETime.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.dayOffset;
+    this.flushValue(this.$input.dayOffset)
     this.$input.$text.focus();
     this.$input.$text.select();
 };

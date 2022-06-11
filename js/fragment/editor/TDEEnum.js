@@ -62,7 +62,7 @@ TDEEnum.prototype._loadCellStyle = function () {
 };
 
 TDEEnum.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.value;
+    this.flushValue(this.$input.value);
     ResizeSystem.update();
 };
 

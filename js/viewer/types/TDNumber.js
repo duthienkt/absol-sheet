@@ -1,6 +1,6 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {_} from "../../dom/SCore";
+import { _ } from "../../dom/SCore";
 
 
 /***
@@ -24,8 +24,20 @@ TDNumber.prototype.attachView = function () {
 
 TDNumber.prototype.loadValue = function () {
     var value = this.implicit(this.value);
-    value = (value === null || value === undefined) ? '' : (value + '');
-    this.$number.firstChild.data = value;
+    var text = (value === null || value === undefined) ? '' : (value + '');
+    var copyFormat, locales;
+    var format =  this.descriptor.format ||{};
+    if (!this.descriptor.formater) {
+        copyFormat = Object.assign({locales: 'vi-VN'}, this.descriptor.format);
+        delete copyFormat.locales;
+        locales = format.locales;
+        if (!locales) {
+            if (copyFormat.currency === 'VND') locales = 'vi-VN';
+        }
+        this.descriptor.formater = new Intl.NumberFormat(locales, copyFormat);
+    }
+    if (typeof value === "number" && this.descriptor.formater) text = this.descriptor.formater.format(value);
+    this.$number.firstChild.data = text;
 };
 
 
@@ -36,8 +48,8 @@ TDNumber.prototype.implicit = function (value) {
     return value;
 };
 
-TDNumber.prototype.isEmpty = function (){
-    var value= this.value;
+TDNumber.prototype.isEmpty = function () {
+    var value = this.value;
     return typeof value !== "number" || value === this.descriptor.emptyValue;
 }
 

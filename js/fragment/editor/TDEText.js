@@ -40,7 +40,7 @@ TDEText.prototype._loadCellStyle = function () {
         'font-size': cellElt.getComputedStyleValue('font-size'),
         'font-family': cellElt.getComputedStyleValue('font-family'),
         'font-style': cellElt.getComputedStyleValue('font-style'),
-        'line-height': cellElt.getComputedStyleValue('line-height'),
+        'line-height': '20px',
         'padding-left': cellElt.getComputedStyleValue('padding-left'),
         'padding-right': cellElt.getComputedStyleValue('padding-right'),
         'padding-top': cellElt.getComputedStyleValue('padding-top'),
@@ -82,7 +82,7 @@ TDEText.prototype.ev_keydown = function (event) {
             this.$input.waitToCommit(newText, pos.start + 1);
         }
         else {
-            this.cell.value = text;
+            this.flushValue(text);
             this.tableEditor.updateFixedTableEltPosition();
             this.editCellNext();
         }
@@ -92,7 +92,7 @@ TDEText.prototype.ev_keydown = function (event) {
 
 
 TDEText.prototype.ev_inputChange = function () {
-    this.cell.value = this.$input.value;
+    this.flushValue(this.$input.value);
     ResizeSystem.update();
 };
 

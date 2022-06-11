@@ -99,7 +99,7 @@ TDENumber.prototype.ev_keydown = function (event) {
         var value = parseFloat(text);
         if (!isNaN(value)) {
             value = Math.max(min, Math.min(max, value));
-            this.cell.value = value;
+            this.flushValue(value);
         }
 
         this.tableEditor.updateFixedTableEltPosition();
@@ -123,7 +123,7 @@ TDENumber.prototype.ev_inputChange = function () {
     var value = parseFloat(text);
     if (!isNaN(value)) {
         value = Math.max(min, Math.min(max, value));
-        this.cell.value = value;
+        this.flushValue(value);
     }
 
     ResizeSystem.update();
