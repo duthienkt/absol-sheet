@@ -95,7 +95,7 @@ TSFunction.prototype._compile = function () {
         this.func = mdl.exports;
     } catch (err) {
         setTimeout(function () {
-            throw  err;
+           throw  err;
         }, 0);
     }
 };
@@ -105,7 +105,7 @@ TSFunction.prototype.invoke = function (_this, record) {
         return this.func.call(_this, record);
     } catch (err) {
         setTimeout(function () {
-            throw err;
+            if (window['ABSOL_DEBUG'])    throw err;
         }, 0);
         return undefined;
     }
