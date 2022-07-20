@@ -23,7 +23,6 @@ var $ = SComp.$;
 function TableData(editor, opt) {
     this.editor = editor;
     this.opt = opt || {};
-    this.fragment = (this.editor && this.editor.fragment) || this.opt.fragment;
     EventEmitter.call(this);
     this.propertyNames = [];
     this.propertyDescriptors = {};
@@ -85,10 +84,9 @@ TableData.prototype.import = function (data) {
 TableData.prototype._computeData = function () {
     var descriptors = this.propertyDescriptors;
     var descriptor;
-    var pName;// con 20p
     var self = this;
     var propertyNames = this.propertyNames;
-    propertyNames.forEach(function (name) {
+    propertyNames.forEach(name => {
         descriptor = descriptors[name];
         if (!descriptor) return;
         self._computeDescriptor(descriptor, propertyNames);
@@ -126,8 +124,8 @@ TableData.prototype._computeDescriptor = function (descriptor, propertyNames) {
             if (val.startsWith('=')) {
                 descriptor.__fx__[key] = new TSFunction(propertyNames, val);
             }
-            else if (val.startsWith('{{') && val.substr(val.length - 2, 2)) {
-                descriptor.__fx__[key] = new TSFunction(propertyNames, val.substr(2, val.length - 4))
+            else if (val.startsWith('{{') && val.endsWith('}}')) {
+                descriptor.__fx__[key] = new TSFunction(propertyNames, val.substring(2, val.length - 2))
             }
             else if (key === 'onchange') {
                 descriptor.__fx__[key] = new TSFunction(propertyNames, val);
@@ -188,7 +186,8 @@ TableData.prototype.loadBody = function () {
     });
     this.$tbody.addChild(rowEltList);
     this.newRow = new TDRecord(this, {}, '*');
-    this.newRow.on('property_change', this.ev_newRowPropertyChange);
+
+    this.newRow.once('property_change', this.ev_newRowPropertyChange);
     this.$tbody.addChild(this.newRow.elt);
 };
 
@@ -213,8 +212,16 @@ TableData.prototype.getView = function () {
     this.$tbody = $('tbody', this.$view);
     this.$rootCell = _('td.asht-table-data-root-cell');
     this.$domSignal = _('attachhook').addTo(this.$rootCell);
-    this.domSignal = new DomSignal(this.$domSignal);
+    this.domSignal = new DomSignal(this.$domSignal)
+        .on('requestEmitResizeEvent', function () {
+            window.dispatchEvent(new Event('resize'));
+        });
     return this.$view;
+};
+
+TableData.prototype.emitResizeEvent = function () {
+    window.dispatchEvent(new Event('resize'));
+    this.domSignal.emit('requestEmitResizeEvent');
 };
 
 /***
@@ -223,13 +230,13 @@ TableData.prototype.getView = function () {
  */
 TableData.prototype.flushNewRow = function (newRecord) {
     this.newRow.idx = this.records.length;
-    this.newRow.off('property_change', this.ev_newRowPropertyChange);
     this.records.push(this.newRow.record);
     this.bodyRow.push(this.newRow);
+    this.newRow.makeDefaultValues();
     this.newRow = new TDRecord(this, newRecord || {}, "*");
-    this.newRow.on('property_change', this.ev_newRowPropertyChange);
+    this.newRow.once('property_change', this.ev_newRowPropertyChange);
     this.$tbody.addChild(this.newRow.elt);
-    ResizeSystem.update();
+    this.emitResizeEvent();
 };
 
 
@@ -262,11 +269,11 @@ TableData.prototype.findRowByClientY = function (y) {
     return null;
 };
 
-TableData.prototype.findFirsIncompleteCell = function (){
+TableData.prototype.findFirsIncompleteCell = function () {
     var cells;
-    for (var i = 0; i < this.bodyRow.length; ++i){
+    for (var i = 0; i < this.bodyRow.length; ++i) {
         cells = this.bodyRow[i].getIncompleteCells();
-        if (cells.length > 0){
+        if (cells.length > 0) {
             return cells[0];
         }
     }
@@ -329,6 +336,12 @@ TableData.prototype.ev_newRowPropertyChange = function (event) {
     }), this);
 };
 
+
+Object.defineProperty(TableData.prototype, 'fragment', {
+    get: function () {
+        return (this.editor && this.editor.fragment) || this.opt.fragment || null
+    },
+})
 
 export default TableData;
 
