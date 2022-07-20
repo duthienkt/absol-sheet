@@ -19,9 +19,9 @@ import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
 import TDRecord from "../viewer/TDRecord";
 import DomSignal from "absol/src/HTML5/DomSignal";
-import {selectRowHeight} from "./dialogs";
+import { selectRowHeight } from "./dialogs";
 import noop from "absol/src/Code/noop";
-import {copyText, pasteText} from "absol/src/HTML5/Clipboard";
+import { copyText, pasteText } from "absol/src/HTML5/Clipboard";
 import Attributes from 'absol/src/AppPattern/Attributes';
 
 // selectRowHeight()
@@ -174,7 +174,7 @@ TableEditor.prototype.getData = function () {
     return this.tableData && this.tableData.export();
 };
 
-TableEditor.prototype.getRecords = function (){
+TableEditor.prototype.getRecords = function () {
     return this.tableData && this.tableData.records;
 }
 
@@ -182,7 +182,8 @@ TableEditor.prototype.scrollYBy = function (dy, dx) {
     dx = dx || 0;
     if (this.$body.scrollTop + dy > this.$body.scrollHeight - this.$body.clientHeight) {
         dy = this.$body.scrollHeight - this.$body.clientHeight - this.$body.scrollTop;
-    } else if (this.$body.scrollTop + dy < 0) {
+    }
+    else if (this.$body.scrollTop + dy < 0) {
         dy = -this.$body.scrollTop;
     }
     if (dy)
@@ -190,7 +191,8 @@ TableEditor.prototype.scrollYBy = function (dy, dx) {
 
     if (this.$body.scrollLeft + dx > this.$body.scrollWidth - this.$body.clientWidth) {
         dx = this.$body.scrollWidth - this.$body.clientWidth - this.$body.scrollLeft;
-    } else if (this.$body.scrollLeft + dx < 0) {
+    }
+    else if (this.$body.scrollLeft + dx < 0) {
         dx = -this.$body.scrollLeft;
     }
     if (dx)
@@ -255,7 +257,8 @@ TableEditor.prototype.ev_editLayerMouseDown = function (ev) {
             if (this.hoverCol) {
                 this.editCell(this.hoverRow, this.hoverCol);
                 this.selectRow(null);
-            } else {
+            }
+            else {
                 this.selectRow(this.hoverRow);
                 this.editCell(this.hoverRow, this.tableData.headCells[0]);
 
@@ -279,7 +282,8 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
     var items = [];
     if (row.idx === "*") {
 
-    } else {
+    }
+    else {
         items.push({
                 cmd: 'insert_before',
                 text: 'Insert Before',
@@ -318,14 +322,14 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
     });
 
     ev.showContextMenu({
-        extendStyle: {fontSize: '14px'},
+        extendStyle: { fontSize: '14px' },
         items: items
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventData = {cmd: cmd};
+        var eventData = { cmd: cmd };
         switch (cmd) {
             case 'row_height':
-                selectRowHeight({value: thisTE.tableData.config.rowHeight, standard: 21})
+                selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
                     .then(function (result) {
                         thisTE.tableData.config.rowHeight = result;
                         ResizeSystem.update();
@@ -344,7 +348,8 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
                         if (isAccept)
                             thisTE.removeRow(eventData.rowIdx);
                     });
-                } else if (eventData.accepted) {
+                }
+                else if (eventData.accepted) {
                     thisTE.removeRow(eventData.rowIdx);
                 }
                 break;
@@ -365,7 +370,8 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
                                 thisTE.insertRow(eventData.rowIdx, result);
                             }
                         });
-                    } else {
+                    }
+                    else {
                         thisTE.insertRow(eventData.rowIdx, eventData.result);
                     }
                 }
@@ -396,7 +402,7 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
                         ResizeSystem.update();
 
                     } catch (e) {
-                        setTimeout(function (){
+                        setTimeout(function () {
                             throw e;
                         }, 0);
                     }
@@ -423,7 +429,7 @@ TableEditor.prototype.ev_rootCellContextMenu = function (ev) {
         ]
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventData = {cmd: cmd};
+        var eventData = { cmd: cmd };
         eventData.type = 'cmd_insert_row';
         eventData.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.records.length;
         eventData.result = {};
@@ -442,7 +448,8 @@ TableEditor.prototype.ev_rootCellContextMenu = function (ev) {
                         }
                     }
                 });
-            } else {
+            }
+            else {
                 thisTE.insertRow(eventData.rowIdx, eventData.result);
                 thisTE.$body.scrollTop = thisTE.$body.scrollHeight - thisTE.$body.clientHeight;
             }
@@ -456,6 +463,7 @@ TableEditor.prototype.ev_resize = function (event) {
     this.updateFixedTableEltPosition();
 };
 
+var t = 10;
 TableEditor.prototype.ev_newRowPropertyChange = function (event) {
     this.tableData.flushNewRow({});
     this.loadIndexCol();
@@ -479,7 +487,8 @@ TableEditor.prototype.editCell = function (row, col) {
             this.currentCellEditor = new EditorClass(this, row.cells[col.index]);
             this.$editingbox.removeStyle('display');
             this.currentCellEditor.start();
-        } else {
+        }
+        else {
             this.currentCellEditor = null;
             this.showError('Data Error', 'Not support ' + cell.descriptor.type);
             this.$editingbox.addStyle('display', 'none');
@@ -492,7 +501,8 @@ TableEditor.prototype.editCell = function (row, col) {
         if (this.currentCellEditor) {
             this.currentCellEditor.on('finish', this.ev_cellEditorFinish);
         }
-    } else {
+    }
+    else {
         this.$editingbox.addStyle('display', 'none');
     }
 };
@@ -523,7 +533,8 @@ TableEditor.prototype.selectRow = function (row) {
         };
         this.$selectedbox.removeStyle('display');
         this.updateSelectedPosition();
-    } else {
+    }
+    else {
         // this.$selectrow
         this.selectedData = null;
         this.$selectedbox.addStyle('display', 'none');
@@ -538,7 +549,8 @@ TableEditor.prototype.selectCol = function (col) {
         };
         this.$selectedbox.removeStyle('display');
         this.updateSelectedPosition();
-    } else {
+    }
+    else {
         // this.$selectrow
         this.selectedData = null;
         this.$selectedbox.addStyle('display', 'none');
@@ -553,12 +565,13 @@ TableEditor.prototype.selectAll = function () {
     this.updateSelectedPosition();
 };
 
-TableEditor.prototype.focusIncompleteCell = function (){
+TableEditor.prototype.focusIncompleteCell = function () {
     if (!this.tableData) return false;
     var incompleteCell = this.tableData.findFirsIncompleteCell();
     if (!incompleteCell) return false;
     var col = this.tableData.findColByName(incompleteCell.pName)
     this.editCell(incompleteCell.row, col);
+    return true;
 };
 
 
@@ -571,11 +584,13 @@ TableEditor.prototype.insertRow = function (atIdx, record) {
         tableData.records.splice(atIdx, 0, record);
         tableData.$tbody.addChildBefore(row.elt, currentRow.elt);
         tableData.bodyRow.splice(atIdx, 0, row);
-    } else {
+    }
+    else {
         tableData.records.push(record);
         if (tableData.bodyRow.length > 0) {
             tableData.$tbody.addChildAfter(row.elt, tableData.bodyRow[tableData.bodyRow.length - 1].elt);
-        } else {
+        }
+        else {
             tableData.$tbody.addChildBefore(row.elt, tableData.$tbody.firstChild);
         }
         tableData.bodyRow.push(row);
@@ -615,7 +630,8 @@ TableEditor.prototype.updateSelectedPosition = function () {
             'min-height': rBound.height + 2 + 'px'
         });
         this.$header.addStyle('z-index', '21');
-    } else if (this.selectedData.col) {
+    }
+    else if (this.selectedData.col) {
         var col = this.selectedData.col;
         var cBound = col.elt.getBoundingClientRect();
         var tBound = col.elt.parentElement.parentElement.parentElement.getBoundingClientRect();
@@ -626,7 +642,8 @@ TableEditor.prototype.updateSelectedPosition = function () {
             'min-height': tBound.height + 2 + 'px'
         });
         this.$header.addStyle('z-index', '19');
-    } else if (this.selectedData.type == 'all') {
+    }
+    else if (this.selectedData.type == 'all') {
         var tBound = this.tableData.$view.getBoundingClientRect();
         this.$selectedbox.addStyle({
             left: tBound.left - fBound.left - 1 + 'px',// boder-width = 2px
@@ -684,7 +701,7 @@ TableEditor.prototype.loadIndexCol = function () {
     });
     var indexHeaderElt = $(this.tableData.$headRow.firstChild.cloneNode());
     indexHeaderElt.$originElt = this.tableData.$headRow.firstChild;
-    var indexHeaderRowElt = _({tag: 'tr', child: indexHeaderElt});
+    var indexHeaderRowElt = _({ tag: 'tr', child: indexHeaderElt });
     indexHeaderRowElt.$originElt = this.tableData.$headRow;
     this.$indexColRows.unshift(indexHeaderRowElt);
     this.$indexCol.addChild(this.$indexColRows);
@@ -712,7 +729,8 @@ TableEditor.prototype.updateForegroundPosition = function () {
     });
     if (this.$body.scrollWidth > this.$body.clientWidth) {
         this.$view.addClass('as-overflow-x');
-    } else {
+    }
+    else {
         this.$view.removeClass('as-overflow-x');
     }
 };
@@ -742,10 +760,12 @@ TableEditor.prototype.scrollIntoRow = function (row) {
     if (vBottom - vTop >= rowBound.height) {
         if (rowBound.bottom > vBottom) {
             this.$body.scrollTop += rowBound.bottom - vBottom;
-        } else if (rowBound.top < vTop) {
+        }
+        else if (rowBound.top < vTop) {
             this.$body.scrollTop += rowBound.top - vTop;
         }
-    } else {
+    }
+    else {
         this.$body.scrollTop += rowBound.top + rowBound.height / 2 - (vBottom + vTop) / 2;
     }
 };
@@ -759,13 +779,16 @@ TableEditor.prototype.scrollIntoCol = function (col) {
     if (vRight - vLeft >= colBound.width) {
         if (colBound.right > vRight) {
             this.$body.scrollLeft += colBound.right - vRight;
-        } else if (colBound.left < vLeft) {
+        }
+        else if (colBound.left < vLeft) {
             this.$body.scrollLeft += colBound.left - vLeft;
         }
-    } else {
+    }
+    else {
         if (vLeft < colBound.left) {
             this.$body.scrollLeft += colBound.left - vLeft;
-        } else if (vRight > colBound.right) {
+        }
+        else if (vRight > colBound.right) {
             this.$body.scrollLeft += colBound.right - vRight;
         }
     }
@@ -793,7 +816,7 @@ TableEditor.prototype.optHandlers = {};
 
 TableEditor.prototype.optHandlers.readOnly = {
     set: function (value) {
-        if (value){
+        if (value) {
             this.$view.addClass('asht-read-only');
         }
         else {
@@ -819,7 +842,7 @@ Object.defineProperty(TableEditor.prototype, 'fragment', {
     get: function () {
         return this.opt.fragment;
     },
-    set: function (value){
+    set: function (value) {
         this.opt.fragment = value;
     }
 });
