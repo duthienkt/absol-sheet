@@ -1,6 +1,7 @@
-import {_} from "../../dom/SCore";
+import { _ } from "../../dom/SCore";
 import noop from "absol/src/Code/noop";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import { keyStringOf } from "absol-acomp/js/utils";
 
 /***
  *
@@ -12,39 +13,37 @@ function TDBase(row, pName) {
     this.elt = _('td');
     this.row = row;
     this.pName = pName;
-    var sync = this.renewDescriptor();
-    if (sync) {
-        sync = sync.then(function () {
+    this.sync = this.renewDescriptor();
+    if (this.sync) {
+        this.sync = this.sync.then(function () {
             this.attachView();
             this.loadDescriptor();
-            if ('calc' in this.descriptor) {
-                this.record[this.pName] = this.implicit(this.descriptor.calc);
-            }
             this.loadValue();
         }.bind(this));
-    } else {
+    }
+    else {
         this.attachView();
         this.loadDescriptor();
-        if ('calc' in this.descriptor) {
-            this.record[this.pName] = this.implicit(this.descriptor.calc);
-        }
         this.loadValue();
     }
+
 }
 
 TDBase.prototype.renewDescriptor = function () {
     var self = this;
     var originDescriptor = this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName];
-    var descriptor = Object.assign({}, originDescriptor || {type: 'text'});
+    var descriptor = Object.assign({}, originDescriptor || { type: 'text' });
     var fx = originDescriptor && originDescriptor.__fx__;
     var syncs = [];
     if (fx) {
         Object.keys(fx).reduce(function (ac, key) {
             if (key === 'onchange') {
                 ac.onchange = originDescriptor.__fx__.onchange;
-            } else if (key === 'switch') {
+            }
+            else if (key === 'switch') {
                 Object.assign(descriptor, fx[key].getCase(self.record));
-            } else {
+            }
+            else {
                 ac[key] = fx[key].invoke(self, self.record);
                 if (ac[key] && ac[key].then) {
                     ac[key] = ac[key].then(function (result) {
@@ -59,7 +58,8 @@ TDBase.prototype.renewDescriptor = function () {
     this.descriptor = descriptor;
     if ('calc' in descriptor) {
         this.elt.addClass('asht-calc');
-    } else {
+    }
+    else {
         this.elt.removeClass('asht-calc');
     }
     if (syncs.length > 0) return Promise.all(syncs);
@@ -73,6 +73,15 @@ TDBase.prototype.isEmpty = function () {
     var value = this.value;
     return value !== null && value !== undefined;
 };
+
+
+TDBase.prototype.makeDefaultValue = function (){
+    var descriptor = this.descriptor;
+    if ('calc' in descriptor) return;
+    if (('defaultValue' in descriptor) && (this.value === undefined || this.value === null)){
+        this.value = descriptor.defaultValue;
+    }
+}
 
 
 /**
@@ -117,6 +126,9 @@ Object.defineProperty(TDBase.prototype, 'fragment', {
  */
 Object.defineProperty(TDBase.prototype, 'value', {
     get: function () {
+        if ('calc' in this.descriptor) {
+            return this.descriptor.calc;
+        }
         return this.row.record[this.pName];
     },
     set: function (value) {
@@ -134,7 +146,7 @@ Object.defineProperty(TDBase.prototype, 'value', {
 });
 
 TDBase.prototype.attachView = function () {
-    this.$text = _({text: '?[' + JSON.stringify(this.value) + ']'});
+    this.$text = _({ text: '?[' + JSON.stringify(this.value) + ']' });
     this.elt.addChild(this.$text);
 };
 
@@ -145,23 +157,15 @@ TDBase.prototype.execOnChange = function () {
     if (this.descriptor.onchange) {
         sync = this.descriptor.onchange.invoke(this, newRecord);
     }
-    var row = this.row;
-
     function update() {
-        var needUpdateSize = false;
-        row.properties.forEach(function (prop) {
-            var pName = prop.pName;
-            if (record[pName] !== newRecord[pName]) {
-                prop.value = newRecord[pName];
-                needUpdateSize = true;
-            }
-        });
+        var needUpdateSize = keyStringOf(newRecord, record);
         if (needUpdateSize) ResizeSystem.update();
     }
 
     if (sync && sync.then) {
         sync.then(update)
-    } else update();
+    }
+    else update();
 };
 
 TDBase.prototype.notifyChange = function () {
@@ -176,7 +180,6 @@ TDBase.prototype.reload = function () {
         if ('calc' in this.descriptor) {
             var value = this.implicit(this.descriptor.calc);
             if (!this.isEqual(value, this.record[this.pName])) {
-                this.record[this.pName] = value;
                 this.execOnChange();
                 this.notifyChange();
             }
@@ -185,7 +188,8 @@ TDBase.prototype.reload = function () {
     }.bind(this);
     if (sync) {
         sync.then(update)
-    } else {
+    }
+    else {
         update();
     }
     return sync;
@@ -193,8 +197,7 @@ TDBase.prototype.reload = function () {
 
 
 TDBase.prototype.isEqual = function (a, b) {
-    return a === b;
-
+    return keyStringOf(a) === keyStringOf(b);
 };
 
 

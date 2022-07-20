@@ -1,6 +1,6 @@
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
-import {_, $} from '../../dom/SCore';
+import { _, $ } from '../../dom/SCore';
 import noop from "absol/src/Code/noop";
 
 
@@ -45,18 +45,18 @@ TDEBase.prototype.start = function () {
 };
 
 
-TDEBase.prototype.stop = function (){
-  if (this.state === STATE_RUNNING){
-      this.state = STATE_STOP;
-      this.onStop();
-  }
+TDEBase.prototype.stop = function () {
+    if (this.state === STATE_RUNNING) {
+        this.state = STATE_STOP;
+        this.onStop();
+    }
 };
 
-TDEBase.prototype.destroy = function (){
-    if (this.state === STATE_RUNNING){
+TDEBase.prototype.destroy = function () {
+    if (this.state === STATE_RUNNING) {
         this.stop();
     }
-    if (this.state !== STATE_DESTROYED){
+    if (this.state !== STATE_DESTROYED) {
         this.onDestroy();
         this.state = STATE_DESTROYED;
     }
@@ -154,11 +154,15 @@ TDEBase.prototype.finish = function () {
     }
 };
 
-TDEBase.prototype.flushValue = function (value){
+TDEBase.prototype.flushValue = function (value) {
     var prev = this.cell.value;
-    if (value!== prev){
+    if (value !== prev) {
         this.cell.value = value;
-        this.tableEditor.emit('change', {target: this.tableEditor, cell: this.cell, cellEditor: this},  this.tableEditor);
+        this.tableEditor.emit('change', {
+            target: this.tableEditor,
+            cell: this.cell,
+            cellEditor: this
+        }, this.tableEditor);
     }
 };
 

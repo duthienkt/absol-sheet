@@ -18,10 +18,10 @@ import "./types/TDDateTime";
 import "./types/TDUniqueString";
 import "./types/TDUniqueNumber";
 import "./types/TDTime";
-import {_} from '../dom/SCore';
+import { _ } from '../dom/SCore';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
-import {randomIdent} from "absol/src/String/stringGenerate";
+import { randomIdent } from "absol/src/String/stringGenerate";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 /***
@@ -66,6 +66,30 @@ Object.defineProperty(TDRecord.prototype, 'record', {
     }
 });
 
+Object.defineProperty(TDRecord.prototype, 'computedRecord', {
+    get: function () {
+        var descriptors = this.propertyDescriptors;
+        var pNames = this.propertyNames;
+        var self = this;
+        return pNames.reduce((ac, pName)=>{
+            var descriptor = descriptors[pName];
+            Object.defineProperty(ac, pName, {
+                enumerable: true,
+                configurable: true,
+                get: function (){
+                    if (descriptor.__fx__ && descriptor.__fx__.calc){
+
+                    }
+                },
+                set: function (){
+
+                }
+            });
+
+            return ac;
+        }, {});
+    }
+});
 
 Object.defineProperty(TDRecord.prototype, 'fragment', {
     get: function () {
@@ -89,10 +113,11 @@ Object.defineProperty(TDRecord.prototype, 'idx', {
     set: function (value) {
         this._idx = value;
         if (value === "*") {
-            this.$idx.clearChild().addChild(_({text: '*'}));
+            this.$idx.clearChild().addChild(_({ text: '*' }));
             this.elt.addClass('asht-new-row');
-        } else {
-            this.$idx.clearChild().addChild(_({text: value + 1 + ''}));
+        }
+        else {
+            this.$idx.clearChild().addChild(_({ text: value + 1 + '' }));
             this.elt.removeClass('asht-new-row');
         }
     },
@@ -118,7 +143,7 @@ TDRecord.prototype.loadCells = function () {
     });
     this.propertyByName = {};
     this.properties = propertyNames.map(function (pName) {
-        var descriptor = propertyDescriptors[pName] || {type: 'notSupport'};
+        var descriptor = propertyDescriptors[pName] || { type: 'notSupport' };
         var td = new (TDBase.typeClasses[descriptor.type] || TDBase.typeClasses.notSupport)(tdRow, pName);
         tdRow.propertyByName[pName] = td;
         return td;
@@ -133,15 +158,19 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
     if (this.changedPNames.indexOf(pName) < 0) {
         this.changedPNames.push(pName);
         this.table.domSignal.emit(this.id + '_property_change');
-        this.emit('property_change', {target: this, record: this.record, pName: pName}, this);
+        this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
     }
 };
 
 TDRecord.prototype.getIncompleteCells = function () {
-   return this.properties.filter(function (cell) {
+    return this.properties.filter(function (cell) {
         return !!(cell.descriptor && cell.descriptor.required && !cell.isEmpty());
     });
 };
+
+TDRecord.prototype.makeDefaultValues = function (){
+    this.properties.forEach(p=> p.makeDefaultValue());
+}
 
 
 TDRecord.prototype.ev_propertyChange = function () {
@@ -163,7 +192,8 @@ TDRecord.prototype.ev_propertyChange = function () {
     });
     if (sync.length > 0) {
         Promise.all(sync).then(ResizeSystem.update.bind(ResizeSystem));
-    } else {
+    }
+    else {
         ResizeSystem.update();
     }
 };
