@@ -11,10 +11,10 @@
   "author": "Pham Quoc Du Thien",
   "license": "ISC",
   "dependencies": {
-    "@babel/generator": "^7.14.5",
-    "absol": "^1.17.4",
-    "absol-acomp": "^0.9.62",
-    "jszip": "^3.6.0"
+    "@babel/core": "^7.16.0",
+    "@babel/generator": "^7.16.0",
+    "absol": "github:duthienkt/absol",
+    "absol-acomp": "github:duthienkt/absol-acomp"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",

@@ -72,7 +72,7 @@ module.exports = {
         host: '0.0.0.0',
         static: __dirname,
         allowedHosts:["localhost", "absol.ddns.net"],
-        https: https
+        // https: https
     },
     performance: {
         hints: false
