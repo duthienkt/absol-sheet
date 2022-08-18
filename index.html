@@ -40,6 +40,11 @@
         var _ = absol._;
         var $ = absol.$;
         window.data_module = {};
+        var counter = 50;
+        setTimeout(function resize(){
+            dispatchEvent(new Event('resize'));
+            if (counter--)setTimeout(resize, 100);
+        }, 100)
 
         data_module.load_dataBase = function (fragment) {
             if (!fragment.dataSync) {// chỉ load 1 lần

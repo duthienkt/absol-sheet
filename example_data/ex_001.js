@@ -12,13 +12,15 @@ export default {
         'old_after',
         'is_young',
         'married',
-        // 'note',
-        'salary'
+        'note',
+        'salary',
+        'dayAlive'
     ],
     propertyDescriptors: {
         full_name: {
             type: 'text',
-            text: 'Họ và tên'
+            text: 'Họ và tên',
+            defaultValue: '= "No Name "+ new Date().getTime()'
         },
         last_name: {
             text: 'Họ',
@@ -40,7 +42,8 @@ export default {
             type: 'Date',
             text: 'Ngày sinh',
             max: '= TODAY()',
-            required: true
+            required: true,
+            defaultValue: new Date(1995, 0, 1)
         }
         ,
         this_year_birthday: {
@@ -68,8 +71,8 @@ export default {
         },
         married: {
             text: "Đã lập gia đình",
-            type:
-                'bool'
+            type: 'bool',
+            defaultValue: false
         },
         salary: {
             type: 'number',
@@ -78,7 +81,8 @@ export default {
                 locales: 'vi-VN',
                 style: 'currency',
                 currency: 'VND'
-            }
+            },
+            defaultValue: 10000000
         },
         note: {
             type: 'text',
@@ -92,11 +96,16 @@ export default {
                 '}' +
                 'else if(old < 18 && married) RET = "Chưa đủ tuổi kết hôn"' +
                 '}}'// hàm nhiều bước dùng {{ để bắt đầu và }} để kết thúc
+        },
+        dayAlive: {
+            type: 'number',
+            text: "Số ngày",
+            calc: '= DATEDIF(birthday, TODAY(),"D")'
         }
     },
     records: [
         { full_name: 'Nguyễn Văn An', birthday: new Date(1996, 5, 19), salary: 30000000 },
-        { full_name: 'Trần Đức Tân' , salary: 25000000},
-        { full_name: 'Phan Bá Quân', married: true , salary: 32000000}
+        { full_name: 'Trần Đức Tân', salary: 25000000 },
+        { full_name: 'Phan Bá Quân', married: true, salary: 32000000 }
     ]
 }
