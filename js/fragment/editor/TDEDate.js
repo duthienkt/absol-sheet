@@ -3,6 +3,7 @@ import TDEBase from "./TDEBase";
 import {_, $} from '../../dom/SCore';
 import TDEText from "./TDEText";
 import {LOCAL_DATE_FORMAT, parseDateString} from "absol/src/Time/datetime";
+import AElement from "absol/src/HTML5/AElement";
 
 
 /***
@@ -63,8 +64,10 @@ TDEDate.prototype._loadCellStyle = function () {
 
 TDEDate.prototype.ev_inputChange = function () {
     this.flushValue(this.$input.value);
-    this.$input.$input.focus();
-    this.$input.$input.select();
+    if (document.activeElement && AElement.prototype.isDescendantOf.call(document.activeElement, this.tableEditor.$view)){
+        this.$input.$input.focus();
+        this.$input.$input.select();
+    }
 };
 
 TDEDate.prototype.ev_focus = TDEText.prototype.ev_focus;

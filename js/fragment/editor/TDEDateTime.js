@@ -1,8 +1,9 @@
 import OOP from "absol/src/HTML5/OOP";
 import TDEBase from "./TDEBase";
-import {_} from "../../dom/SCore";
+import { _ } from "../../dom/SCore";
 import TDEDate from "./TDEDate";
-import {parseDateTime} from "../../../../absol/src/Time/datetime";
+import { parseDateTime } from "absol/src/Time/datetime";
+import AElement from "absol/src/HTML5/AElement";
 
 
 /***
@@ -17,9 +18,9 @@ OOP.mixClass(TDEDateTime, TDEDate);
 
 TDEDateTime.prototype.prepareInput = function () {
     this.$input = _({
-        tag:'datetimeinput',
-        class:["asht-cell-editor-input", 'asht-date-time-cell-editor-input'],
-        on:{
+        tag: 'datetimeinput',
+        class: ["asht-cell-editor-input", 'asht-date-time-cell-editor-input'],
+        on: {
             change: this.ev_inputChange
         }
     });
@@ -33,11 +34,11 @@ TDEDateTime.prototype.reload = function () {
     var value = this.cell.value;
     var descriptor = this.cell.descriptor;
     var dateValue;
-    if (typeof value === "string"){
+    if (typeof value === "string") {
         dateValue = new Date(value);
-        if (isNaN(dateValue.getTime())){
+        if (isNaN(dateValue.getTime())) {
             try {
-            dateValue = parseDateTime(value, descriptor.format || 'dd/mm/yyyy hh:mm a');
+                dateValue = parseDateTime(value, descriptor.format || 'dd/mm/yyyy hh:mm a');
 
             }
             catch (e){
@@ -56,8 +57,10 @@ TDEDateTime.prototype.reload = function () {
 
 TDEDateTime.prototype.ev_inputChange = function () {
     this.flushValue(this.$input.value)
-    this.$input.$text.focus();
-    this.$input.$text.select();
+    if (document.activeElement && AElement.prototype.isDescendantOf.call(document.activeElement, this.tableEditor.$view)){
+        this.$input.$input.focus();
+        this.$input.$input.select();
+    }
 };
 
 TDEBase.typeClasses.datetime = TDEDateTime;
