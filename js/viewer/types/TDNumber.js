@@ -28,9 +28,10 @@ TDNumber.prototype.loadValue = function () {
     var copyFormat, locales;
     var format =  this.descriptor.format ||{};
     if (!this.descriptor.formater) {
-        copyFormat = Object.assign({locales: 'vi-VN'}, this.descriptor.format);
+        copyFormat = Object.assign({locales: 'vi-VN', maximumFractionDigits: 20,
+            minimumFractionDigits: 0}, format);
+        locales = copyFormat.locales;
         delete copyFormat.locales;
-        locales = format.locales;
         if (!locales) {
             if (copyFormat.currency === 'VND') locales = 'vi-VN';
         }

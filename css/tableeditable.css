@@ -9,7 +9,7 @@
     height: var(--table-data-height);
 }
 
-.asht-table-editor.as-overflow-x{
+.asht-table-editor.as-overflow-x {
     height: calc(var(--table-data-height) + 17px);
 }
 
@@ -43,12 +43,11 @@
 }
 
 .asht-table-editor.asht-read-only .asht-table-editor-editing-layer,
-.asht-table-editor.asht-read-only .asht-table-editor-foreground
-{
+.asht-table-editor.asht-read-only .asht-table-editor-foreground {
     display: none;
 }
 
-.asht-table-editor.asht-read-only .asht-new-row{
+.asht-table-editor.asht-read-only .asht-new-row {
     display: none;
 }
 
@@ -114,8 +113,6 @@ table.asht-table-data {
 }
 
 
-
-
 td.asht-table-data-root-cell {
     min-width: 1em;
 }
@@ -167,7 +164,6 @@ pre.as-preinput.asht-cell-editor-input {
 }
 
 
-
 input.asht-cell-editor-input[type="number"] {
     width: var(--cell-width);
     text-align: right;
@@ -179,6 +175,21 @@ input.asht-cell-editor-input[type="number"]::-webkit-outer-spin-button,
 input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+.absol-number-input.asht-cell-editor-input {
+    height: calc(var(--cell-height) - 0px);
+    min-width: calc(var(--cell-width) - 0px);
+
+}
+
+.absol-number-input.asht-cell-editor-input .absol-number-input-text-container {
+    right: 4px;
+}
+
+.absol-number-input.asht-cell-editor-input .absol-number-input-button-up-container,
+.absol-number-input.asht-cell-editor-input .absol-number-input-button-down-container {
+    display: none;
 }
 
 
@@ -251,7 +262,6 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 }
 
 /*.asht-date-cell-editor-input */
-
 
 
 .asht-cell-editor-input.as-select-menu {

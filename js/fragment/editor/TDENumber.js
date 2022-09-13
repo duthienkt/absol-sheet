@@ -22,10 +22,7 @@ TDENumber.prototype.prepareInput = function () {
      * @type {PreInput}
      */
     this.$input = _({
-        tag: 'input',
-        attr: {
-            type: 'number'
-        },
+        tag: 'numberinput',
         class: 'asht-cell-editor-input',
         on: {
             change: this.ev_inputChange,
@@ -75,11 +72,10 @@ TDENumber.prototype.reload = function () {
 
 TDENumber.prototype.onStart = function () {
     setTimeout(function () {
-        this.$input.focus();
+        this.$input.$input.focus();
         var value = this.cell.value;
         if (typeof value !== "number" || isNaN(value)) value = '';
         this.$input.value = value;
-        this.$input.select();
     }.bind(this), 5);
 };
 
