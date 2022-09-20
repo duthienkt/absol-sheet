@@ -23,6 +23,7 @@ import { selectRowHeight } from "./dialogs";
 import noop from "absol/src/Code/noop";
 import { copyText, pasteText } from "absol/src/HTML5/Clipboard";
 import Attributes from 'absol/src/AppPattern/Attributes';
+import { duplicateData } from "../util";
 
 // selectRowHeight()
 
@@ -152,6 +153,7 @@ TableEditor.prototype.getView = function () {
 
 
 TableEditor.prototype.setData = function (data) {
+    data = duplicateData(data);
     if (this.$tableData) this.$tableData.remove();
     var tableData = new TableData(this, {});
     this.$tableData = tableData.getView();
