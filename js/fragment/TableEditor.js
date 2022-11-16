@@ -231,7 +231,7 @@ TableEditor.prototype.ev_rootCellMouseDown = function (ev) {
     var row = this.tableData.findRowByIndex(0)
     var col = this.tableData.findColByIndex(0);
     if (row && col) {
-        this.editCell(row, col);
+        this.editCellDelay(row, col);
     }
 };
 
@@ -244,7 +244,7 @@ TableEditor.prototype.ev_headerMouseDown = function (ev) {
         this.selectCol(col);
         row = this.tableData.findRowByIndex(0);
         if (row) {
-            this.editCell(row, col);
+            this.editCellDelay(row, col);
         }
     }
 };
@@ -257,12 +257,12 @@ TableEditor.prototype.ev_editLayerMouseDown = function (ev) {
     if (ev.target === this.$editingLayer) {
         if (this.hoverRow) {
             if (this.hoverCol) {
-                this.editCell(this.hoverRow, this.hoverCol);
+                this.editCellDelay(this.hoverRow, this.hoverCol);
                 this.selectRow(null);
             }
             else {
                 this.selectRow(this.hoverRow);
-                this.editCell(this.hoverRow, this.tableData.headCells[0]);
+                this.editCellDelay(this.hoverRow, this.tableData.headCells[0]);
 
             }
         }
@@ -274,7 +274,7 @@ TableEditor.prototype.ev_indexColMouseDown = function (ev) {
     this.hoverRow = this.tableData.findRowByClientY(y);
     if (this.hoverRow) {
         this.selectRow(this.hoverRow);
-        this.editCell(this.hoverRow, this.tableData.headCells[0]);
+        this.editCellDelay(this.hoverRow, this.tableData.headCells[0]);
     }
 };
 
@@ -385,15 +385,7 @@ TableEditor.prototype.ev_indexColContextMenu = function (ev) {
             case "paste":
                 pasteText().then(function (result) {
                     try {
-                        var obj = JSON.parse(result, function (key, value) {
-                            var reISO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*))(?:Z|(\+|-)([\d|:]*))?$/;
-                            if (typeof value === 'string') {
-                                var a = reISO.exec(value);
-                                if (a)
-                                    return new Date(value);
-                            }
-                            return value;
-                        });
+                        var obj = duplicateData(JSON.parse(result));
                         thisTE.tableData.propertyNames.forEach(function (cr) {
                                 row.propertyByName[cr].value = obj[cr];
                             },
@@ -471,12 +463,20 @@ TableEditor.prototype.ev_newRowPropertyChange = function (event) {
     this.loadIndexCol();
 };
 
+TableEditor.prototype.editCellDelay = function (row, col){
+  setTimeout(()=>{
+      this.editCell(row, col);
+  }, 100);
+};
 
 TableEditor.prototype.editCell = function (row, col) {
     if (this.currentCellEditor) {
         this.currentCellEditor.off('finish', this.ev_cellEditorFinish);
         this.currentCellEditor.destroy();
         this.currentCellEditor = null;
+        // if (document.activeElement && AElement.prototype.isDescendantOf.call(document.activeElement, this.$editingbox)){
+        //     // document.activeElement.blur();
+        // }
         this.$editingbox.clearChild();
 
     }
@@ -571,8 +571,8 @@ TableEditor.prototype.focusIncompleteCell = function () {
     if (!this.tableData) return false;
     var incompleteCell = this.tableData.findFirsIncompleteCell();
     if (!incompleteCell) return false;
-    var col = this.tableData.findColByName(incompleteCell.pName)
-    this.editCell(incompleteCell.row, col);
+    var col = this.tableData.findColByName(incompleteCell.pName);
+    this.editCellDelay(incompleteCell.row, col);
     return true;
 };
 
@@ -798,7 +798,7 @@ TableEditor.prototype.scrollIntoCol = function (col) {
 
 TableEditor.prototype.ev_cellEditorFinish = function (event) {
     if (this.currentCellEditor === event.target) {
-        this.editCell(null);
+        this.editCellDelay(null);
     }
 };
 
