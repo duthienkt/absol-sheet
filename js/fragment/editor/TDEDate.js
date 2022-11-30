@@ -64,7 +64,7 @@ TDEDate.prototype._loadCellStyle = function () {
 
 TDEDate.prototype.ev_inputChange = function () {
     this.flushValue(this.$input.value);
-    if (document.activeElement && AElement.prototype.isDescendantOf.call(document.activeElement, this.tableEditor.$view)){
+    if (document.activeElement && AElement.prototype.isDescendantOf.call(document.activeElement, this.tableEditor.$view)) {
         this.$input.$input.focus();
         this.$input.$input.select();
     }
