@@ -3,6 +3,7 @@ import TDEBase from "./TDEBase";
 import TDEText from "./TDEText";
 import { _, $ } from '../../dom/SCore';
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import NumberInput from "absol-acomp/js/numberinput/NumberInput";
 
 
 /***
@@ -22,13 +23,14 @@ TDENumber.prototype.prepareInput = function () {
      * @type {PreInput}
      */
     this.$input = _({
-        tag: 'numberinput',
+        tag: NumberInput,
         class: 'asht-cell-editor-input',
         on: {
             change: this.ev_inputChange,
-            keydown: this.ev_keydown
         }
     });
+
+
     this.$editingbox.clearChild()
         .addChild(this.$input);
     this._loadCellStyle();
@@ -81,32 +83,35 @@ TDENumber.prototype.onStart = function () {
 
 
 TDENumber.prototype.ev_keydown = function (event) {
+    // var value = this.$input.value;
     if (event.key === "Enter" || event.key === "Tab") {
-        var text = this.$input.value;
-        var min = -Infinity;
-        var max = Infinity;
-        var descriptor = this.cell.descriptor;
-        if (!isNaN(descriptor.min) && isFinite(descriptor.min)) {
-            min = descriptor.min;
-        }
-        if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
-            max = descriptor.max;
-        }
-        var value = parseFloat(text);
-        if (!isNaN(value)) {
-            value = Math.max(min, Math.min(max, value));
-            this.flushValue(value);
-        }
-
-        this.tableEditor.updateFixedTableEltPosition();
-        event.preventDefault();
-        this.editCellNext();
+        // var text = this.$input.value;
+        // var min = -Infinity;
+        // var max = Infinity;
+        // var descriptor = this.cell.descriptor;
+        // if (!isNaN(descriptor.min) && isFinite(descriptor.min)) {
+        //     min = descriptor.min;
+        // }
+        // if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
+        //     max = descriptor.max;
+        // }
+        // var value = parseFloat(text);
+        // console.log(text, value)
+        //
+        // if (!isNaN(value)) {
+        //     value = Math.max(min, Math.min(max, value));
+        //     this.flushValue(value);
+        // }
+        //
+        // this.tableEditor.updateFixedTableEltPosition();
+        // event.preventDefault();
+        // this.editCellNext();
     }
 };
 
 
 TDENumber.prototype.ev_inputChange = function () {
-    var text = this.$input.value;
+    var value = this.$input.value;
     var min = -Infinity;
     var max = Infinity;
     var descriptor = this.cell.descriptor;
@@ -116,7 +121,6 @@ TDENumber.prototype.ev_inputChange = function () {
     if (!isNaN(descriptor.max) && isFinite(descriptor.max)) {
         max = descriptor.max;
     }
-    var value = parseFloat(text);
     if (!isNaN(value)) {
         value = Math.max(min, Math.min(max, value));
         this.flushValue(value);
