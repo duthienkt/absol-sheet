@@ -164,7 +164,7 @@ TDRecord.prototype.notifyPropertyChange = function (pName) {
 
 TDRecord.prototype.getIncompleteCells = function () {
     return this.properties.filter(function (cell) {
-        return !!(cell.descriptor && cell.descriptor.required && !cell.isEmpty());
+        return !!(cell.descriptor && (cell.descriptor.required ||cell.descriptor.require) && !cell.isEmpty());
     });
 };
 
