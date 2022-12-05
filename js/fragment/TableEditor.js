@@ -140,6 +140,7 @@ TableEditor.prototype.getView = function () {
     this.$headRow = $('tr', this.$header)
         .on('mousedown', this.ev_headerMouseDown);
     this.$headerScroller = $('.asht-table-editor-header-scroller', this.$view);
+    this.$headerScroller.on('scroll', this.ev_scrollHeader);
     this.$headerViewport = $('.asht-table-editor-header-viewport', this.$view);
 
     this.$indexViewport = $('.asht-table-editor-index-viewport', this.$view);
@@ -214,8 +215,24 @@ TableEditor.prototype.ev_wheel = function (ev) {
 
 
 TableEditor.prototype.ev_scrollBody = function () {
+    var now = new Date().getTime();
+    if (this._scrollHolder && this._scrollHolder.by !== 'body' && now -  this._scrollHolder.time < 100) {
+        return;
+    }
+    this._scrollHolder = { time: now, by: 'body' };
     this.$indexSccroller.scrollTop = this.$body.scrollTop;
     this.$headerScroller.scrollLeft = this.$body.scrollLeft;
+    this.updateSelectedPosition();
+};
+
+TableEditor.prototype.ev_scrollHeader = function () {
+    var now = new Date().getTime();
+    if (this._scrollHolder && this._scrollHolder.by !== 'header' && now -  this._scrollHolder.time < 100) {
+        return;
+    }
+    this._scrollHolder = { time: now, by: 'header' };
+    this.$indexSccroller.scrollTop = this.$body.scrollTop;
+    this.$body.scrollLeft = this.$headerScroller.scrollLeft;
     this.updateSelectedPosition();
 };
 
@@ -463,10 +480,10 @@ TableEditor.prototype.ev_newRowPropertyChange = function (event) {
     this.loadIndexCol();
 };
 
-TableEditor.prototype.editCellDelay = function (row, col){
-  setTimeout(()=>{
-      this.editCell(row, col);
-  }, 100);
+TableEditor.prototype.editCellDelay = function (row, col) {
+    setTimeout(() => {
+        this.editCell(row, col);
+    }, 100);
 };
 
 TableEditor.prototype.editCell = function (row, col) {
