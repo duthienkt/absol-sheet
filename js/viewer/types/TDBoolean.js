@@ -36,7 +36,7 @@ TDBoolean.prototype.loadValue = function () {
 
 TDBoolean.prototype.isEmpty = function (){
     var value;
-    return typeof value === 'boolean';
+    return typeof value !== 'boolean';
 }
 
 TDBase.typeClasses.bool = TDBoolean;

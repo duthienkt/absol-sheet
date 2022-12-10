@@ -72,7 +72,7 @@ TDDate.prototype._dateFromString = function (dateString) {
 
 TDDate.prototype.isEmpty = function () {
     var value = this.implicit(this.value);
-    return value instanceof Date;
+    return !(value instanceof Date);
 };
 
 

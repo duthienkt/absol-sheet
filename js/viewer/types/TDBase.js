@@ -71,7 +71,7 @@ TDBase.prototype.implicit = function (value) {
 
 TDBase.prototype.isEmpty = function () {
     var value = this.value;
-    return value !== null && value !== undefined;
+    return value === null || value === undefined;
 };
 
 
