@@ -51,7 +51,9 @@ TDEDateTime.prototype.reload = function () {
     }
     this.$input.value = dateValue;
     this.$input.disabled = descriptor.readOnly;
-    //todo: min, max
+    this.$input.min = descriptor.min || new Date(1890, 0, 1);
+    this.$input.max = descriptor.max || new Date(2090, 0, 1);
+    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
 };
 
 
