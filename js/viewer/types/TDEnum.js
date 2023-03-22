@@ -71,7 +71,7 @@ TDEnum.prototype.implicit = function (value) {
 
 TDEnum.prototype.isEmpty = function () {
     var value = this.value;
-    return value === null || value === this.descriptor.emptyValue;
+    return value === null|| value === undefined || value === this.descriptor.emptyValue;
 }
 
 
