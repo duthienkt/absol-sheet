@@ -78,6 +78,7 @@ TableData.prototype.import = function (data) {
     Object.assign(this.config, this.defaultConfig, data.config || {});
     this._computeData();
     this.reload();
+    this.emitResizeEvent();
 };
 
 
