@@ -32,7 +32,25 @@ function TDBase(row, pName) {
 TDBase.prototype.renewDescriptor = function () {
     var self = this;
     var originDescriptor = this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName];
-    var descriptor = Object.assign({}, originDescriptor || { type: 'text' });
+    var descriptor = {type: 'text' };
+
+    Object.keys(originDescriptor).forEach(key => {
+        var assigned = false;
+        var newValue = null;
+        Object.defineProperty(descriptor, key, {
+            enumerable: true,
+            configurable: true,
+            set: (value) => {
+                newValue = value;
+                assigned = true;
+            },
+            get: () => {
+                if (assigned) return  newValue;
+                return this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName] && this.row.table.propertyDescriptors[this.pName][key];
+            }
+        })
+    });
+
     var fx = originDescriptor && originDescriptor.__fx__;
     var syncs = [];
     if (fx) {
@@ -75,10 +93,10 @@ TDBase.prototype.isEmpty = function () {
 };
 
 
-TDBase.prototype.makeDefaultValue = function (){
+TDBase.prototype.makeDefaultValue = function () {
     var descriptor = this.descriptor;
     if ('calc' in descriptor) return;
-    if (('defaultValue' in descriptor) && (this.value === undefined || this.value === null)){
+    if (('defaultValue' in descriptor) && (this.value === undefined || this.value === null)) {
         this.value = descriptor.defaultValue;
     }
 }
@@ -151,15 +169,25 @@ TDBase.prototype.attachView = function () {
 };
 
 TDBase.prototype.execOnChange = function () {
+    var self = this;
     var record = this.record;
     var newRecord = Object.assign({}, this.record);
     var sync;
     if (this.descriptor.onchange) {
         sync = this.descriptor.onchange.invoke(this, newRecord);
     }
+
     function update() {
         var needUpdateSize = keyStringOf(newRecord, record);
-        if (needUpdateSize) ResizeSystem.update();
+        if (needUpdateSize) {
+            Object.keys(newRecord).forEach(key=>{
+                if (keyStringOf(record[key]) !== keyStringOf(newRecord[key])) {
+                    if (self.row.propertyByName[key])
+                    self.row.propertyByName[key].value = newRecord[key];
+                }
+            });
+            ResizeSystem.update();
+        }
     }
 
     if (sync && sync.then) {
