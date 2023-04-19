@@ -11,6 +11,7 @@ import "./editor/TDEEnumSet";
 import "./editor/TDEBoolean";
 import "./editor/TDETreeEnum";
 import "./editor/TDETime";
+import "./editor/TDETimeRange24";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP from "absol/src/HTML5/OOP";
@@ -149,6 +150,7 @@ TableEditor.prototype.getView = function () {
         .on('contextmenu', this.ev_indexColContextMenu);
     this.$indexSccroller = $('.asht-table-editor-index-scroller', this.$view);
     this.opt.loadAttributeHandlers(this.optHandlers);
+    this.$view.tableEditor = this;
     return this.$view;
 };
 

@@ -18,6 +18,7 @@ import "./types/TDDateTime";
 import "./types/TDUniqueString";
 import "./types/TDUniqueNumber";
 import "./types/TDTime";
+import "./types/TDTimeRange24";
 import { _ } from '../dom/SCore';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
