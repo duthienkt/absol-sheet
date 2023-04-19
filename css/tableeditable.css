@@ -274,6 +274,18 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 }
 
 
+.asht-time-range-24-cell-editor-input .ac-time-input,
+.asht-time-range-24-cell-editor-input .ac-time-input .as-time-input-text
+{
+    font: inherit;
+
+}
+
+.asht-time-range-24-cell-editor-input .ac-time-input  {
+    height: var(--cell-height);
+    width: 7em;
+}
+
 /*
 .asht-table-editor-editing-layer,
 .asht-table-editor-header,

@@ -85,3 +85,10 @@ table.asht-table-data > tbody > tr > td.asht-type-enum {
     text-align: left;
     padding-right: calc(0.35em + 18px);
 }
+
+table.asht-table-data > tbody > tr > td.asht-type-time-range-24{
+    text-align: left;
+    padding-right: 1.35em;
+    min-width: calc(14em + 11px);
+    box-sizing: border-box;
+}
