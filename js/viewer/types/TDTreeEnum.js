@@ -1,10 +1,10 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {_} from "../../dom/SCore";
-import {measureListSize} from "absol-acomp/js/SelectList";
+import { _ } from "../../dom/SCore";
+import { measureListSize } from "absol-acomp/js/SelectList";
 import treeListToList from "absol-acomp/js/list/treeListToList";
 import TDEnum from "./TDEnum";
-import {isDifferent} from "../../util";
+import { isDifferent } from "../../util";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 
 
@@ -22,14 +22,15 @@ OOP.mixClass(TDTreeEnum, TDBase);
 TDTreeEnum.prototype.attachView = function () {
     this.elt.clearChild();
     this.$text = _({
-        tag: 'span', child: {text: ''}
+        tag: 'span', child: { text: '' }
     });
     this.elt.addChild(this.$text);
 };
 
 TDTreeEnum.prototype.loadDescriptor = function () {
     var descriptor = this.descriptor;
-    descriptor.items = descriptor.items || [];
+    if (!descriptor.items)
+        descriptor.items = [];
     if (!descriptor.items.__val2Item__) {
         Object.defineProperty(descriptor.items, '__val2Item__', {
             configurable: true,
@@ -70,7 +71,8 @@ TDTreeEnum.prototype.loadValue = function () {
     var value = this.value;
     if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
         this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
-    } else {
+    }
+    else {
         this.$text.firstChild.data = '';
     }
 };
