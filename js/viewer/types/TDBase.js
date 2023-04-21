@@ -80,7 +80,16 @@ TDBase.prototype.renewDescriptor = function () {
     else {
         this.elt.removeClass('asht-calc');
     }
-    if (syncs.length > 0) return Promise.all(syncs);
+    if (syncs.length > 0) return Promise.all(syncs).then(()=>{
+        if ('calc' in descriptor) {
+          this.record[this.pName] = this.value;
+        }
+    });
+    else {
+        if ('calc' in descriptor) {
+            this.record[this.pName] = this.value;
+        }
+    }
 };
 
 TDBase.prototype.implicit = function (value) {
