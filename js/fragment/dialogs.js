@@ -124,10 +124,6 @@ export function selectRowHeight(opt) {
 
 
     return new Promise(function (resolve, reject) {
-        windowElt.$closeBtn.once('click', function () {
-            modal.remove();
-            reject();
-        });
         okBtn.once('click', function () {
             modal.remove();
             resolve(parseFloat(valueInput.value));
@@ -136,6 +132,5 @@ export function selectRowHeight(opt) {
             modal.remove();
             reject();
         });
-
     });
 }
