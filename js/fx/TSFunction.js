@@ -104,9 +104,7 @@ TSFunction.prototype.invoke = function (_this, record) {
     try {
         return this.func.call(_this, record);
     } catch (err) {
-        setTimeout(function () {
-            if (window['ABSOL_DEBUG'])    throw err;
-        }, 0);
+       // if (window["ABSOL_DEBUG"]) safeThrow(err);
         return undefined;
     }
 };
