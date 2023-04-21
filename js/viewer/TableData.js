@@ -8,6 +8,7 @@ import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import TSFunction from "../fx/TSFunction";
 import DomSignal from "absol/src/HTML5/DomSignal";
 import TSSwitch from "../fx/TSSwitch";
+import Context from "absol/src/AppPattern/Context";
 
 var _ = SComp._;
 var $ = SComp.$;
@@ -15,15 +16,17 @@ var $ = SComp.$;
 
 /***
  * /**
- * @extends EventEmitter
+ * @augments EventEmitter
+ * @augments Context
  * @param {TableEditor} editor
  * @param {object=} opt
  * @constructor
  */
 function TableData(editor, opt) {
+    Context.apply(this, arguments);
+    EventEmitter.call(this);
     this.editor = editor;
     this.opt = opt || {};
-    EventEmitter.call(this);
     this.propertyNames = [];
     this.propertyDescriptors = {};
     this.records = [];
@@ -43,7 +46,7 @@ function TableData(editor, opt) {
     }
 }
 
-OOP.mixClass(TableData, EventEmitter);
+OOP.mixClass(TableData, EventEmitter, Context);
 
 TableData.prototype.defaultConfig = {
     rowHeight: 21
@@ -81,16 +84,59 @@ TableData.prototype.import = function (data) {
     this.emitResizeEvent();
 };
 
+TableData.prototype.onStart = function () {
+
+};
+
+
+TableData.prototype.onResume = function () {
+
+};
+
+
+TableData.prototype.onPause = function () {
+
+};
+
+
+TableData.prototype.onStop = function () {
+
+};
+
+
+
+
 
 TableData.prototype._computeData = function () {
-    var descriptors = this.propertyDescriptors;
-    var descriptor;
-    var self = this;
     var propertyNames = this.propertyNames;
-    propertyNames.forEach(name => {
-        descriptor = descriptors[name];
-        if (!descriptor) return;
-        self._computeDescriptor(descriptor, propertyNames);
+
+    var computeFxDescriptor = (descriptor) => {
+        Object.defineProperty(descriptor, '__fx__', {
+            configurable: true,
+            enumerable: false,
+            value: {}
+        });
+        Object.keys(descriptor).reduce((ac, key) => {
+            var val = descriptor[key];
+            if (typeof val === 'string') {
+                if (val.startsWith('=')) {
+                    descriptor.__fx__[key] = new TSFunction(propertyNames, val);
+                }
+                else if (val.startsWith('{{') && val.endsWith('}}')) {
+                    descriptor.__fx__[key] = new TSFunction(propertyNames, val.substring(2, val.length - 2))
+                }
+                else if (key === 'onchange') {
+                    descriptor.__fx__[key] = new TSFunction(propertyNames, val);
+                }
+            }
+            else if (key === 'switch') {
+                descriptor.__fx__['switch'] = new TSSwitch(descriptor['switch']);
+            }
+            return ac;
+        }, descriptor.__fx__);
+    }
+
+    var computeDependenciesDescriptor = descriptor => {
         var dependencies = {};
         var fx = descriptor.__fx__;
         Object.keys(fx).reduce(function (ac, key) {
@@ -110,33 +156,16 @@ TableData.prototype._computeData = function () {
                 enumerable: false,
                 value: dependencies
             });
-    });
-};
+    };
 
-TableData.prototype._computeDescriptor = function (descriptor, propertyNames) {
-    Object.defineProperty(descriptor, '__fx__', {
-        configurable: true,
-        enumerable: false,
-        value: {}
+    var descriptors = this.propertyDescriptors;
+    var descriptor;
+    propertyNames.forEach(name => {
+        descriptor = descriptors[name];
+        if (!descriptor) return;
+        computeFxDescriptor(descriptor);
+        computeDependenciesDescriptor(descriptor);
     });
-    Object.keys(descriptor).reduce(function (ac, key) {
-        var val = descriptor[key];
-        if (typeof val === 'string') {
-            if (val.startsWith('=')) {
-                descriptor.__fx__[key] = new TSFunction(propertyNames, val);
-            }
-            else if (val.startsWith('{{') && val.endsWith('}}')) {
-                descriptor.__fx__[key] = new TSFunction(propertyNames, val.substring(2, val.length - 2))
-            }
-            else if (key === 'onchange') {
-                descriptor.__fx__[key] = new TSFunction(propertyNames, val);
-            }
-        }
-        else if (key === 'switch') {
-            descriptor.__fx__['switch'] = new TSSwitch(descriptor['switch']);
-        }
-        return ac;
-    }, descriptor.__fx__);
 };
 
 
@@ -342,7 +371,7 @@ Object.defineProperty(TableData.prototype, 'fragment', {
     get: function () {
         return (this.editor && this.editor.fragment) || this.opt.fragment || null
     },
-})
+});
 
 export default TableData;
 
