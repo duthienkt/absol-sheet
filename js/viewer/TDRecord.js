@@ -24,9 +24,11 @@ import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
 import { randomIdent } from "absol/src/String/stringGenerate";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import Context from "absol/src/AppPattern/Context";
 
 /***
- * @extends EventEmitter
+ * @augments EventEmitter
+ * @augments Context
  * @param {TableData} table
  * @param {Object} record
  * @param {number|"*"} idx
@@ -34,6 +36,7 @@ import ResizeSystem from "absol/src/HTML5/ResizeSystem";
  */
 export function TDRecord(table, record, idx) {
     EventEmitter.call(this);
+    Context.apply(this)
     this.busy = false;
     this.id = randomIdent(24);
     this.changedPNames = [];
