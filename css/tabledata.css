@@ -44,6 +44,7 @@ table.asht-table-data > tr > td:first-child {
 td.asht-type-number {
     text-align: right;
     padding-left: 0.35em;
+    min-width: 64px;
 }
 
 td.asht-type-boolean {
