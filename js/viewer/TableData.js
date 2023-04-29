@@ -4,7 +4,6 @@ import Attributes from "absol/src/AppPattern/Attributes";
 import '../../css/tabledata.css';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
-import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import TSFunction from "../fx/TSFunction";
 import DomSignal from "absol/src/HTML5/DomSignal";
 import TSSwitch from "../fx/TSSwitch";
@@ -85,25 +84,25 @@ TableData.prototype.import = function (data) {
 };
 
 TableData.prototype.onStart = function () {
-
+    console.log(this, 'start');
 };
 
 
 TableData.prototype.onResume = function () {
+    console.log(this, 'resume');
 
 };
 
 
 TableData.prototype.onPause = function () {
+    console.log(this, 'pause');
 
 };
 
 
 TableData.prototype.onStop = function () {
-
+    console.log(this, 'stop');
 };
-
-
 
 
 
@@ -185,6 +184,10 @@ TableData.prototype.loadHeader = function () {
     this.headCells = this.propertyNames.map(function (name, i) {
         var cell = _({
             tag: 'td',
+            attr:{
+                'data-col-idx': i,
+                'data-prop-name': name
+            },
             child: {
                 tag: 'span',
                 child: {
