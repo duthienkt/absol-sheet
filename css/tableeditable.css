@@ -1,102 +1,30 @@
 .asht-table-editor {
     position: relative;
     overflow: hidden;
-    --body-scroll-height: 0;
-    --body-scroll-width: 0;
-    background-color: white;
-    min-height: 50px;
-    --table-data-height: 50px;
-    height: var(--table-data-height);
 }
 
-.asht-table-editor.as-overflow-x {
-    height: calc(var(--table-data-height) + 17px);
+.asht-table-editor .as-table-scroller-fixed-y-header-ctn {
+    z-index: 20;
+}
+
+.asht-table-editor .as-table-scroller-fixed-xy-header-ctn {
+    z-index: 21;
 }
 
 .asht-table-editor-content {
     position: relative;
-    overflow: visible;
     display: inline-block;
-    vertical-align: top;
 }
-
 
 .asht-table-editor-foreground {
     position: absolute;
     z-index: 15;
     top: 0;
     left: 0;
-    bottom: var(--body-scroll-height);
-    right: var(--body-scroll-width);
+    bottom: 0;
+    right: 0;
     overflow: hidden;
     pointer-events: none;
-}
-
-.asht-table-editor-editing-layer {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 100%;
-    z-index: 12;
-    overflow: hidden;
-}
-
-.asht-table-editor.asht-read-only .asht-table-editor-editing-layer,
-.asht-table-editor.asht-read-only .asht-table-editor-foreground {
-    display: none;
-}
-
-.asht-table-editor.asht-read-only .asht-new-row {
-    display: none;
-}
-
-
-.asht-table-editor-body {
-    position: relative;
-    height: 100%;
-    overflow: auto;
-}
-
-
-.asht-table-editor-header-viewport,
-.asht-table-editor-index-viewport,
-.asht-table-editor-root-cell {
-    pointer-events: all;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
-    z-index: 10;
-    position: absolute;
-    left: 0;
-    top: 0;
-    overflow: hidden;
-}
-
-
-.asht-table-editor-root-cell {
-    border: solid 1px #dddddd;
-    box-sizing: border-box;
-    background-color: rgb(248, 249, 250);
-}
-
-.asht-table-editor-index-viewport {
-    bottom: 0;
-}
-
-.asht-table-editor-index-scroller {
-    height: 100%;
-    width: calc(100% + 18px);
-    overflow-y: scroll;
-}
-
-.asht-table-editor-header-viewport {
-    right: 0;
-}
-
-
-.asht-table-editor-header-scroller {
-    overflow-x: scroll;
 }
 
 
@@ -104,17 +32,6 @@ table.asht-table-data {
     table-layout: fixed;
     border-collapse: collapse;
     box-sizing: border-box;
-}
-
-.asht-text-cell-editor-input {
-    outline: none;
-    padding: 0;
-    margin: 0;
-}
-
-
-td.asht-table-data-root-cell {
-    min-width: 1em;
 }
 
 
@@ -261,8 +178,6 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
     line-height: var(--cell-height);
 }
 
-/*.asht-date-cell-editor-input */
-
 
 .asht-cell-editor-input.as-select-menu {
     height: var(--cell-height);
@@ -275,20 +190,12 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 
 
 .asht-time-range-24-cell-editor-input .ac-time-input,
-.asht-time-range-24-cell-editor-input .ac-time-input .as-time-input-text
-{
+.asht-time-range-24-cell-editor-input .ac-time-input .as-time-input-text {
     font: inherit;
 
 }
 
-.asht-time-range-24-cell-editor-input .ac-time-input  {
+.asht-time-range-24-cell-editor-input .ac-time-input {
     height: var(--cell-height);
     width: 7em;
 }
-
-/*
-.asht-table-editor-editing-layer,
-.asht-table-editor-header,
-.asht-table-editor-index-viewport {
-    visibility: hidden;
-}*/

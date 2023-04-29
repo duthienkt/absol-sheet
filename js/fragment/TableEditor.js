@@ -835,8 +835,8 @@ LayoutController.prototype.updateFixedXYHeaderSize = function () {
 };
 
 LayoutController.prototype.updateStyleConfig = function () {
-    if (this.editor.tableData.config &&this.editor.tableData.config.rowHeight){
-        this.editor.$view.addStyle('--row-height', this.editor.tableData.config.rowHeight+'px');
+    if (this.editor.tableData.config && this.editor.tableData.config.rowHeight) {
+        this.editor.$view.addStyle('--row-height', this.editor.tableData.config.rowHeight + 'px');
     }
     else {
         this.editor.$view.removeStyle('--row-height');
@@ -857,9 +857,6 @@ LayoutController.prototype.onData = function () {
     this.updateFixedXCol();
     this.updateFixedXYHeader();
 };
-
-
-
 
 
 LayoutController.prototype.scrollIntoRow = function (row) {
@@ -946,9 +943,10 @@ CommandController.prototype.ev_click = function (event) {
     if (hitElement(this.editor.tableData.$view, event)) {
         this.ev_clickTable(event);
     }
-    else {
-
+    else if (hitElement(this.editor.$fixXCol.lastChild, event)) {
+        this.ev_clickIndexCol(event);
     }
+
 };
 
 CommandController.prototype.ev_contextMenu = function (event) {
@@ -964,13 +962,14 @@ CommandController.prototype.ev_contextMenu = function (event) {
 };
 
 CommandController.prototype.ev_clickTable = function (event) {
+
     var c = event.target;
     var cellElt;
     while (c) {
         if (c.hasClass && c.hasClass('asht-table-cell')) {
             cellElt = c;
             this.ev_clickCell(cellElt, event);
-            break;
+            return;
         }
         c = c.parentElement;
     }
@@ -985,6 +984,20 @@ CommandController.prototype.ev_clickCell = function (cellElt, event) {
     this.editor.editTool.editCellDelay(row, col);
 };
 
+CommandController.prototype.ev_clickIndexCol = function (ev) {
+    var c = ev.target;
+    while (c) {
+        if (c.tagName === 'TR') break;
+        c = c.parentElement;
+    }
+    if (!c) return;
+    var rowIdx = Array.prototype.indexOf.call(c.parentElement.childNodes, c);
+    var row = this.editor.tableData.findRowByIndex(rowIdx) || this.editor.tableData.newRow;
+    this.editor.selectRow(row);
+    var firstCol = this.editor.tableData.findColByIndex(0);
+    this.editor.editTool.editCellDelay(row, firstCol);
+};
+
 
 CommandController.prototype.ev_indexColContextMenu = function (ev) {
     var thisTE = this.editor;
@@ -994,9 +1007,9 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
         c = c.parentElement;
     }
     if (!c) return;
-   var  rowIdx = Array.prototype.indexOf.call(c.parentElement.childNodes, c);
-   var row = this.editor.tableData.findRowByIndex(rowIdx) || this.editor.tableData.newRow;
-   this.editor.selectRow(row);
+    var rowIdx = Array.prototype.indexOf.call(c.parentElement.childNodes, c);
+    var row = this.editor.tableData.findRowByIndex(rowIdx) || this.editor.tableData.newRow;
+    this.editor.selectRow(row);
     var items = [];
     if (row.idx === "*") {
 
