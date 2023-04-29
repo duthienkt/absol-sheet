@@ -12,10 +12,11 @@ import "./editor/TDEBoolean";
 import "./editor/TDETreeEnum";
 import "./editor/TDETime";
 import "./editor/TDETimeRange24";
+import "./editor/TDEWeek";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP from "absol/src/HTML5/OOP";
-import EventEmitter from "absol/src/HTML5/EventEmitter";
+import EventEmitter, { hitElement } from "absol/src/HTML5/EventEmitter";
 import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
 import TDRecord from "../viewer/TDRecord";
@@ -27,6 +28,8 @@ import Attributes from 'absol/src/AppPattern/Attributes';
 import { duplicateData } from "../util";
 import Fragment from 'absol/src/AppPattern/Fragment';
 import safeThrow from "absol/src/Code/safeThrow";
+import TableScroller from "absol-acomp/js/tablescroller/TableScroller";
+import { swapChildrenInElt, vScrollIntoView } from "absol-acomp/js/utils";
 
 
 var _ = SComp._;
@@ -72,51 +75,81 @@ TableEditor.prototype.getView = function () {
     if (this.$view) return this.$view;
     ContextCaptor.auto();
     this.$view = _({
-        class: 'asht-table-editor',
+        extendEvent: 'contextmenu',
+        class: ['asht-table-editor', 'absol-table-scroller'],
         child: [
             'attachhook',
             {
-                class: 'asht-table-editor-body',
-                child: {
-                    class: 'asht-table-editor-content',
-                    child: {
-                        class: 'asht-table-editor-editing-layer',
-                        child: '.asht-table-editor-editing-box',
+                class: ['asht-table-editor-body', 'absol-table-scroller-content'],
+                child: [
+                    {
+                        class: ['asht-table-editor-vertical-scroller', 'as-table-scroller-vertical-scroller'],
+                        child: {
+                            class: ['asht-table-editor-vertical-scroller-viewport', 'as-table-scroller-horizontal-scroller-viewport'],
+                            child: [
+                                {
+                                    class: ['asht-table-editor-horizontal-scroller', 'as-table-scroller-horizontal-scroller'],
+                                    child: [
+                                        {
+                                            class: 'as-table-scroller-fixed-x-col-ctn',
+                                            child: {
+                                                tag: 'table',
+                                                class: 'as-table-scroller-fixed-x-col',
+                                            }
+                                        },
+                                        {
+                                            class: ['asht-table-editor-content', 'as-table-scroller-origin-table-ctn'],
+                                            child: [
+                                                {
+                                                    class: 'asht-table-editor-foreground',
+                                                    child: [
+                                                        '.asht-table-editor-selected-box'
+                                                    ]
+                                                },
+                                                '.asht-table-editor-editing-box'
+                                            ]
+                                        }
+                                    ]
+                                },
+
+                            ]
+                        }
+                    },
+                    {
+                        class: 'as-table-scroller-fixed-y-header-ctn',
+                        child: {
+                            class: 'as-table-scroller-fixed-y-header-scroller',
+                            child: {
+                                tag: 'table',
+                                class: 'as-table-scroller-fixed-y-header',
+
+                            }
+
+                        }
+                    },
+                    {
+                        class: 'as-table-scroller-fixed-xy-header-ctn',
+                        child: {
+                            tag: 'table',
+                            class: 'as-table-scroller-fixed-xy-header'
+                        }
                     }
+                ]
+            },
+
+
+            {
+                class: 'absol-table-scroller-vscrollbar-container',
+                child: {
+                    tag: 'vscrollbar'
                 }
             },
             {
-                class: 'asht-table-editor-foreground',
-                child: [
-                    {
-                        class: "asht-table-editor-header-viewport",
-                        child: {
-                            class: "asht-table-editor-header-scroller",
-                            child: {
-                                tag: 'table',
-                                class: ['asht-table-editor-header', 'asht-table-data'],
-                                child: {
-                                    tag: 'thead',
-                                    child: 'tr'
-                                }
-                            }
-                        }
-                    },
-                    {
-                        class: 'asht-table-editor-index-viewport',
-                        child: {
-                            class: 'asht-table-editor-index-scroller',
-                            child: {
-                                tag: 'table',
-                                class: ['asht-table-editor-index-col', 'asht-table-data'],
-                                extendEvent: 'contextmenu'
-                            }
-                        }
-                    },
-                    '.asht-table-editor-root-cell',
-                    '.asht-table-editor-selected-box'
-                ]
-            }
+                class: 'absol-table-scroller-hscrollbar-container',
+                child: {
+                    tag: 'hscrollbar'
+                }
+            },
         ]
     });
 
@@ -134,17 +167,14 @@ TableEditor.prototype.getView = function () {
     this.$body = $('.asht-table-editor-body', this.$view);
 
     this.$content = $('.asht-table-editor-content', this.$view);
+
     this.$foreground = $('.asht-table-editor-foreground', this.$view);
-    this.$editingLayer = $('.asht-table-editor-editing-layer', this.$view);
     this.$editingbox = $('.asht-table-editor-editing-box', this.$view)
         .addStyle('display', 'none');
 
     this.$selectedbox = $('.asht-table-editor-selected-box', this.$foreground).addStyle('display', 'none')
 
 
-    this.$rootCell = $('.asht-table-editor-root-cell', this.$view);
-    this.$rootCell.defineEvent('contextmenu');
-    this.$rootCell.on('contextmenu', this.ev_rootCellContextMenu);
     this.$header = $('.asht-table-editor-header', this.$view);
     this.$headRow = $('tr', this.$header);
     this.$headerScroller = $('.asht-table-editor-header-scroller', this.$view);
@@ -152,7 +182,20 @@ TableEditor.prototype.getView = function () {
     this.$headerViewport = $('.asht-table-editor-header-viewport', this.$view);
 
     this.$indexViewport = $('.asht-table-editor-index-viewport', this.$view);
-    this.$indexCol = $('.asht-table-editor-index-col', this.$view)
+    this.$indexCol = $('.asht-table-editor-index-col', this.$view);
+
+
+    this.$fixedYHeaderScroller = $('.as-table-scroller-fixed-y-header-scroller', this.$view);
+    this.$fixedYHeader = $('.as-table-scroller-fixed-y-header', this.$view);
+    this.$vscrollbar = $('.absol-table-scroller-vscrollbar-container vscrollbar', this.$view);
+    this.$hscrollbar = $('.absol-table-scroller-hscrollbar-container hscrollbar', this.$view);
+
+    this.$fixedXYHeader = $('.as-table-scroller-fixed-xy-header', this.$view);
+    this.$fixXCol = $('.as-table-scroller-fixed-x-col', this.$view);
+
+    this.$vscroller = $('.as-table-scroller-vertical-scroller', this.$view);
+    this.$hscroller = $('.as-table-scroller-horizontal-scroller', this.$view);
+
 
     this.$indexSccroller = $('.asht-table-editor-index-scroller', this.$view);
     this.opt.loadAttributeHandlers(this.optHandlers);
@@ -172,10 +215,13 @@ TableEditor.prototype.setData = function (data) {
     if (this.$tableData) this.$tableData.remove();
     var tableData = new TableData(this, {});
     this.$tableData = tableData.getView();
-    this.$content.addChildBefore(this.$tableData, this.$editingLayer);
+    this.$content.addChildBefore(this.$tableData, this.$content.firstChild);
     tableData.import(data);
     this.tableData = tableData;
-    this.domSignal.emit('request_load_foreground_content');
+    this.layoutCtrl.onData();
+
+
+    //? this.domSignal.emit('request_load_foreground_content');
     tableData.on('new_row_property_change', this.ev_newRowPropertyChange);
 };
 
@@ -186,17 +232,27 @@ TableEditor.prototype.getData = function () {
 
 TableEditor.prototype.getRecords = function () {
     return this.tableData && this.tableData.records;
-}
+};
+
+TableEditor.prototype.onStart = function () {
+    console.log('start')
+};
+
+
+TableEditor.prototype.onStop = function () {
+    console.log('stop')
+};
 
 
 TableEditor.prototype.ev_resize = function (event) {
-    this.layoutCtrl.updateFixedTableEltPosition();
+    this.layoutCtrl.onResize();
 };
 
 var t = 10;
 TableEditor.prototype.ev_newRowPropertyChange = function (event) {
     this.tableData.flushNewRow({});
-    this.layoutCtrl.loadIndexCol();
+    this.layoutCtrl.updateFixedXCol();
+    vScrollIntoView(this.tableData.newRow.elt);
 };
 
 TableEditor.prototype.editCellDelay = function (row, col) {
@@ -250,8 +306,7 @@ TableEditor.prototype.insertRow = function (atIdx, record) {
     for (var i = atIdx; i < tableData.bodyRow.length; ++i) {
         tableData.bodyRow[i].idx = i;
     }
-    this.layoutCtrl.loadIndexCol();
-    this.layoutCtrl.updateFixedTableEltPosition();
+    this.layoutCtrl.updateFixedXCol();
 };
 
 
@@ -265,8 +320,7 @@ TableEditor.prototype.removeRow = function (atIdx) {
     for (var i = atIdx; i < tableData.bodyRow.length; ++i) {
         tableData.bodyRow[i].idx = i;
     }
-    this.layoutCtrl.loadIndexCol();
-    this.selectTool.updateFixedTableEltPosition();
+    this.layoutCtrl.updateFixedXCol();
 };
 
 
@@ -355,10 +409,10 @@ function SelectTool(editor) {
 }
 
 SelectTool.prototype.onViewCreated = function () {
-    this.editor.$editingLayer.on('mousedown', this.ev_editLayerMouseDown);
-    this.editor.$rootCell.on('mousedown', this.ev_rootCellMouseDown);
-    this.editor.$headRow.on('mousedown', this.ev_headerMouseDown);
-    this.editor.$indexCol.on('mousedown', this.ev_indexColMouseDown);
+    // this.editor.$editingLayer.on('mousedown', this.ev_editLayerMouseDown);
+    // this.editor.$rootCell.on('mousedown', this.ev_rootCellMouseDown);
+    // this.editor.$headRow.on('mousedown', this.ev_headerMouseDown);
+    // this.editor.$indexCol.on('mousedown', this.ev_indexColMouseDown);
 };
 
 
@@ -408,7 +462,6 @@ SelectTool.prototype.updateSelectedPosition = function () {
             'min-width': rBound.width + 2 + 'px',
             'min-height': rBound.height + 2 + 'px'
         });
-        this.editor.$header.addStyle('z-index', '21');
     }
     else if (this.selectedData.col) {
         var col = this.selectedData.col;
@@ -420,7 +473,6 @@ SelectTool.prototype.updateSelectedPosition = function () {
             'min-width': cBound.width + 2 + 'px',
             'min-height': tBound.height + 2 + 'px'
         });
-        this.editor.$header.addStyle('z-index', '19');
     }
     else if (this.selectedData.type === 'all') {
         tBound = this.editor.tableData.$view.getBoundingClientRect();
@@ -441,26 +493,6 @@ SelectTool.prototype.selectAll = function () {
     this.updateSelectedPosition();
 };
 
-
-SelectTool.prototype.ev_editLayerMouseDown = function (ev) {
-    var x = ev.clientX;
-    var y = ev.clientY;
-    this.hoverRow = this.editor.tableData.findRowByClientY(y);
-    this.hoverCol = this.editor.tableData.findColByClientX(x);
-    if (ev.target === this.editor.$editingLayer) {
-        if (this.hoverRow) {
-            if (this.hoverCol) {
-                this.editor.editCellDelay(this.hoverRow, this.hoverCol);
-                this.editor.selectRow(null);
-            }
-            else {
-                this.editor.selectRow(this.hoverRow);
-                this.editor.editCellDelay(this.hoverRow, this.editor.tableData.headCells[0]);
-
-            }
-        }
-    }
-};
 
 SelectTool.prototype.ev_rootCellMouseDown = function (ev) {
     if (this.editor.opt.readOnly) return;
@@ -563,7 +595,7 @@ EditTool.prototype.updateEditingBoxPosition = function () {
     if (!this.currentCellEditor) return;
     var cellEditor = this.currentCellEditor;
     var elt = cellEditor.cell.elt;
-    var eLBound = this.editor.$editingLayer.getBoundingClientRect();
+    var eLBound = this.editor.$content.getBoundingClientRect();
     var eBound = elt.getBoundingClientRect();
     var left = eBound.left - eLBound.left;
     var width = eBound.width;
@@ -606,222 +638,289 @@ function LayoutController(editor) {
 }
 
 LayoutController.prototype.onViewCreated = function () {
-    this.editor.domSignal.on('request_load_foreground_content', this.loadForegroundContent.bind(this));
-    this.editor.$view.on('wheel', this.ev_wheel)
-        .on('mousemove', this.ev_mosemove);
-    this.editor.$headerScroller.on('scroll', this.ev_scrollHeader);
-    this.editor.$body.on('scroll', this.ev_scrollBody);
+    this.editor.$hscrollbar.on('scroll', this.ev_scroll.bind(this, 'hscrollbar'));
+    this.editor.$vscrollbar.on('scroll', this.ev_scroll.bind(this, 'vscrollbar'));
+    this.editor.$hscroller.on('scroll', this.ev_scroll.bind(this, 'hscroller'));
+    this.editor.$vscroller.on('scroll', this.ev_scroll.bind(this, 'vscroller'));
+    this.editor.$fixedYHeaderScroller.on('scroll', this.ev_scroll.bind(this, 'fixedYScroller'));
+    //
+    // this.editor.domSignal.on('request_load_foreground_content', this.loadForegroundContent.bind(this));
+    // this.editor.$view.on('wheel', this.ev_wheel)
+    //     .on('mousemove', this.ev_mosemove);
+    // this.editor.$headerScroller.on('scroll', this.ev_scrollHeader);
+    // this.editor.$body.on('scroll', this.ev_scrollBody);
+
 };
 
-
-LayoutController.prototype.loadHeader = function () {
-    var $headRow = this.editor.$headRow;
-    $headRow.clearChild();
-    Array.prototype.forEach.call(this.editor.tableData.$headRow.children, function (td, index) {
-        var newTd = $(td.cloneNode(true));
-        newTd.$originElt = td;
-        newTd.__index__ = index - 1;
-        $headRow.addChild(newTd);
-    });
-    this.updateHeaderPosition();
-};
-
-
-LayoutController.prototype.updateHeaderPosition = function () {
-    var headerElt = this.editor.$header;
-    var headerViewport = this.editor.$headerViewport;
-    var rootCellElt = this.editor.$rootCell;
-    Array.prototype.forEach.call(this.editor.$headRow.children, function (td, i) {
-        var originTd = td.$originElt;
-        var bound = originTd.getBoundingClientRect();
-        td.addStyle({
-            width: bound.width + 'px'
-        });
-        if (i === 0) {
-            headerElt.addStyle('height', bound.height + 1 + 'px');
-            headerViewport.addStyle('height', bound.height + 1 + 'px');
-            rootCellElt.addStyle('height', bound.height + 1 + 'px');
-            rootCellElt.addStyle('width', bound.width + 1 + 'px');
-        }
-    });
-    var bound = this.editor.tableData.$view.getBoundingClientRect();
-    this.editor.$header.addStyle('width', bound.width + 'px');
-};
-
-
-LayoutController.prototype.loadIndexCol = function () {
-    this.editor.$indexCol.clearChild();
-    this.$indexColRows = this.editor.tableData.bodyRow.concat([this.editor.tableData.newRow]).map(function (row) {
-        var trElt = $(row.elt.cloneNode(false));
-        trElt.$originElt = row.elt;
-        var tdElt = $(row.elt.firstChild.cloneNode(true));
-        tdElt.$originElt = row.elt.firstChild;
-        trElt.addChild(tdElt);
-        return trElt;
-    });
-    var indexHeaderElt = $(this.editor.tableData.$headRow.firstChild.cloneNode());
-    indexHeaderElt.$originElt = this.editor.tableData.$headRow.firstChild;
-    var indexHeaderRowElt = _({ tag: 'tr', child: indexHeaderElt });
-    indexHeaderRowElt.$originElt = this.editor.tableData.$headRow;
-    this.$indexColRows.unshift(indexHeaderRowElt);
-    this.editor.$indexCol.addChild(this.$indexColRows);
-    this.updateIndexColPosition();
-};
-
-
-LayoutController.prototype.updateIndexColPosition = function () {
-    var indexViewportElt = this.editor.$indexViewport;
-    var indexColElt = this.editor.$indexCol;
-    this.$indexColRows.forEach(function (trElt, i) {
-        var tdElt = trElt.firstChild;
-        var bound = tdElt.$originElt.getBoundingClientRect();
-        tdElt.addStyle('height', bound.height + 'px');
-        if (i === 0) {
-            indexViewportElt.addStyle('width', bound.width + 1 + 'px');//1px is border
-            indexColElt.addStyle('width', bound.width + 1 + 'px');
-        }
-    });
-};
-
-
-LayoutController.prototype.updateForegroundPosition = function () {
-    this.editor.$view.addStyle({
-        '--body-scroll-width': this.editor.$body.offsetWidth - this.editor.$body.clientWidth + 'px',
-        '--body-scroll-height': this.editor.$body.offsetHeight - this.editor.$body.clientHeight + 'px',
-    });
-    if (this.editor.$body.scrollWidth > this.editor.$body.clientWidth) {
-        this.editor.$view.addClass('as-overflow-x');
+LayoutController.prototype.updateScrollerStatus = function () {
+    var tableBound = this.editor.$tableData.getBoundingClientRect();
+    var bound = this.editor.$view.getBoundingClientRect();
+    if (tableBound.width > bound.width) {
+        this.editor.$view.addClass('as-scroll-horizontal');
+        this.editor.$hscrollbar.outerWidth = bound.width - 17;
+        this.editor.$hscrollbar.innerWidth = tableBound.width;
     }
     else {
-        this.editor.$view.removeClass('as-overflow-x');
+        this.editor.$view.removeClass('as-scroll-horizontal');
+    }
+
+    if (tableBound.height > bound.height) {
+        this.editor.$view.addClass('as-scroll-vertical');
+
+        this.editor.$vscrollbar.outerHeight = bound.height - 17;
+        this.editor.$vscrollbar.innerHeight = tableBound.height;
+    }
+    else {
+        this.editor.$view.removeClass('as-scroll-vertical');
     }
 };
 
 
-LayoutController.prototype.updateFixedTableEltPosition = function () {
-    if (!this.editor.tableData) return;
-    var tableBound = this.editor.tableData.getView().getBoundingClientRect()
-    this.editor.$view.addStyle({
-        '--table-data-width': tableBound.width + 'px',
-        '--table-data-height': tableBound.height + 'px',
+LayoutController.prototype.updateFixedYHeader = function () {
+    var head = $(this.editor.tableData.$thead.cloneNode(false));
+    head.$origin = this.editor.tableData.$thead;
+
+    var headRows = Array.prototype.filter.call(this.editor.tableData.$thead.childNodes, elt => elt.tagName === 'TR')
+        .map(tr => {
+            var copyTr = $(tr.cloneNode(false));
+            copyTr.$origin = tr;
+            var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD')
+                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })))
+            copyTr.addChild(cells);
+
+            return copyTr;
+
+        });
+    head.addChild(headRows);
+    this.editor.$fixedYHeader.clearChild().addChild(head);
+    this.editor.$fixedYHeader.attr('class', this.editor.tableData.$view.attr('class')).addClass('as-table-scroller-fixed-y-header')
+};
+
+LayoutController.prototype.updateFixedYHeaderSize = function () {
+    var cells = this.editor.$fixedYHeader.firstChild
+        && Array.prototype.slice.call(this.editor.$fixedYHeader.firstChild.firstChild.childNodes);
+    var bound = this.editor.tableData.$thead.getBoundingClientRect();
+    this.editor.$fixedYHeader.addStyle({
+        width: bound.width + 'px',
+        height: bound.height + 'px'
     });
-    this.updateForegroundPosition();
-    this.updateHeaderPosition();
-    this.updateIndexColPosition();
-    this.editor.editTool.updateEditingBoxPosition();
+    cells.forEach(elt => {
+        elt.addStyle('width', elt.$origin.getBoundingClientRect().width + 'px')
+    });
+};
+
+LayoutController.prototype.fullUpdateFixedXCol = function () {
+    var head, body;
+    this.editor.$fixXCol.clearChild();
+    this.editor.$fixXCol.$origin = this.editor.tableData.$view;
+    head = $(this.editor.tableData.$thead.cloneNode(false));
+    head.$origin = this.editor.tableData.$thead;
+    var headRows = Array.prototype.filter.call(this.editor.tableData.$thead.childNodes, elt => elt.tagName === 'TR')
+        .map(tr => {
+            var copyTr = $(tr.cloneNode(false));
+            copyTr.$origin = tr;
+            var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
+            cells = cells.slice(0, 1).map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+            copyTr.addChild(cells);
+            return copyTr;
+        });
+    head.addChild(headRows);
+
+    body = $(this.editor.tableData.$tbody.cloneNode());
+    body.$origin = this.editor.tableData.$tbody;
+    var rows = Array.prototype.filter.call(this.editor.tableData.$tbody.childNodes, elt => elt.tagName === 'TR')
+        .map(tr => {
+            var copyTr = $(tr.cloneNode(false));
+            copyTr.$origin = tr;
+            var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
+            cells = cells.slice(0, 1)
+                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+            // cells.forEach(elt => {
+            //     swapChildrenInElt(elt, elt.$origin);
+            //     this._swappedPairs.push([elt, elt.$origin]);
+            // });
+            copyTr.addChild(cells);
+            return copyTr;
+        });
+    body.addChild(rows);
+    this.editor.$fixXCol.addChild(head)
+        .addChild(body);
+    this.editor.$fixXCol.attr('class', this.editor.tableData.$view.attr('class')).addClass('as-table-scroller-fixed-x-col');
+}
+
+LayoutController.prototype.partUpdateFixedXCol = function () {
+    var body = this.editor.$fixXCol.lastChild;
+    var rows = Array.prototype.slice.call(this.editor.tableData.$tbody.childNodes);
+    var i = 0;
+    while (i < body.childNodes.length) {
+        if (body.childNodes[i].$origin !== rows[i]) break;
+        i++;
+    }
+    i = Math.max(0, Math.min(body.childNodes.length - 1, i));
+    while (body.childNodes.length > i) {
+        body.lastChild.remove();
+    }
+    rows = rows.slice(i).map(tr => {
+        var copyTr = $(tr.cloneNode(false));
+        copyTr.$origin = tr;
+        var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
+        cells = cells.slice(0, 1)
+            .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+        // cells.forEach(elt => {
+        //     swapChildrenInElt(elt, elt.$origin);
+        //     this._swappedPairs.push([elt, elt.$origin]);
+        // });
+        copyTr.addChild(cells);
+        return copyTr;
+    });
+    body.addChild(rows);
+
+};
+
+LayoutController.prototype.updateFixedXCol = function () {
+    if (this.editor.$fixXCol.$origin !== this.editor.tableData.$view) {
+        this.fullUpdateFixedXCol();
+    }
+    else {
+        this.partUpdateFixedXCol();
+    }
+};
+
+LayoutController.prototype.updateFixedXColSize = function () {
+    var bound = this.editor.tableData.$view.getBoundingClientRect();
+
+    this.editor.$fixXCol.addStyle('height', bound.height + 'px');
+
+    Array.prototype.forEach.call(this.editor.$fixXCol.firstChild.childNodes, elt => {
+        elt.addStyle('height', elt.$origin.getBoundingClientRect().height + 'px');
+    });
+
+    Array.prototype.forEach.call(this.editor.$fixXCol.firstChild.firstChild.childNodes, elt => {
+        elt.addStyle('width', elt.$origin.getBoundingClientRect().width + 'px');
+    });
+};
+
+
+LayoutController.prototype.updateFixedXYHeader = function () {
+
+    var head = $(this.editor.tableData.$thead.cloneNode(false));
+    var headRows = Array.prototype.filter.call(this.editor.tableData.$thead.childNodes, elt => elt.tagName === 'TR')
+        .map(tr => {
+            var copyTr = _('tr');
+            copyTr.$origin = tr;
+            var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
+            cells = cells.slice(0, 1)
+                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+            copyTr.addChild(cells);
+            // cells.forEach(cell => {
+            //     swapChildrenInElt(cell, cell.$origin);
+            //     this._swappedPairs.push([cell, cell.$origin]);
+            // })
+            return copyTr;
+
+        });
+    head.addChild(headRows);
+    this.editor.$fixedXYHeader.clearChild().addChild(head);
+    this.editor.$fixedXYHeader.attr('class', this.editor.tableData.$view.attr('class')).addClass('as-table-scroller-fixed-xy-header');
+};
+
+LayoutController.prototype.updateFixedXYHeaderSize = function () {
+    Array.prototype.forEach.call(this.editor.$fixedXYHeader.firstChild.childNodes, elt => {
+        elt.addStyle('height', elt.$origin.getBoundingClientRect().height + 'px');
+    });
+    Array.prototype.forEach.call(this.editor.$fixedXYHeader.firstChild.firstChild.childNodes, elt => {
+        elt.addStyle('width', elt.$origin.getBoundingClientRect().width + 'px');
+    });
+    // this.$leftLine.addStyle('left', this.editor.$fixedXYHeader.getBoundingClientRect().width - 1 + 'px');
+};
+
+LayoutController.prototype.updateStyleConfig = function () {
+    if (this.editor.tableData.config &&this.editor.tableData.config.rowHeight){
+        this.editor.$view.addStyle('--row-height', this.editor.tableData.config.rowHeight+'px');
+    }
+    else {
+        this.editor.$view.removeStyle('--row-height');
+    }
+};
+
+LayoutController.prototype.onResize = function () {
+    this.updateScrollerStatus();
+    this.updateFixedYHeaderSize();
+    this.updateFixedXColSize();
+    this.updateFixedXYHeaderSize();
     this.editor.selectTool.updateSelectedPosition();
 };
 
-LayoutController.prototype.loadForegroundContent = function () {
-    this.loadHeader();
-    this.loadIndexCol();
-    this.updateFixedTableEltPosition();
-    this.updateForegroundPosition();
+LayoutController.prototype.onData = function () {
+    this.updateStyleConfig();
+    this.updateFixedYHeader();
+    this.updateFixedXCol();
+    this.updateFixedXYHeader();
 };
 
 
+
+
+
 LayoutController.prototype.scrollIntoRow = function (row) {
-    var headerBound = this.editor.$header.getBoundingClientRect();
-    var bBound = this.editor.$foreground.getBoundingClientRect();
     var rowBound = row.elt.getBoundingClientRect();
-    var vTop = headerBound.bottom;
-    var vBottom = bBound.bottom;
-    if (vBottom - vTop >= rowBound.height) {
-        if (rowBound.bottom > vBottom) {
-            this.editor.$body.scrollTop += rowBound.bottom - vBottom;
-        }
-        else if (rowBound.top < vTop) {
-            this.editor.$body.scrollTop += rowBound.top - vTop;
-        }
+    var bound = this.editor.$body.getBoundingClientRect();
+    var headBound = this.editor.$fixedYHeader.getBoundingClientRect();
+    if (rowBound.top < headBound.bottom) {
+        this.editor.$vscroller.scrollTop -= headBound.bottom - rowBound.top;
     }
-    else {
-        this.editor.$body.scrollTop += rowBound.top + rowBound.height / 2 - (vBottom + vTop) / 2;
+    else if (rowBound.bottom > bound.bottom) {
+        this.editor.$vscroller.scrollTop += rowBound.bottom - bound.bottom;
     }
 };
 
 LayoutController.prototype.scrollIntoCol = function (col) {
     var colBound = col.elt.getBoundingClientRect();
-    var iBound = this.editor.$indexCol.getBoundingClientRect();
-    var bBound = this.editor.$foreground.getBoundingClientRect();
-    var vLeft = iBound.right;
-    var vRight = bBound.right;
-    if (vRight - vLeft >= colBound.width) {
-        if (colBound.right > vRight) {
-            this.editor.$body.scrollLeft += colBound.right - vRight;
-        }
-        else if (colBound.left < vLeft) {
-            this.editor.$body.scrollLeft += colBound.left - vLeft;
-        }
+    var bound = this.editor.$body.getBoundingClientRect();
+    var iBound = this.editor.$fixXCol.getBoundingClientRect();
+    if (colBound.left < iBound.right) {
+        this.editor.$hscroller.scrollLeft -= iBound.right - colBound.left;
     }
-    else {
-        if (vLeft < colBound.left) {
-            this.editor.$body.scrollLeft += colBound.left - vLeft;
-        }
-        else if (vRight > colBound.right) {
-            this.editor.$body.scrollLeft += colBound.right - vRight;
-        }
+    else if (colBound.right > bound.right) {
+        this.editor.$hscroller.scrollLeft += colBound.right - bound.right;
     }
 };
 
 
-LayoutController.prototype.scrollYBy = function (dy, dx) {
-    dx = dx || 0;
-    if (this.editor.$body.scrollTop + dy > this.editor.$body.scrollHeight - this.editor.$body.clientHeight) {
-        dy = this.editor.$body.scrollHeight - this.editor.$body.clientHeight - this.editor.$body.scrollTop;
-    }
-    else if (this.editor.$body.scrollTop + dy < 0) {
-        dy = -this.editor.$body.scrollTop;
-    }
-    if (dy)
-        this.editor.$body.scrollTop += dy;
-
-    if (this.editor.$body.scrollLeft + dx > this.editor.$body.scrollWidth - this.editor.$body.clientWidth) {
-        dx = this.editor.$body.scrollWidth - this.editor.$body.clientWidth - this.editor.$body.scrollLeft;
-    }
-    else if (this.editor.$body.scrollLeft + dx < 0) {
-        dx = -this.editor.$body.scrollLeft;
-    }
-    if (dx)
-        this.editor.$body.scrollLeft += dx;
-    return dy * dy + dx * dx;
-};
-
-
-/***
- *
- * @param {WheelEvent} ev
- */
-LayoutController.prototype.ev_wheel = function (ev) {
-    var dL = ev.shiftKey ? this.scrollYBy(0, ev.deltaY) : this.scrollYBy(ev.deltaY);
-    if (dL !== 0) ev.preventDefault();
-};
-
-LayoutController.prototype.ev_mosemove = function (ev) {
-    if (!this.editor.tableData) return;
-};
-
-
-LayoutController.prototype.ev_scrollHeader = function () {
+LayoutController.prototype.ev_scroll = function (tag, event) {
     var now = new Date().getTime();
-    if (this._scrollHolder && this._scrollHolder.by !== 'header' && now - this._scrollHolder.time < 100) {
-        return;
+    if (this._scrollTarget && this._scrollTarget.tag !== tag && now - this._scrollTarget.time < 100) return;
+    this._scrollTarget = {
+        tag: tag,
+        time: now
+    };
+    var scrollLeft;
+    if (tag === 'hscrollbar') {
+        scrollLeft = this.editor.$hscrollbar.innerOffset;
+        this.editor.$hscroller.scrollLeft = scrollLeft;
+        this.editor.$fixedYHeaderScroller.scrollLeft = scrollLeft;
     }
-    this._scrollHolder = { time: now, by: 'header' };
-    this.editor.$indexSccroller.scrollTop = this.editor.$body.scrollTop;
-    this.editor.$body.scrollLeft = this.editor.$headerScroller.scrollLeft;
-    this.editor.selectTool.updateSelectedPosition();
-};
-
-
-LayoutController.prototype.ev_scrollBody = function () {
-    var now = new Date().getTime();
-    if (this._scrollHolder && this._scrollHolder.by !== 'body' && now - this._scrollHolder.time < 100) {
-        return;
+    else if (tag === 'hscroller') {
+        scrollLeft = this.editor.$hscroller.scrollLeft;
+        this.editor.$hscrollbar.innerOffset = scrollLeft;
+        this.editor.$fixedYHeaderScroller.scrollLeft = scrollLeft;
     }
-    this._scrollHolder = { time: now, by: 'body' };
-    this.editor.$indexSccroller.scrollTop = this.editor.$body.scrollTop;
-    this.editor.$headerScroller.scrollLeft = this.editor.$body.scrollLeft;
-    this.editor.selectTool.updateSelectedPosition();
+    else if (tag === 'fixedYScroller') {
+        scrollLeft = this.editor.$fixedYHeaderScroller.scrollLeft;
+        this.editor.$hscrollbar.innerOffset = scrollLeft;
+        this.editor.$hscroller.scrollLeft = scrollLeft;
+    }
+
+    var scrollTop;
+    if (tag === 'vscrollbar') {
+        scrollTop = this.editor.$vscrollbar.innerOffset;
+        this.editor.$vscroller.scrollTop = scrollTop;
+    }
+    else if (tag === 'vscroller') {
+        scrollTop = this.editor.$vscroller.scrollTop;
+        this.editor.$vscrollbar.innerOffset = scrollTop;
+    }
+
 };
 
 /***
@@ -837,13 +936,67 @@ function CommandController(editor) {
 }
 
 CommandController.prototype.onViewCreated = function () {
-    this.editor.$indexCol.on('contextmenu', this.ev_indexColContextMenu);
+    ContextCaptor.auto();
+    this.editor.$view.on('click', this.ev_click);
+    this.editor.$view.on('contextmenu', this.ev_contextMenu);
+    // this.editor.$indexCol.on('contextmenu', this.ev_indexColContextMenu);
+};
+
+CommandController.prototype.ev_click = function (event) {
+    if (hitElement(this.editor.tableData.$view, event)) {
+        this.ev_clickTable(event);
+    }
+    else {
+
+    }
+};
+
+CommandController.prototype.ev_contextMenu = function (event) {
+    if (hitElement(this.editor.tableData.$view, event)) {
+
+    }
+    else if (hitElement(this.editor.$fixXCol.lastChild, event)) {
+        this.ev_indexColContextMenu(event);
+    }
+    else if (hitElement(this.editor.$fixedXYHeader, event)) {
+        this.ev_rootCellContextMenu(event);
+    }
+};
+
+CommandController.prototype.ev_clickTable = function (event) {
+    var c = event.target;
+    var cellElt;
+    while (c) {
+        if (c.hasClass && c.hasClass('asht-table-cell')) {
+            cellElt = c;
+            this.ev_clickCell(cellElt, event);
+            break;
+        }
+        c = c.parentElement;
+    }
+};
+
+CommandController.prototype.ev_clickCell = function (cellElt, event) {
+    var colIdx = Array.prototype.indexOf.call(cellElt.parentElement.childNodes, cellElt) - 1;
+    var col = this.editor.tableData.findColByIndex(colIdx);
+    var rowIdx = Array.prototype.indexOf.call(cellElt.parentElement.parentElement.childNodes, cellElt.parentElement);
+    var row = this.editor.tableData.findRowByIndex(rowIdx);
+    if (!row && rowIdx >= 0) row = this.editor.tableData.newRow;
+    this.editor.editTool.editCellDelay(row, col);
 };
 
 
 CommandController.prototype.ev_indexColContextMenu = function (ev) {
     var thisTE = this.editor;
-    var row = this.editor.tableData.findRowByClientY(ev.clientY);
+    var c = ev.target;
+    while (c) {
+        if (c.tagName === 'TR') break;
+        c = c.parentElement;
+    }
+    if (!c) return;
+   var  rowIdx = Array.prototype.indexOf.call(c.parentElement.childNodes, c);
+   var row = this.editor.tableData.findRowByIndex(rowIdx) || this.editor.tableData.newRow;
+   this.editor.selectRow(row);
     var items = [];
     if (row.idx === "*") {
 
@@ -897,8 +1050,9 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
                 selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
                     .then(function (result) {
                         thisTE.tableData.config.rowHeight = result;
+                        thisTE.layoutCtrl.updateStyleConfig();
                         ResizeSystem.update();
-                    }, err=>{
+                    }, err => {
                         if (err) console.error(err);
                     });
                 break;
@@ -969,8 +1123,8 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
     });
 };
 
-TableEditor.prototype.ev_rootCellContextMenu = function (ev) {
-    var thisTE = this;
+CommandController.prototype.ev_rootCellContextMenu = function (ev) {
+    var thisTE = this.editor;
     ev.showContextMenu({
         items: [
             {
