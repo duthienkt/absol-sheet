@@ -60,17 +60,25 @@ TableData.prototype.configHandlers.rowHeight = {
         }
         this.$view.addStyle('--row-height', value + 'px');
         return value;
+    },
+    export: function (ref) {
+        if (ref.get() === 21) return undefined;
+        return  ref.get() || undefined;
     }
 }
 
 
 TableData.prototype.export = function () {
-    return {
+    var res = {
         propertyNames: this.propertyNames,
         propertyDescriptors: this.propertyDescriptors,
         records: this.records,
-        config: this.config.export()
+    };
+    var config = this.config.export();
+    if (Object.keys(config).length > 0 ) {
+        res.config = config;
     }
+    return res;
 };
 
 TableData.prototype.import = function (data) {
