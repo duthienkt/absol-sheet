@@ -10,7 +10,7 @@ import { keyStringOf } from "absol-acomp/js/utils";
  * @constructor
  */
 function TDBase(row, pName) {
-    this.elt = _('td');
+    this.elt = _('td.asht-table-cell');
     this.row = row;
     this.pName = pName;
     this.sync = this.renewDescriptor();
