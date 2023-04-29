@@ -83,7 +83,7 @@ TDEText.prototype.ev_keydown = function (event) {
         }
         else {
             this.flushValue(text);
-            this.tableEditor.updateFixedTableEltPosition();
+            this.tableEditor.layoutCtrl.updateFixedYHeaderSize();
             this.editCellNext();
         }
         event.preventDefault();
