@@ -1,7 +1,7 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import { formatDateTime, implicitDate, LOCAL_DATE_FORMAT, parseDateString } from "absol/src/Time/datetime";
-import {_} from "../../dom/SCore";
+import { _ } from "../../dom/SCore";
 
 
 /***
@@ -18,7 +18,7 @@ OOP.mixClass(TDDate, TDBase);
 TDDate.prototype.attachView = function () {
     this.elt.clearChild();
     this.$date = _({
-        tag: 'span', child: {text: ''}
+        tag: 'span', child: { text: '' }
     });
     this.elt.addChild(this.$date);
 };
@@ -38,10 +38,12 @@ TDDate.prototype.loadValue = function () {
     if (value) {
         if (!dateValue) {
             text = "?[" + JSON.stringify(value) + ']';
-        } else if (dateValue) {
+        }
+        else if (dateValue) {
             text = formatDateTime(dateValue, (this.descriptor.format || "dd/MM/yyyy").replace(/m/g, 'M'));
         }
-    } else {
+    }
+    else {
         text = '';
     }
 
@@ -51,9 +53,13 @@ TDDate.prototype.loadValue = function () {
 
 TDDate.prototype.isEmpty = function () {
     var value = this.implicit(this.value);
-    return !(value instanceof Date);
+    return this.isNoneValue(value);
 };
 
+
+TDDate.prototype.isNoneValue = function (value) {
+    return TDBase.prototype.isNoneValue.call(this, value) || !(value instanceof Date);
+};
 
 Object.defineProperty(TDDate.prototype, 'dateValue', {
     get: function () {
