@@ -11,6 +11,7 @@ import "./types/TDNumber";
 import "./types/TDBoolean";
 import "./types/TDEnum";
 import "./types/TDTreeEnum";
+import "./types/TDTreeLeafEnum";
 import "./types/TDArrayOfText";
 import "./types/TDEnumSet";
 import "./types/TDDate";
@@ -20,6 +21,8 @@ import "./types/TDUniqueNumber";
 import "./types/TDTime";
 import "./types/TDTimeRange24";
 import "./types/TDWeek";
+import "./types/TDWeek";
+import "./types/TDDateNLevel";
 import { _ } from '../dom/SCore';
 import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
@@ -188,6 +191,7 @@ TDRecord.prototype.ev_propertyChange = function () {
             return !!dp[cN];
         });
     });
+
 
 
     var sync = needUpdatePNames.map(function (name) {
