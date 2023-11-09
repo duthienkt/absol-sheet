@@ -1,7 +1,7 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {LOCAL_DATE_FORMAT, parseDateTime, formatDateTime} from "absol/src/Time/datetime";
-import {_} from "../../dom/SCore";
+import { LOCAL_DATE_FORMAT, parseDateTime, formatDateTime } from "absol/src/Time/datetime";
+import { _ } from "../../dom/SCore";
 import TDDate from "./TDDate";
 
 
@@ -26,6 +26,7 @@ TDDateTime.prototype.attachView = function () {
 
 TDDateTime.prototype.implicit = TDDate.prototype.implicit;
 TDDateTime.prototype.isEmpty = TDDate.prototype.isEmpty;
+TDDateTime.prototype.isNoneValue = TDDate.prototype.isNoneValue;
 
 TDDateTime.prototype.loadValue = function () {
     var value = this.value;
