@@ -54,9 +54,8 @@ TDEnumSet.prototype.implicit = function (value) {
     return value;
 };
 
-TDEnumSet.prototype.isEmpty = function () {
-    var value = this.value;
-    return !value || value.length === 0;
+TDEnumSet.prototype.isNoneValue = function (value) {
+    return TDBase.prototype.isNoneValue.call(this, value) || value.length === 0;
 };
 
 TDEnumSet.prototype.loadValue = function () {
