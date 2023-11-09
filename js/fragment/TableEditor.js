@@ -10,9 +10,11 @@ import "./editor/TDEEnum";
 import "./editor/TDEEnumSet";
 import "./editor/TDEBoolean";
 import "./editor/TDETreeEnum";
+import "./editor/TDETreeLeafEnum";
 import "./editor/TDETime";
 import "./editor/TDETimeRange24";
 import "./editor/TDEWeek";
+import "./editor/TDEDateNLevel";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP from "absol/src/HTML5/OOP";
@@ -235,17 +237,18 @@ TableEditor.prototype.getRecords = function () {
 };
 
 TableEditor.prototype.onStart = function () {
-    console.log('start')
+    // console.log('start')
 };
 
 
 TableEditor.prototype.onStop = function () {
-    console.log('stop')
+    // console.log('stop')
 };
 
 
 TableEditor.prototype.ev_resize = function (event) {
     this.layoutCtrl.onResize();
+    this.editTool.updateEditingBoxPosition();
 };
 
 var t = 10;
@@ -346,7 +349,7 @@ TableEditor.prototype.optHandlers.readOnly = {
         else {
             this.$view.removeClass('asht-read-only');
         }
-        ResizeSystem.update();
+        // ResizeSystem.update();
     },
     get: function () {
         return this.$view.containsClass('asht-read-only');
@@ -844,6 +847,7 @@ LayoutController.prototype.updateStyleConfig = function () {
 };
 
 LayoutController.prototype.onResize = function () {
+    if (!this.editor.tableData) return;
     this.updateScrollerStatus();
     this.updateFixedYHeaderSize();
     this.updateFixedXColSize();
@@ -948,8 +952,10 @@ CommandController.prototype.ev_click = function (event) {
     }
 
 };
-
+//ban giao tài sản-? chọn TPN =<> nguễn Ngọc Tm=> sửa
+//Bàn giao tai sản hệ tống
 CommandController.prototype.ev_contextMenu = function (event) {
+    if (this.editor.opt.readOnly) return;
     if (hitElement(this.editor.tableData.$view, event)) {
 
     }
@@ -976,6 +982,7 @@ CommandController.prototype.ev_clickTable = function (event) {
 };
 
 CommandController.prototype.ev_clickCell = function (cellElt, event) {
+    if (this.editor.opt.readOnly) return;
     var colIdx = Array.prototype.indexOf.call(cellElt.parentElement.childNodes, cellElt) - 1;
     var col = this.editor.tableData.findColByIndex(colIdx);
     var rowIdx = Array.prototype.indexOf.call(cellElt.parentElement.parentElement.childNodes, cellElt.parentElement);
@@ -985,6 +992,7 @@ CommandController.prototype.ev_clickCell = function (cellElt, event) {
 };
 
 CommandController.prototype.ev_clickIndexCol = function (ev) {
+    if (this.editor.opt.readOnly) return;
     var c = ev.target;
     while (c) {
         if (c.tagName === 'TR') break;
@@ -1064,7 +1072,7 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
                     .then(function (result) {
                         thisTE.tableData.config.rowHeight = result;
                         thisTE.layoutCtrl.updateStyleConfig();
-                        ResizeSystem.update();
+                        ResizeSystem.updateDown(thisTE.$attachook);
                     }, err => {
                         if (err) console.error(err);
                     });
