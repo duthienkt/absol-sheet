@@ -1,7 +1,6 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {_} from "../../dom/SCore";
-
+import { _ } from "../../dom/SCore";
 
 
 /***
@@ -16,7 +15,8 @@ function TDBoolean() {
 OOP.mixClass(TDBoolean, TDBase);
 
 TDBoolean.prototype.implicit = function (value) {
-    if (['false', '0', 'no'].indexOf(value) >=0) return false;
+    if (value === undefined || value === null) return undefined;
+    if (['false', '0', 'no'].indexOf(value) >= 0) return false;
     return !!value;
 };
 
@@ -34,10 +34,9 @@ TDBoolean.prototype.loadValue = function () {
         this.$check.addStyle('display', 'none');
 };
 
-TDBoolean.prototype.isEmpty = function (){
-    var value;
+TDBoolean.prototype.isNoneValue = function (value) {
     return typeof value !== 'boolean';
-}
+};
 
 TDBase.typeClasses.bool = TDBoolean;
 TDBase.typeClasses.boolean = TDBoolean;
