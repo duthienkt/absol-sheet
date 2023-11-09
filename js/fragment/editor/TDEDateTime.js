@@ -20,6 +20,9 @@ TDEDateTime.prototype.prepareInput = function () {
     this.$input = _({
         tag: 'datetimeinput',
         class: ["asht-cell-editor-input", 'asht-date-time-cell-editor-input'],
+        props:{
+            format:'dd/MM/yyyy hh:mm a'
+        },
         on: {
             change: this.ev_inputChange
         }
