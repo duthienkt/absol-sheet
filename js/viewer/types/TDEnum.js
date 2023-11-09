@@ -56,7 +56,7 @@ TDEnum.prototype.loadDescriptor = function () {
 
         }.bind(this), 0)
     }
-    ResizeSystem.update();
+    ResizeSystem.updateUp(this.elt);
 };
 
 TDEnum.prototype.implicit = function (value) {
@@ -68,11 +68,6 @@ TDEnum.prototype.implicit = function (value) {
     } else if (descriptor.items.__val2Item__[value]) return value;
     return null;
 };
-
-TDEnum.prototype.isEmpty = function () {
-    var value = this.value;
-    return value === null|| value === undefined || value === this.descriptor.emptyValue;
-}
 
 
 TDEnum.prototype.loadValue = function () {
