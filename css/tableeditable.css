@@ -35,6 +35,10 @@ table.asht-table-data {
 }
 
 
+.asht-read-only .asht-new-row {
+    display: none;
+}
+
 .asht-table-editor-editing-box {
     position: absolute;
     box-sizing: border-box;
@@ -198,4 +202,26 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 .asht-time-range-24-cell-editor-input .ac-time-input {
     height: var(--cell-height);
     width: 7em;
+}
+
+.asht-date-n-level-cell-editor-input > div,
+.asht-date-n-level-cell-editor-input input.as-date-input-text {
+    height: var(--cell-height);
+}
+
+.as-date-n-level-input.asht-date-n-level-cell-editor-input .absol-selectmenu {
+    margin-right: 2px;
+}
+
+.asht-date-n-level-cell-editor-input .as-date-input-clear-btn {
+    height: calc(var(--cell-height) - 2px);
+    top: calc(50% - var(--cell-height) * 0.5 + 1px)
+}
+
+.asht-date-n-level-cell-editor-input button span.mdi {
+    line-height: 1;
+}
+
+.asht-date-n-level-cell-editor-input {
+    background-color: white;
 }
