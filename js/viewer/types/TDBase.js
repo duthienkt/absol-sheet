@@ -32,7 +32,7 @@ function TDBase(row, pName) {
 TDBase.prototype.renewDescriptor = function () {
     var self = this;
     var originDescriptor = this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName];
-    var descriptor = {type: 'text' };
+    var descriptor = { type: 'text' };
 
     Object.keys(originDescriptor).forEach(key => {
         var assigned = false;
@@ -45,7 +45,7 @@ TDBase.prototype.renewDescriptor = function () {
                 assigned = true;
             },
             get: () => {
-                if (assigned) return  newValue;
+                if (assigned) return newValue;
                 return this.row.table.propertyDescriptors && this.row.table.propertyDescriptors[this.pName] && this.row.table.propertyDescriptors[this.pName][key];
             }
         })
@@ -80,9 +80,9 @@ TDBase.prototype.renewDescriptor = function () {
     else {
         this.elt.removeClass('asht-calc');
     }
-    if (syncs.length > 0) return Promise.all(syncs).then(()=>{
+    if (syncs.length > 0) return Promise.all(syncs).then(() => {
         if ('calc' in descriptor) {
-          this.record[this.pName] = this.value;
+            this.record[this.pName] = this.value;
         }
     });
     else {
@@ -97,8 +97,12 @@ TDBase.prototype.implicit = function (value) {
 };
 
 TDBase.prototype.isEmpty = function () {
-    var value = this.value;
-    return value === null || value === undefined;
+    return this.isNoneValue(this.value);
+};
+
+TDBase.prototype.isNoneValue = function (value) {
+    var descriptor = this.descriptor;
+    return value === null || value === undefined || ((typeof value === "number") &&isNaN(value)) || value === "" || value === descriptor.emptyValue;
 };
 
 
@@ -160,11 +164,12 @@ Object.defineProperty(TDBase.prototype, 'value', {
     },
     set: function (value) {
         value = this.implicit(value);
-        if ((value === undefined || value === null)
-            && (this.row.record[this.pName] === null || this.row.record[this.pName] === undefined))
-            return;
-        if (!this.isEqual(value, this.row.record[this.pName])) {
-            this.row.record[this.pName] = value;
+        if (this.isNoneValue(value)) value = undefined;
+        var prevValue = this.row.record[this.pName];
+
+        if (!this.isEqual(value, prevValue)) {
+            if (value === undefined) delete this.row.record[this.pName];
+            else this.row.record[this.pName] = value;
             this.loadValue();
             this.execOnChange();
             this.notifyChange();
@@ -189,10 +194,10 @@ TDBase.prototype.execOnChange = function () {
     function update() {
         var needUpdateSize = keyStringOf(newRecord, record);
         if (needUpdateSize) {
-            Object.keys(newRecord).forEach(key=>{
+            Object.keys(newRecord).forEach(key => {
                 if (keyStringOf(record[key]) !== keyStringOf(newRecord[key])) {
                     if (self.row.propertyByName[key])
-                    self.row.propertyByName[key].value = newRecord[key];
+                        self.row.propertyByName[key].value = newRecord[key];
                 }
             });
             ResizeSystem.update();
@@ -234,6 +239,7 @@ TDBase.prototype.reload = function () {
 
 
 TDBase.prototype.isEqual = function (a, b) {
+    if (this.isNoneValue(a) && this.isNoneValue(b)) return true;
     return keyStringOf(a) === keyStringOf(b);
 };
 
