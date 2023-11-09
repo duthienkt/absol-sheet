@@ -60,11 +60,12 @@ TDTreeEnum.prototype.loadDescriptor = function () {
             }
         }.bind(this), 0)
     }
-    ResizeSystem.update();
+    ResizeSystem.updateUp(this.elt, true);
 };
 
 TDTreeEnum.prototype.implicit = TDEnum.prototype.implicit;
 TDTreeEnum.prototype.isEmpty = TDEnum.prototype.isEmpty;
+TDTreeEnum.prototype.isNoneValue = TDEnum.prototype.isNoneValue;
 
 TDTreeEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
