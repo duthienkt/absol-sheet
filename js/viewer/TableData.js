@@ -92,24 +92,24 @@ TableData.prototype.import = function (data) {
 };
 
 TableData.prototype.onStart = function () {
-    console.log(this, 'start');
+    // console.log(this, 'start');
 };
 
 
 TableData.prototype.onResume = function () {
-    console.log(this, 'resume');
+    // console.log(this, 'resume');
 
 };
 
 
 TableData.prototype.onPause = function () {
-    console.log(this, 'pause');
+    // console.log(this, 'pause');
 
 };
 
 
 TableData.prototype.onStop = function () {
-    console.log(this, 'stop');
+    // console.log(this, 'stop');
 };
 
 

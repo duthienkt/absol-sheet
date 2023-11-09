@@ -3,7 +3,10 @@ table.asht-table-data {
 }
 
 
-table.asht-table-data,
+table.asht-table-data {
+    border: solid 1px #dddddd;
+}
+
 table.asht-table-data > tbody > tr > td,
 table.asht-table-data > thead > tr > td,
 table.asht-table-data > tr > td {
