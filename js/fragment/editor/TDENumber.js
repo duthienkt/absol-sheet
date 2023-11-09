@@ -25,6 +25,9 @@ TDENumber.prototype.prepareInput = function () {
     this.$input = _({
         tag: NumberInput,
         class: 'asht-cell-editor-input',
+        props: {
+            notNull: false
+        },
         on: {
             change: this.ev_inputChange,
         }
