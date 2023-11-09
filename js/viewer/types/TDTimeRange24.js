@@ -27,7 +27,8 @@ TDTimeRange24.prototype.attachView = function () {
 TDTimeRange24.prototype.implicit = function (value) {
     var rangeValue = null;
     if (isNaturalNumber(value)) rangeValue = { dayOffset: value, duration: 0 };
-    else if (!value){}
+    else if (!value) {
+    }
     else if (typeof rangeValue === "object") {
         if (isNaturalNumber(value.dayOffset)) {
             rangeValue = { dayOffset: value.dayOffset, duration: 0 };
@@ -45,7 +46,6 @@ TDTimeRange24.prototype.implicit = function (value) {
 
 TDTimeRange24.prototype.loadValue = function () {
     var value = this.implicit(this.value);
-    console.log(value)
     var text;
     var date = beginOfDay(new Date())
     if (!value) text = '';
@@ -59,8 +59,7 @@ TDTimeRange24.prototype.loadValue = function () {
 
 
 TDTimeRange24.prototype.isEmpty = function () {
-    var value = this.implicit(this.value);
-    return !value;
+    return this.isNoneValue(this.implicit(this.value));
 };
 
 

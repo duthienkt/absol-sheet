@@ -35,10 +35,5 @@ TDText.prototype.loadValue = function () {
 };
 
 
-TDText.prototype.isEmpty = function () {
-    var value = this.value;
-    return !value || value.length === 0;
-};
-
 TDBase.typeClasses.text = TDText;
 export default TDText;
