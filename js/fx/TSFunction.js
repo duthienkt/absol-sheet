@@ -1,6 +1,5 @@
 import * as ExcelFx from './ExcelFx';
 
-var types = babel.types;
 
 function TSFunction(propertyNames, body) {
     this.propertyNames = propertyNames;
@@ -39,6 +38,7 @@ TSFunction.prototype._makeConstCode = function (localConstants) {
 };
 
 TSFunction.prototype._compile = function () {
+    var types = babel && babel.types;
     var scriptCode;
     if (this.body.startsWith('=')) {
         scriptCode = 'RET' + this.body;
