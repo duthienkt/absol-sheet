@@ -204,13 +204,26 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
     width: 7em;
 }
 
-.asht-date-n-level-cell-editor-input > div,
-.asht-date-n-level-cell-editor-input input.as-date-input-text {
+/*.asht-date-n-level-cell-editor-input > div,*/
+/*.asht-date-n-level-cell-editor-input input.as-date-input-text {*/
+/*    height: var(--cell-height);*/
+/*}*/
+
+.as-date-n-level-input.asht-date-n-level-cell-editor-input {
+    padding: 0;
+    margin: 0;
     height: var(--cell-height);
+    width: calc(6em + 50px + 2em);
 }
 
-.as-date-n-level-input.asht-date-n-level-cell-editor-input .absol-selectmenu {
-    margin-right: 2px;
+.asht-date-n-level-cell-editor-input .as-date-n-level-input-select-level {
+    height: 100%;
+    font-size: 0.8em;
+    width: 1em;
+}
+
+.asht-date-n-level-cell-editor-input  .as-date-input-text {
+    padding-left: 1.2em;
 }
 
 .asht-date-n-level-cell-editor-input .as-date-input-clear-btn {
@@ -224,4 +237,5 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 
 .asht-date-n-level-cell-editor-input {
     background-color: white;
+    padding: 0;
 }
