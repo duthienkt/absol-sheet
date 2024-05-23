@@ -29,67 +29,49 @@ import OOP from "absol/src/HTML5/OOP";
 import { randomIdent } from "absol/src/String/stringGenerate";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import Context from "absol/src/AppPattern/Context";
+import { ASHTRow } from "../fragment/Abstractions";
 
 /***
- * @augments EventEmitter
- * @augments Context
+
  * @param {TableData} table
  * @param {Object} record
  * @param {number|"*"} idx
  * @constructor
  */
 export function TDRecord(table, record, idx) {
-    EventEmitter.call(this);
-    Context.apply(this)
-    this.busy = false;
-    this.id = randomIdent(24);
-    this.changedPNames = [];
-    this.table = table;
+    ASHTRow.call(this, table, record);
+   this.idx = idx;
+}
+
+OOP.mixClass(TDRecord, ASHTRow);
+
+TDRecord.prototype.render = function () {
     this.elt = _('tr');
     this.$idx = _('td');
     this.elt.addChild(this.$idx);
-    this.table.domSignal.on(this.id + '_property_change', this.ev_propertyChange.bind(this));
-    /***
-     *
-     * @type {TDBase[]}
-     */
-    this.properties = [];
-    this.propertyByName = {};
-    this.idx = idx;
-    this.record = record;
+};
+
+
+TDRecord.prototype.loadFields = function () {
+    this.loadCells();
 }
-
-OOP.mixClass(TDRecord, EventEmitter);
-
-
-Object.defineProperty(TDRecord.prototype, 'record', {
-    set: function (value) {
-        this.busy = true;
-        this._record = value;
-        this.loadCells();
-        this.busy = false;
-    },
-    get: function () {
-        return this._record;
-    }
-});
 
 Object.defineProperty(TDRecord.prototype, 'computedRecord', {
     get: function () {
         var descriptors = this.propertyDescriptors;
         var pNames = this.propertyNames;
         var self = this;
-        return pNames.reduce((ac, pName)=>{
+        return pNames.reduce((ac, pName) => {
             var descriptor = descriptors[pName];
             Object.defineProperty(ac, pName, {
                 enumerable: true,
                 configurable: true,
-                get: function (){
-                    if (descriptor.__fx__ && descriptor.__fx__.calc){
+                get: function () {
+                    if (descriptor.__fx__ && descriptor.__fx__.calc) {
 
                     }
                 },
-                set: function (){
+                set: function () {
 
                 }
             });
@@ -99,23 +81,6 @@ Object.defineProperty(TDRecord.prototype, 'computedRecord', {
     }
 });
 
-Object.defineProperty(TDRecord.prototype, 'fragment', {
-    get: function () {
-        return this.table.fragment;
-    }
-});
-
-Object.defineProperty(TDRecord.prototype, 'propertyNames', {
-    get: function () {
-        return this.table.propertyNames;
-    }
-});
-
-Object.defineProperty(TDRecord.prototype, 'propertyDescriptors', {
-    get: function () {
-        return this.table.propertyDescriptors;
-    }
-});
 
 Object.defineProperty(TDRecord.prototype, 'idx', {
     set: function (value) {
@@ -134,12 +99,7 @@ Object.defineProperty(TDRecord.prototype, 'idx', {
     }
 });
 
-//for name mapping
-Object.defineProperty(TDRecord.prototype, 'cells', {
-    get: function () {
-        return this.properties;
-    }
-});
+
 
 
 TDRecord.prototype.loadCells = function () {
@@ -162,50 +122,7 @@ TDRecord.prototype.loadCells = function () {
     this.elt.addChild(cellEltList);
 };
 
-TDRecord.prototype.notifyPropertyChange = function (pName) {
-    if (this.changedPNames.indexOf(pName) < 0) {
-        this.changedPNames.push(pName);
-        this.table.domSignal.emit(this.id + '_property_change');
-        this.emit('property_change', { target: this, record: this.record, pName: pName }, this);
-    }
-};
 
-TDRecord.prototype.getIncompleteCells = function () {
-    return this.properties.filter(function (cell) {
-        return !!(cell.descriptor && (cell.descriptor.required ||cell.descriptor.require) && cell.isEmpty());
-    });
-};
-
-TDRecord.prototype.makeDefaultValues = function (){
-    this.properties.forEach(p=> p.makeDefaultValue());
-}
-
-
-TDRecord.prototype.ev_propertyChange = function () {
-    var changedPNames = this.changedPNames.splice(0, this.changedPNames.length);
-    var self = this;
-    var needUpdatePNames = this.propertyNames.filter(function (name) {
-        if (changedPNames.indexOf(name) >= 0) return true;
-        var dp = self.table.propertyDescriptors[name].__dependencies__;
-        return changedPNames.some(function (cN) {
-            return !!dp[cN];
-        });
-    });
-
-
-
-    var sync = needUpdatePNames.map(function (name) {
-        return self.propertyByName[name].reload();
-    }).filter(function (p) {
-        return !!p && p.then;
-    });
-    if (sync.length > 0) {
-        Promise.all(sync).then(ResizeSystem.update.bind(ResizeSystem));
-    }
-    else {
-        ResizeSystem.update();
-    }
-};
 
 
 export default TDRecord;

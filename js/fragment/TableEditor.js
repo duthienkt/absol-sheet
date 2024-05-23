@@ -1,5 +1,5 @@
 import '../../css/tableeditable.css';
-import SComp from "../dom/SComp";
+import { _, $ } from "../dom/SCore";
 import TableData from "../viewer/TableData";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
 import "./editor/TDEText";
@@ -32,10 +32,7 @@ import Fragment from 'absol/src/AppPattern/Fragment';
 import safeThrow from "absol/src/Code/safeThrow";
 import TableScroller from "absol-acomp/js/tablescroller/TableScroller";
 import { swapChildrenInElt, vScrollIntoView } from "absol-acomp/js/utils";
-
-
-var _ = SComp._;
-var $ = SComp.$;
+import { ASHTConfirmEvent, ASHTEditor, ASHTWaitValueEvent } from "./Abstractions";
 
 
 /***
@@ -48,11 +45,7 @@ var $ = SComp.$;
  * @constructor
  */
 function TableEditor(opt) {
-    Fragment.call(this);
-    var defaultOpt = Object.assign({ autoStart: true }, this.opt, opt);
-    this.opt = new Attributes(this);
-    Object.assign(this.opt, defaultOpt);
-    EventEmitter.call(this);
+    ASHTEditor.call(this, opt);
 
     this.autoStateMng = new StateAutoManager(this);
     this.layoutCtrl = new LayoutController(this);
@@ -64,19 +57,18 @@ function TableEditor(opt) {
             this[key] = this[key].bind(this);
         }
     }
-
-
 }
 
-OOP.mixClass(TableEditor, Fragment, EventEmitter);
+OOP.mixClass(TableEditor, ASHTEditor);
 
 
 TableEditor.prototype.opt = {};
 
-TableEditor.prototype.getView = function () {
+TableEditor.prototype.createView = function () {
     if (this.$view) return this.$view;
     ContextCaptor.auto();
     this.$view = _({
+        elt: this.opt.elt,
         extendEvent: 'contextmenu',
         class: ['asht-table-editor', 'absol-table-scroller'],
         child: [
@@ -126,7 +118,6 @@ TableEditor.prototype.getView = function () {
                                 class: 'as-table-scroller-fixed-y-header',
 
                             }
-
                         }
                     },
                     {
@@ -362,15 +353,6 @@ TableEditor.prototype.optHandlers.readOnly = {
 Object.defineProperty(TableEditor.prototype, 'records', {
     get: function () {
         return this.tableData && this.tableData.records;
-    }
-});
-
-Object.defineProperty(TableEditor.prototype, 'fragment', {
-    get: function () {
-        return this.opt.fragment;
-    },
-    set: function (value) {
-        this.opt.fragment = value;
     }
 });
 
@@ -944,7 +926,7 @@ CommandController.prototype.onViewCreated = function () {
 };
 
 CommandController.prototype.ev_click = function (event) {
-    if (hitElement(this.editor.tableData.$view, event)) {
+    if (this.editor.tableData && hitElement(this.editor.tableData.$view, event)) {
         this.ev_clickTable(event);
     }
     else if (hitElement(this.editor.$fixXCol.lastChild, event)) {
@@ -952,8 +934,8 @@ CommandController.prototype.ev_click = function (event) {
     }
 
 };
-//ban giao tài sản-? chọn TPN =<> nguễn Ngọc Tm=> sửa
-//Bàn giao tai sản hệ tống
+
+
 CommandController.prototype.ev_contextMenu = function (event) {
     if (this.editor.opt.readOnly) return;
     if (hitElement(this.editor.tableData.$view, event)) {
@@ -1065,7 +1047,9 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
         items: items
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventData = { cmd: cmd };
+        var eventOpt = { cmd: cmd };
+        var ev2;
+        console.log(cmd)
         switch (cmd) {
             case 'row_height':
                 selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
@@ -1078,45 +1062,33 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
                     });
                 break;
             case 'remove':
-                eventData.type = 'cmd_remove_row';
-                eventData.rowIdx = row.idx;
-                eventData.accepted = true;
-                eventData.accept = function (isAccepted) {
-                    this.accepted = isAccepted;
-                };
-                thisTE.emit(eventData.type, eventData, thisTE);
-                if (eventData.accepted && eventData.accepted.then) {
-                    eventData.accepted.then(function (isAccept) {
-                        if (isAccept)
-                            thisTE.removeRow(eventData.rowIdx);
-                    });
-                }
-                else if (eventData.accepted) {
-                    thisTE.removeRow(eventData.rowIdx);
-                }
+                eventOpt.type = 'cmd_remove_row';
+                eventOpt.rowIdx = row.idx;
+                eventOpt.accepted = true;
+                ev2 = new ASHTConfirmEvent(eventOpt);
+
+                thisTE.emit(eventOpt.type, ev2, thisTE);
+                ev2.afterThen(isAccept => {
+                    if (isAccept)
+                        thisTE.removeRow(eventOpt.rowIdx);
+                });
                 break;
             case 'insert_before':
             case 'insert_after':
-                eventData.type = 'cmd_insert_row';
-                eventData.rowIdx = row.idx + (cmd === 'insert_after' ? 1 : 0);
-                eventData.result = {};
-                eventData.resolve = function (result) {
-                    this.result = result;
-                };
+                eventOpt.type = 'cmd_insert_row';
+                eventOpt.rowIdx = row.idx + (cmd === 'insert_after' ? 1 : 0);
+                ev2 = new ASHTWaitValueEvent(eventOpt);
 
-                thisTE.emit(eventData.type, eventData, thisTE);
-                if (eventData.result) {
-                    if (eventData.result.then) {
-                        eventData.result.then(function (result) {
-                            if (result) {
-                                thisTE.insertRow(eventData.rowIdx, result);
-                            }
-                        });
+                thisTE.emit(eventOpt.type, ev2, thisTE);
+                ev2.afterThen(result => {
+                    if (result) {
+                        thisTE.insertRow(eventOpt.rowIdx, result);
                     }
-                    else {
-                        thisTE.insertRow(eventData.rowIdx, eventData.result);
+                    else if (result === null) {
+                        thisTE.insertRow(eventOpt.rowIdx, {});
                     }
-                }
+                });
+
                 break;
 
             case "copy":
@@ -1161,20 +1133,20 @@ CommandController.prototype.ev_rootCellContextMenu = function (ev) {
         ]
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventData = { cmd: cmd };
-        eventData.type = 'cmd_insert_row';
-        eventData.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.records.length;
-        eventData.result = {};
-        eventData.resolve = function (result) {
+        var eventOpt = { cmd: cmd };
+        eventOpt.type = 'cmd_insert_row';
+        eventOpt.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.records.length;
+        eventOpt.result = {};
+        eventOpt.resolve = function (result) {
             this.result = result;
         };
 
-        thisTE.emit(eventData.type, eventData, thisTE);
-        if (eventData.result) {
-            if (eventData.result.then) {
-                eventData.result.then(function (result) {
+        thisTE.emit(eventOpt.type, eventOpt, thisTE);
+        if (eventOpt.result) {
+            if (eventOpt.result.then) {
+                eventOpt.result.then(function (result) {
                     if (result) {
-                        thisTE.insertRow(eventData.rowIdx, result);
+                        thisTE.insertRow(eventOpt.rowIdx, result);
                         if (cmd === 'append_last') {
                             thisTE.$body.scrollTop = thisTE.$body.scrollHeight - thisTE.$body.clientHeight;
                         }
@@ -1182,7 +1154,7 @@ CommandController.prototype.ev_rootCellContextMenu = function (ev) {
                 });
             }
             else {
-                thisTE.insertRow(eventData.rowIdx, eventData.result);
+                thisTE.insertRow(eventOpt.rowIdx, eventOpt.result);
                 thisTE.$body.scrollTop = thisTE.$body.scrollHeight - thisTE.$body.clientHeight;
             }
         }

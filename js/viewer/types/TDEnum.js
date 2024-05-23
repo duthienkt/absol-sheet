@@ -73,9 +73,10 @@ TDEnum.prototype.implicit = function (value) {
 TDEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;
-    if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
+    if (value !== null && value !== undefined && descriptor.items.__val2Item__[value] && !this.isNoneValue(value)) {
         this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
-    } else {
+    }
+    else {
         this.$text.firstChild.data = '';
     }
 };
