@@ -10,6 +10,7 @@ import noop from "absol/src/Code/noop";
 import Context from "absol/src/AppPattern/Context";
 import { randomIdent } from "absol/src/String/stringGenerate";
 import { computeSheetDescriptor } from "../util";
+import { stringHashCode } from "absol/src/String/stringUtils";
 
 
 /**
@@ -352,6 +353,9 @@ ASHTRow.prototype.loadFields = function () {
     throw new Error("Not implement!");
 };
 
+ASHTRow.prototype.remove = function () {
+    this.table.removeRow(this);
+};
 
 ASHTRow.prototype.notifyPropertyChange = function (pName) {
     if (this.changedPNames.indexOf(pName) < 0) {
@@ -396,6 +400,10 @@ ASHTRow.prototype.ev_propertyChange = function () {
     }
 };
 
+ASHTRow.prototype.getHash = function () {
+    return stringHashCode(JSON.stringify(this.record));
+};
+
 
 Object.defineProperty(ASHTRow.prototype, 'record', {
     set: function (value) {
@@ -408,6 +416,8 @@ Object.defineProperty(ASHTRow.prototype, 'record', {
         return this.rawRecord;
     }
 });
+
+
 
 
 Object.defineProperty(ASHTRow.prototype, 'fragment', {
@@ -450,8 +460,6 @@ export function ASHTTable(editor, opt) {
     this.opt = opt || {};
     this.propertyNames = [];
     this.propertyDescriptors = {};
-    this.records = [];//
-
 }
 
 
@@ -471,7 +479,45 @@ ASHTTable.prototype.import = function (data) {
 
 
 ASHTTable.prototype.export = function () {
+    return {
+        propertyNames: this.propertyNames,
+        propertyDescriptors: this.propertyDescriptors,
+        records: this.getRecords()
+    };
+};
 
+ASHTTable.prototype.getLength = function () {
+    throw new Error("Not Implement!");
+};
+
+ASHTTable.prototype.getRecords = function () {
+    throw new Error("Not Implement!");
+};
+
+ASHTTable.prototype.addRowAt = function (idx, record) {
+    throw new Error("Not Implement!");
+};
+
+ASHTTable.prototype.removeRowAt = function (idx) {};
+
+ASHTTable.prototype.removeRow = function (row) {
+    var idx = this.rowIndexOf(row);
+    if (idx >= 0) {
+        this.removeRowAt(idx);
+    }
+};
+
+ASHTTable.prototype.rowIndexOf = function (row) {
+    throw new Error("Not Implement!");
+}
+
+ASHTTable.prototype.rowAt = function (idx){
+    throw new Error("Not Implement!");
+};
+
+
+ASHTTable.prototype.getHash = function () {
+    throw new Error("Not Implement!");
 };
 
 /**
