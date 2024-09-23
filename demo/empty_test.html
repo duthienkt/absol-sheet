@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NumberTest</title>
+    <link rel="stylesheet" href="//cdn.materialdesignicons.com/4.5.95/css/materialdesignicons.min.css">
+    <link
+            href="https://fonts.googleapis.com/css?family=Alegreya|Alegreya+SC|Alegreya+Sans|Alegreya+Sans+SC|Alfa+Slab+One|Amatic+SC|Andika|Anton|Archivo|Archivo+Narrow|Arima+Madurai|Arimo|Arsenal|Asap|Asap+Condensed|Athiti|Bahianita|Bai+Jamjuree|Baloo|Baloo+Bhai|Baloo+Bhaijaan|Baloo+Bhaina|Baloo+Chettan|Baloo+Da|Baloo+Paaji|Baloo+Tamma|Baloo+Tammudu|Baloo+Thambi|Bangers|Barlow|Barlow+Condensed|Barlow+Semi+Condensed|Barriecito|Be+Vietnam|Bevan|Big+Shoulders+Display|Big+Shoulders+Text|Bungee|Bungee+Hairline|Bungee+Inline|Bungee+Outline|Bungee+Shade|Cabin|Cabin+Condensed|Chakra+Petch|Charm|Charmonman|Chonburi|Coiny|Comfortaa|Cormorant|Cormorant+Garamond|Cormorant+Infant|Cormorant+SC|Cormorant+Unicase|Cormorant+Upright|Cousine|Crimson+Pro|Cuprum|Dancing+Script|Darker+Grotesque|David+Libre|Dosis|EB+Garamond|Encode+Sans|Encode+Sans+Condensed|Encode+Sans+Expanded|Encode+Sans+Semi+Condensed|Encode+Sans+Semi+Expanded|Exo|Exo+2|Fahkwang|Farsan|Faustina|Fira+Sans|Fira+Sans+Condensed|Fira+Sans+Extra+Condensed|Francois+One|Grenze|Hepta+Slab|IBM+Plex+Mono|IBM+Plex+Sans|IBM+Plex+Sans+Condensed|IBM+Plex+Serif|Inconsolata|Itim|Josefin+Sans|Judson|Jura|K2D|Kanit|KoHo|Kodchasan|Krub|Lalezar|Lemonada|Lexend+Deca|Lexend+Exa|Lexend+Giga|Lexend+Mega|Lexend+Peta|Lexend+Tera|Lexend+Zetta|Literata|Livvic|Lobster|Lora|M+PLUS+1p|M+PLUS+Rounded+1c|Maitree|Major+Mono+Display|Mali|Manuale|Markazi+Text|Maven+Pro|Merriweather|Metrophobic|Mitr|Montserrat|Montserrat+Alternates|Muli|Niramit|Noticia+Text|Noto+Sans|Noto+Sans+SC|Noto+Serif|Noto+Serif+SC|Noto+Serif+TC|Nunito|Nunito+Sans|Old+Standard+TT|Open+Sans|Open+Sans+Condensed:300|Oswald|Pacifico|Pangolin|Patrick+Hand|Patrick+Hand+SC|Pattaya|Paytone+One|Philosopher|Play|Playfair+Display|Playfair+Display+SC|Podkova|Prata|Pridi|Prompt|Quicksand|Roboto|Roboto+Condensed|Roboto+Mono|Roboto+Slab|Rokkitt|Rosario|Saira|Saira+Condensed|Saira+Extra+Condensed|Saira+Semi+Condensed|Saira+Stencil+One|Sarabun|Sawarabi+Gothic|Sedgwick+Ave|Sedgwick+Ave+Display|Sigmar+One|Source+Code+Pro|Source+Sans+Pro|Space+Mono|Spectral|Spectral+SC|Sriracha|Srisakdi|Taviraj|Thasadith|Tinos|Trirong|VT323|Varela+Round|Vollkorn|Vollkorn+SC|Yanone+Kaffeesatz|Yeseva+One&display=swap"
+            rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="../absol/absol_sheet.js?date=<?php  echo stat('./absol/absol_sheet.js')['mtime'];?>"></script>
+    <style>
+        :root {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    var editor = new absol.sheet.TableEditor(Object.assign({}, {readOnly: false}));
+    editor.on('change', function () {
+        console.log(this.getData().records)
+    })
+    editor.getView()
+        .addStyle({
+            maxHeight: '50vh'
+
+        })
+        .addTo(document.body);
+
+    absol.remoteNodeRequireAsync('../example_data/ex_006.js').then(data=>{
+        editor.setData(data);
+    });
+
+    absol._({
+        tag:'button',
+        child:{text:'verify'},
+        on:{
+            click: function (){
+                editor.focusIncompleteCell();
+            }
+        }
+    }).addTo(document.body);
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-export default {
+module.exports =  {
     exampleTitle: "Min max ngày tháng",
     propertyNames: [
         "id",
@@ -52,4 +52,4 @@ export default {
             "end_date": "2021-08-05T17:00:00.000Z"
         }
     ]
-}// còn 5p
+};

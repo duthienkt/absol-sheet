@@ -1,4 +1,4 @@
-export default {
+module.exports =  {
     exampleTitle: "Sử dụng công thức",
     opt: { readOnly: false },
     propertyNames: [

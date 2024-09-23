@@ -71,8 +71,15 @@ module.exports = {
         compress: false,
         host: '0.0.0.0',
         static: __dirname,
-        allowedHosts:["localhost", "absol.ddns.net"],
-        // https: https
+        allowedHosts:["localhost", "absol.ddns.net", 'c9.absol.cf'],
+        // client: {
+        //     webSocketURL: {
+        //         hostname: 'c9.absol.cf',
+        //         pathname: '/ws',
+        //         port: 443,
+        //         protocol: 'wss',
+        //     },
+        // }
     },
     performance: {
         hints: false

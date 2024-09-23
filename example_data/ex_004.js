@@ -24,10 +24,10 @@ export default {
     records: [
         {
             date_time_type: new Date(),
-            time: new Date(2021, 1, 1)
+            time: 234
         },
         {
-            time: new Date()
+            time: 232
         }
     ]
 }
