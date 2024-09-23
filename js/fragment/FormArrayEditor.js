@@ -114,12 +114,10 @@ FARow.prototype.loadFields = function () {
     this.fields = this.table.propertyNames.map(pName => {
         var descriptor = propertyDescriptors[pName] || { type: 'notSupport' };
         var clazz = FAField.typeClasses[descriptor.type] || FAField;
-        console.log(descriptor.type, clazz)
         return new clazz(this, pName);
 
     });
     this.domRows = this.fields.map(field => field.rowElt);
-    console.log(this.domRows)
 
 }
 
@@ -192,7 +190,6 @@ FAField.typeClasses.DateNLevel = FADateNLevel;
  */
 function FAText(row, pName) {
     FAField.call(this, row, pName);
-    console.log(this)
 }
 
 OOP.mixClass(FAText, FAField, TDText);
