@@ -1,34 +1,24 @@
-import SComp from '../dom/SComp';
+import { _, $ } from '../dom/SCore';
 import TDRecord from "./TDRecord";
 import Attributes from "absol/src/AppPattern/Attributes";
 import '../../css/tabledata.css';
-import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
-import TSFunction from "../fx/TSFunction";
 import DomSignal from "absol/src/HTML5/DomSignal";
-import TSSwitch from "../fx/TSSwitch";
-import Context from "absol/src/AppPattern/Context";
-
-var _ = SComp._;
-var $ = SComp.$;
+import { ASHTTable } from "../fragment/Abstractions";
+import { isNaturalNumber } from "absol-acomp/js/utils";
+import { stringHashCode } from "absol/src/String/stringUtils";
 
 
 /***
  * /**
- * @augments EventEmitter
- * @augments Context
+ * @extends ASHTTable
  * @param {TableEditor} editor
  * @param {object=} opt
  * @constructor
  */
 function TableData(editor, opt) {
-    Context.apply(this, arguments);
-    EventEmitter.call(this);
-    this.editor = editor;
-    this.opt = opt || {};
-    this.propertyNames = [];
-    this.propertyDescriptors = {};
-    this.records = [];
+    ASHTTable.apply(this, arguments);
+
     this.bodyRow = [];
     this.headCells = [];
     this.newRow = null;
@@ -45,7 +35,7 @@ function TableData(editor, opt) {
     }
 }
 
-OOP.mixClass(TableData, EventEmitter, Context);
+OOP.mixClass(TableData, ASHTTable);
 
 TableData.prototype.defaultConfig = {
     rowHeight: 21
@@ -55,6 +45,7 @@ TableData.prototype.configHandlers = {};
 
 TableData.prototype.configHandlers.rowHeight = {
     set: function (value) {
+        this.getView();
         if (!(value > 0 && value < 1024)) {
             value = this.defaultConfig.rowHeight;
         }
@@ -63,19 +54,19 @@ TableData.prototype.configHandlers.rowHeight = {
     },
     export: function (ref) {
         if (ref.get() === 21) return undefined;
-        return  ref.get() || undefined;
+        return ref.get() || undefined;
     }
-}
+};
 
 
 TableData.prototype.export = function () {
     var res = {
         propertyNames: this.propertyNames,
         propertyDescriptors: this.propertyDescriptors,
-        records: this.records,
+        records: this.getRecords()
     };
     var config = this.config.export();
-    if (Object.keys(config).length > 0 ) {
+    if (Object.keys(config).length > 0) {
         res.config = config;
     }
     return res;
@@ -84,11 +75,18 @@ TableData.prototype.export = function () {
 TableData.prototype.import = function (data) {
     this.propertyDescriptors = data.propertyDescriptors;
     this.propertyNames = data.propertyNames;
-    this.records = data.records;
     Object.assign(this.config, this.defaultConfig, data.config || {});
-    this._computeData();
+    this.computeHeader();
+    this.bodyRow = (data.records || []).map((record, idx) => {
+        return new TDRecord(this, record, idx);
+    });
     this.reload();
     this.emitResizeEvent();
+};
+
+
+TableData.prototype.getHash = function () {
+    return this.bodyRow.reduce((ac, row) => stringHashCode(row.getHash() + ',' + ac));
 };
 
 TableData.prototype.onStart = function () {
@@ -113,69 +111,6 @@ TableData.prototype.onStop = function () {
 };
 
 
-
-TableData.prototype._computeData = function () {
-    var propertyNames = this.propertyNames;
-
-    var computeFxDescriptor = (descriptor) => {
-        Object.defineProperty(descriptor, '__fx__', {
-            configurable: true,
-            enumerable: false,
-            value: {}
-        });
-        Object.keys(descriptor).reduce((ac, key) => {
-            var val = descriptor[key];
-            if (typeof val === 'string') {
-                if (val.startsWith('=')) {
-                    descriptor.__fx__[key] = new TSFunction(propertyNames, val);
-                }
-                else if (val.startsWith('{{') && val.endsWith('}}')) {
-                    descriptor.__fx__[key] = new TSFunction(propertyNames, val.substring(2, val.length - 2))
-                }
-                else if (key === 'onchange') {
-                    descriptor.__fx__[key] = new TSFunction(propertyNames, val);
-                }
-            }
-            else if (key === 'switch') {
-                descriptor.__fx__['switch'] = new TSSwitch(descriptor['switch']);
-            }
-            return ac;
-        }, descriptor.__fx__);
-    }
-
-    var computeDependenciesDescriptor = descriptor => {
-        var dependencies = {};
-        var fx = descriptor.__fx__;
-        Object.keys(fx).reduce(function (ac, key) {
-            if (fx[key].dependents) {
-                fx[key].dependents.reduce(function (ac1, pName) {
-                    ac1[pName] = true;
-                    return ac1;
-                }, ac);
-            }
-            // ac[];
-            return ac;
-        }, dependencies);
-        delete dependencies[name];
-        Object.defineProperty(descriptor, '__dependencies__',
-            {
-                configurable: true,
-                enumerable: false,
-                value: dependencies
-            });
-    };
-
-    var descriptors = this.propertyDescriptors;
-    var descriptor;
-    propertyNames.forEach(name => {
-        descriptor = descriptors[name];
-        if (!descriptor) return;
-        computeFxDescriptor(descriptor);
-        computeDependenciesDescriptor(descriptor);
-    });
-};
-
-
 TableData.prototype.reload = function () {
     this.loadHeader();
     this.loadBody();
@@ -192,7 +127,7 @@ TableData.prototype.loadHeader = function () {
     this.headCells = this.propertyNames.map(function (name, i) {
         var cell = _({
             tag: 'td',
-            attr:{
+            attr: {
                 'data-col-idx': i,
                 'data-prop-name': name
             },
@@ -219,9 +154,7 @@ TableData.prototype.loadHeader = function () {
 TableData.prototype.loadBody = function () {
     var thisTable = this;
     this.$tbody.clearChild();
-    this.bodyRow = this.records.map(function (record, idx) {
-        return new TDRecord(thisTable, record, idx);
-    });
+
     var rowEltList = this.bodyRow.map(function (row) {
         return row.elt;
     });
@@ -235,8 +168,7 @@ TableData.prototype.loadBody = function () {
 
 TableData.prototype.getView = function () {
     if (this.$view) return this.$view;
-    this.$view = _({
-        tag: 'table',
+    var viewConstructor = {
         class: 'asht-table-data',
         child: [
             { tag: 'thead', child: 'tr' },
@@ -247,7 +179,16 @@ TableData.prototype.getView = function () {
                 ]
             }
         ]
-    });
+    };
+    if (this.opt.elt) {
+        viewConstructor.elt = this.opt.elt;
+    }
+    else {
+        viewConstructor.tag = 'table';
+    }
+
+    this.$view = _(viewConstructor);
+
     this.$thead = $('thead', this.$view);
     this.$headRow = $('tr', this.$thead);
     this.$tbody = $('tbody', this.$view);
@@ -270,8 +211,7 @@ TableData.prototype.emitResizeEvent = function () {
  * @param {Object=} newRecord
  */
 TableData.prototype.flushNewRow = function (newRecord) {
-    this.newRow.idx = this.records.length;
-    this.records.push(this.newRow.record);
+    this.newRow.idx = this.bodyRow.length;
     this.bodyRow.push(this.newRow);
     this.newRow.makeDefaultValues();
     this.newRow = new TDRecord(this, newRecord || {}, "*");
@@ -362,6 +302,44 @@ TableData.prototype.findColByName = function (name) {
 TableData.prototype.findRowByIndex = function (index) {
     if (index === '*') return this.newRow;
     return this.bodyRow[index] || null;
+};
+
+TableData.prototype.rowAt = function (index) {
+    return this.bodyRow[index];
+};
+
+
+TableData.prototype.removeRowAt = function (idx) {
+    var row = this.bodyRow[idx];
+    if (!row) return;
+    this.bodyRow.splice(idx, 1);
+    this.$tbody.removeChild(row.elt);
+    for (var i = idx; i < this.bodyRow.length; ++i) {
+        this.bodyRow[i].idx = i;
+    }
+    this.emitResizeEvent();
+};
+
+TableData.prototype.addRowAt = function (idx, record) {
+    if (idx < 0) idx = 0;
+    if (idx > this.bodyRow.length || !isNaturalNumber(idx)) idx = this.bodyRow.length;
+    var atElt = this.$tbody.childNodes[idx];
+    var newRow = new TDRecord(this, record, idx);
+    this.bodyRow.splice(idx, 0, newRow);
+    this.$tbody.addChildBefore(newRow.elt, atElt);
+    for (var i = idx + 1; i < this.bodyRow.length; ++i) {
+        this.bodyRow[i].idx = i;
+    }
+};
+
+TableData.prototype.getLength = function () {
+    return this.bodyRow.length;
+};
+
+TableData.prototype.getRecords = function () {
+    return this.bodyRow.map(function (r) {
+        return r.record;
+    });
 };
 
 
