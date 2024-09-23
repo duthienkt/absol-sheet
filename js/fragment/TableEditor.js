@@ -896,7 +896,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
         viewElt.removeStyle('--available-height');
     }
 
-    if (tableBound.width > availableWidth - 17) {
+    if ((tableBound.width) > availableWidth - 17) {
         this.editor.$view.addClass('asht-overflow-x');
     }
     else {
@@ -916,29 +916,20 @@ LayoutController.prototype.updateScrollerStatus = function () {
         var viewportBound = this.editor.$mainViewport.getBoundingClientRect();
         this.editor.$hscrollbar.outerWidth = viewportBound.width;
         this.editor.$vscrollbar.outerHeight = viewportBound.height;
-    }, 10);
+        if (this.editor.$hscrollbar.innerWidth > this.editor.$hscrollbar.outerWidth) {
+            this.editor.$hscrollbar.removeStyle('display');
+        }
+        else {
+            this.editor.$hscrollbar.addStyle('display', 'none');
+        }
 
-    // return;
-
-    // var bound = this.editor.$view.getBoundingClientRect();
-    // if (tableBound.width > bound.width) {
-    //     this.editor.$view.addClass('as-scroll-horizontal');
-    //     this.editor.$hscrollbar.outerWidth = bound.width - 17;
-    //     this.editor.$hscrollbar.innerWidth = tableBound.width;
-    // }
-    // else {
-    //     this.editor.$view.removeClass('as-scroll-horizontal');
-    // }
-    //
-    // if (tableBound.height > bound.height) {
-    //     this.editor.$view.addClass('as-scroll-vertical');
-    //
-    //     this.editor.$vscrollbar.outerHeight = bound.height - 17;
-    //     this.editor.$vscrollbar.innerHeight = tableBound.height;
-    // }
-    // else {
-    //     this.editor.$view.removeClass('as-scroll-vertical');
-    // }
+        if (this.editor.$vscrollbar.innerHeight > this.editor.$vscrollbar.outerHeight) {
+            this.editor.$vscrollbar.removeStyle('display');
+        }
+        else {
+            this.editor.$vscrollbar.addStyle('display', 'none');
+        }
+    }, 1);
 };
 
 
@@ -1227,8 +1218,11 @@ TEFixedXController.prototype.updateSize = function () {
     // var bound = this.editor.tableData.$view.getBoundingClientRect();
 
     // this.$fixXCol.addStyle('height', bound.height + 'px');
-    var colSize = this.editor.tableData.$view.firstChild.firstChild.getBoundingClientRect();
+    if (!this.editor.tableData) return;
+    var firstCell = this.editor.tableData.$view.firstChild.firstChild.firstChild;
+    var colSize = firstCell.getBoundingClientRect();
     var colWidth = colSize.width;
+    this.editor.$view.addStyle('--index-col-width', colWidth + 'px');
     Array.prototype.forEach.call(this.$fixXTable.firstChild.childNodes, elt => {
         elt.addStyle('height', elt.$origin.getBoundingClientRect().height + 'px');
         elt.addStyle('width', colWidth + 'px');

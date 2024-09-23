@@ -32,7 +32,7 @@
     position: absolute;
     z-index: 23;
     border-right: 1px solid #aaa;
-    left: calc(var(--index-col-width) - 1px);
+    left: calc(var(--index-col-width));
     height: 100%;
     top: 0;
     max-height: var(--content-height);
@@ -59,6 +59,7 @@
 /********** MAIN *********************/
 .asht-table-editor-main-viewport {
     overflow: hidden;
+    max-height: var(--content-height);
 }
 
 .asht-table-editor-main-scroller {
@@ -174,7 +175,7 @@
 }
 
 .asht-table-editor-fixed-xy td {
-    width: calc(var(--index-col-width) - 1px); /*? border*/
+    width: calc(var(--index-col-width)); /*? border*/
     height: var(--head-height);
     box-sizing: border-box;
 }
