@@ -32,7 +32,7 @@ import Context from "absol/src/AppPattern/Context";
 import { ASHTRow } from "../fragment/Abstractions";
 
 /***
-
+ * @extends ASHTRow
  * @param {TableData} table
  * @param {Object} record
  * @param {number|"*"} idx
