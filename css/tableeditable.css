@@ -1,10 +1,243 @@
 .asht-table-editor {
     position: relative;
     overflow: hidden;
+    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    --available-width: 10000000px;
+    --available-height: 1000000px;
+    --sys-scrollbar-width: 17px;
+    --sys-scrollbar-height: 17px;
+    --head-height: 21px;
+    --index-col-width: 35px;
+    box-sizing: border-box;
 }
 
-.asht-table-editor .as-table-scroller-fixed-y-header-ctn {
+.asht-table-editor::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: var(--head-height);
+    max-width: var(--content-width);
+    border-bottom: 1px solid #aaa;
+    z-index: 23;
+}
+
+.asht-table-editor.asht-overflow-y::before {
+    width: calc(100% - 17px);
+}
+
+.asht-table-editor::after {
+    content: "";
+    position: absolute;
+    z-index: 23;
+    border-right: 1px solid #aaa;
+    left: calc(var(--index-col-width) - 1px);
+    height: 100%;
+    top: 0;
+    max-height: var(--content-height);
+}
+
+.asht-table-editor.asht-overflow-x::after {
+    height: calc(100% - 17px);
+
+}
+
+.asht-table-editor * {
+    /*background-color: transparent !important;*/
+}
+
+.asht-table-editor.asht-overflow-x {
+    padding-bottom: 17px;
+}
+
+.asht-table-editor.asht-overflow-y {
+    padding-right: 17px;
+}
+
+
+/********** MAIN *********************/
+.asht-table-editor-main-viewport {
+    overflow: hidden;
+}
+
+.asht-table-editor-main-scroller {
+    overflow-x: scroll;
+    overflow-y: scroll;
+    margin-right: calc(var(--sys-scrollbar-width) * -1);
+}
+
+
+.asht-table-editor.asht-overflow-x {
+    width: var(--available-width);
+    padding-right: 17px;
+}
+
+.asht-table-editor.asht-overflow-x .asht-table-editor-main-viewport {
+    width: 100%;
+}
+
+.asht-table-editor.asht-overflow-x .asht-table-editor-main-scroller {
+    width: calc(100% + var(--sys-scrollbar-width));
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-main-viewport {
+    height: 100%;
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-main-scroller {
+    height: 100%;
+}
+
+.asht-table-editor.asht-overflow-y {
+    height: var(--available-height);
+    padding-bottom: 17px;
+}
+
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-main-viewport {
+    height: 100%;
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-main-scroller {
+    height: calc(100% + var(--sys-scrollbar-height));
+}
+
+/*******   FIXED Y ***************************/
+
+.asht-table-editor-fixed-y-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
     z-index: 20;
+    height: var(--head-height);
+    width: 100%;
+    user-select: none;
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-fixed-y-viewport {
+    width: calc(100% - 17px);
+}
+
+.asht-table-editor-fixed-y-scroller {
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+.asht-table-editor-fixed-y-scroller {
+    width: 100%;
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-fixed-y-scroller {
+    height: calc(100% + var(--sys-scrollbar-height));
+}
+
+
+.asht-table-editor-fixed-y-size-wrapper {
+    width: var(--content-width);
+}
+
+/********** FIXED X ************************/
+
+.asht-table-editor-fixed-x-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    overflow: hidden;
+    z-index: 20;
+    height: 100%;
+    width: var(--index-col-width);
+    user-select: none;
+}
+
+.asht-table-editor.asht-overflow-x .asht-table-editor-fixed-x-viewport,
+.asht-table-editor.asht-overflow-y .asht-table-editor-fixed-x-viewport {
+    height: calc(100% - 17px);
+}
+
+.asht-table-editor-fixed-x-scroller {
+    overflow: scroll;
+    height: calc(100% + var(--sys-scrollbar-height));
+    width: 200px;
+}
+
+/********** FIXED XY ************************/
+
+.asht-table-editor-fixed-xy-viewport {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 21;
+    user-select: none;
+}
+
+.asht-table-editor-fixed-xy td {
+    width: calc(var(--index-col-width) - 1px); /*? border*/
+    height: var(--head-height);
+    box-sizing: border-box;
+}
+
+/*******  SCROLLER ***************/
+
+.asht-table-editor-v-scrollbar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 17px;
+    display: none;
+}
+
+.asht-table-editor-h-scrollbar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 17px;
+    display: none;
+}
+
+
+.asht-table-editor.asht-overflow-x .asht-table-editor-v-scrollbar {
+    bottom: 17px;
+}
+
+.asht-table-editor.asht-overflow-y .asht-table-editor-h-scrollbar {
+    right: 17px;
+}
+
+.asht-table-editor.asht-overflow-x .asht-table-editor-h-scrollbar,
+.asht-table-editor.asht-overflow-y .asht-table-editor-v-scrollbar {
+    display: block;
+}
+
+
+.asht-table-editor .ash-fixed-y-header-ctn {
+    z-index: 20;
+    left: 0;
+    top: 0;
+    width: 100%;
+    position: absolute;
+    overflow: hidden;
+}
+
+.ash-fixed-y-header-scroller {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    margin-bottom: -17px;
+    padding-bottom: 17px;
+}
+
+.ash-fixed-y-header-size-wrapper {
+    display: inline-block;
+    width: var(--content-width);
+}
+
+
+table.asht-table-editor-fixed-y-scroller-header {
+    display: inline-table;
 }
 
 .asht-table-editor .as-table-scroller-fixed-xy-header-ctn {
@@ -222,7 +455,7 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
     width: 1em;
 }
 
-.asht-date-n-level-cell-editor-input  .as-date-input-text {
+.asht-date-n-level-cell-editor-input .as-date-input-text {
     padding-left: 1.2em;
 }
 
