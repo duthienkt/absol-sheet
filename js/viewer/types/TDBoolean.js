@@ -40,4 +40,5 @@ TDBoolean.prototype.isNoneValue = function (value) {
 
 TDBase.typeClasses.bool = TDBoolean;
 TDBase.typeClasses.boolean = TDBoolean;
+TDBase.typeClasses.CheckBox = TDBoolean;
 export default TDBoolean;

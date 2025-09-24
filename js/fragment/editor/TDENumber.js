@@ -134,6 +134,7 @@ TDENumber.prototype.ev_inputChange = function () {
 
 TDEBase.typeClasses.number = TDENumber;
 TDEBase.typeClasses.Number = TDENumber;
+TDEBase.typeClasses.NumberInput = TDENumber;
 TDEBase.typeClasses.UniqueNumber = TDENumber;
 TDEBase.typeClasses.unique_number = TDENumber;
 TDEBase.typeClasses['unique<number>'] = TDENumber;

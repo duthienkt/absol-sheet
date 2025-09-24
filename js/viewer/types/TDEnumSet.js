@@ -72,4 +72,5 @@ TDEnumSet.prototype.loadValue = function () {
 
 TDBase.typeClasses.EnumSet = TDEnumSet;
 TDBase.typeClasses['{enum}'] = TDEnumSet;
+TDBase.typeClasses.MultiSelectComboBox = TDEnumSet;
 export default TDEnumSet;

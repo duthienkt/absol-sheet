@@ -82,4 +82,5 @@ TDEnum.prototype.loadValue = function () {
 };
 
 TDBase.typeClasses.enum = TDEnum;
+TDBase.typeClasses.ComboBox = TDEnum;
 export default TDEnum;

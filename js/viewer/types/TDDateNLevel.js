@@ -71,4 +71,5 @@ Object.defineProperty(TDDateNLevel.prototype, 'dateValue', {
 
 TDBase.typeClasses.datenlevel = TDDateNLevel;
 TDBase.typeClasses.DateNLevel = TDDateNLevel;
+TDBase.typeClasses.DateNLevelInput = TDDateNLevel;
 export default TDDateNLevel;

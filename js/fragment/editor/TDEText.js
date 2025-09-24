@@ -40,7 +40,7 @@ TDEText.prototype._loadCellStyle = function () {
         'font-size': cellElt.getComputedStyleValue('font-size'),
         'font-family': cellElt.getComputedStyleValue('font-family'),
         'font-style': cellElt.getComputedStyleValue('font-style'),
-        'line-height': '20px',
+        'line-height': cellElt.getComputedStyleValue('line-height'),
         'padding-left': cellElt.getComputedStyleValue('padding-left'),
         'padding-right': cellElt.getComputedStyleValue('padding-right'),
         'padding-top': cellElt.getComputedStyleValue('padding-top'),
@@ -75,7 +75,7 @@ TDEText.prototype.onStart = function () {
 TDEText.prototype.ev_keydown = function (event) {
     if (event.key === "Enter" || event.key === "Tab") {
         var text = this.$input.value;
-        if (event.altKey && event.key === "Enter") {
+        if ((event.altKey || event.shiftKey) && event.key === "Enter") {
             var pos = this.$input.getSelectPosition();
             var newText = text.substr(0, pos.start) + '\n' + text.substr(pos.end);
             this.$input.applyData(newText, pos.start + 1);

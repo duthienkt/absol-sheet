@@ -43,7 +43,7 @@ TDEEnum.prototype.reload = function () {
     this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
 
 
-    if (this.$input.items && this.$input.items.length > 0 && isDifferent(prevValue, this.$input.value)) {
+    if (prevValue !== null && prevValue !== undefined &&this.$input.items && this.$input.items.length > 0 && isDifferent(prevValue, this.$input.value)) {
         setTimeout(function () {
             if (isDifferent(prevValue, this.$input.value)) {
                 this.ev_inputChange();
@@ -68,5 +68,6 @@ TDEEnum.prototype.ev_inputChange = function () {
 
 
 TDEBase.typeClasses.enum = TDEEnum;
+TDEBase.typeClasses.ComboBox = TDEEnum;
 
 export default TDEEnum;
