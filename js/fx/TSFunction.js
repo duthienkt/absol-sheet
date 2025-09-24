@@ -1,4 +1,5 @@
 import * as ExcelFx from './ExcelFx';
+import safeThrow from "absol/src/Code/safeThrow";
 
 
 function TSFunction(propertyNames, body) {
@@ -6,8 +7,8 @@ function TSFunction(propertyNames, body) {
     this.body = body;
     this.dependents = [];
     this.ast = null;
-    this.func = null;
     this._compile();
+    this.mutex = null;
 }
 
 
@@ -31,7 +32,8 @@ TSFunction.prototype._isAsync = function (jsCode) {
 };
 
 
-TSFunction.prototype._makeConstCode = function (localConstants) {
+TSFunction.prototype._makeConstCode = function (localConstants, context) {
+    localConstants = Object.assign({}, localConstants || {}, context || {});
     return Object.keys(localConstants).map(function (key) {
         return 'const ' + key + ' = localConstants[' + JSON.stringify(key) + '];'
     }).join('\n') + '\n';
@@ -42,8 +44,7 @@ TSFunction.prototype._compile = function () {
     var scriptCode;
     if (this.body.startsWith('=')) {
         scriptCode = 'RET' + this.body;
-    }
-    else scriptCode = this.body;
+    } else scriptCode = this.body;
     if (!window.babel) return;
     var variableDict = this.propertyNames.reduce(function (ac, cr) {
         ac[cr] = true;
@@ -90,23 +91,39 @@ TSFunction.prototype._compile = function () {
             ]
         };
         this.transformedCode = babel.transform(this.jsCode, options).code;
-        var mdl = {};
-        (new Function('module', 'regeneratorRuntime', 'localConstants', this._makeConstCode(this.localConstants) + this.transformedCode))(mdl, babel.regeneratorRuntime, this.localConstants);
-        this.func = mdl.exports;
     } catch (err) {
-        setTimeout(function () {
-           throw  err;
-        }, 0);
+        safeThrow(err);
     }
 };
 
-TSFunction.prototype.invoke = function (_this, record) {
+TSFunction.prototype._makeFunction = function (context) {
     try {
-        return this.func.call(_this, record);
+        var mdl = {};
+        var localConstants = Object.assign({}, this.localConstants || {}, context || {});
+        (new Function('module', 'regeneratorRuntime', 'localConstants', this._makeConstCode(localConstants, context) + this.transformedCode))(mdl, babel.regeneratorRuntime, localConstants);
+        return mdl.exports;
+    } catch (e) {
+        safeThrow(e);
+    }
+};
+
+TSFunction.prototype.invoke = function (_this, record, context) {
+    try {
+        var func = this._makeFunction(context);
+        return func.call(_this, record);
     } catch (err) {
-       // if (window["ABSOL_DEBUG"]) safeThrow(err);
+        // console.error(err);
+        if (window["ABSOL_DEBUG"])
+            safeThrow(err);
         return undefined;
     }
+};
+
+TSFunction.prototype.callable = function (record) {
+    if (!this.dependents || this.dependents.length === 0) return true;
+    return this.dependents.every(function (cr) {
+        return record[cr] !== undefined;
+    });
 };
 
 export default TSFunction;
