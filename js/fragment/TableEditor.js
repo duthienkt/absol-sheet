@@ -15,9 +15,10 @@ import "./editor/TDETime";
 import "./editor/TDETimeRange24";
 import "./editor/TDEWeek";
 import "./editor/TDEDateNLevel";
+import "./editor/TDEDateInYear";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
-import OOP from "absol/src/HTML5/OOP";
+import OOP, { mixClass } from "absol/src/HTML5/OOP";
 import EventEmitter, { hitElement } from "absol/src/HTML5/EventEmitter";
 import TDEBase from "./editor/TDEBase";
 import Toast from "absol-acomp/js/Toast";
@@ -27,16 +28,23 @@ import { selectRowHeight } from "./dialogs";
 import noop from "absol/src/Code/noop";
 import { copyText, pasteText } from "absol/src/HTML5/Clipboard";
 import Attributes from 'absol/src/AppPattern/Attributes';
-import { duplicateData } from "../util";
+import { calcIndexColumnWidth, duplicateData, getDataSheetClipboard, setDataSheetClipboard } from "../util";
 import Fragment from 'absol/src/AppPattern/Fragment';
 import safeThrow from "absol/src/Code/safeThrow";
-import { isRealNumber, swapChildrenInElt, vScrollIntoView } from "absol-acomp/js/utils";
+import { findMaxZIndex, isNaturalNumber, isRealNumber, swapChildrenInElt, vScrollIntoView } from "absol-acomp/js/utils";
 import { ASHTConfirmEvent, ASHTEditor, ASHTWaitValueEvent } from "./Abstractions";
 import AElement from "absol/src/HTML5/AElement";
 import { kebabCaseToCamelCase } from "absol/src/String/stringFormat";
 import { computeMeasureExpression, parseMeasureValue } from "absol/src/JSX/attribute";
 import Dom, { getScreenSize } from "absol/src/HTML5/Dom";
 import { HScrollbar } from "absol-acomp/js/Scroller";
+import CMDTool, { CMDToolDelegate } from "absol-acomp/js/CMDTool";
+import TDEDateTime from "./editor/TDEDateTime";
+import Follower from "absol-acomp/js/Follower";
+import TECommandDescriptors from "./TECommandDescriptors";
+import { generateJSVariable } from "absol/src/JSMaker/generator";
+import Rectangle from "absol/src/Math/Rectangle";
+import QuickMenu, { QuickMenuInstance } from "absol-acomp/js/QuickMenu";
 
 
 function getScrollSize() {
@@ -53,7 +61,7 @@ function getScrollSize() {
             position: 'fixed'
         }
     }).addTo(document.body);
-    var child = _({ style: { width: '100%', height: '100%' } }).addTo(parent);
+    var child = _({style: {width: '100%', height: '100%'}}).addTo(parent);
     var parentBound = parent.getBoundingClientRect();
     var childBound = child.getBoundingClientRect();
     return {
@@ -81,6 +89,9 @@ function TableEditor(opt) {
     this.layoutCtrl = new LayoutController(this);
     this.selectTool = new SelectTool(this);
     this.editTool = new EditTool(this);
+    this.cmdTool = new CMDTool(this);
+    this.cmdToolDelegate = new TECMDToolDelegate(this);
+    this.cmdTool.delegate = this.cmdToolDelegate;
     this.commandCtrl = new CommandController(this);
     this.fixedYCtrl = new TEFixedYController(this);
     this.fixedXCtrl = new TEFixedXController(this);
@@ -96,6 +107,7 @@ function TableEditor(opt) {
         this.fixedYCtrl.updateContent();
         this.fixedXCtrl.updateContent();
         ResizeSystem.updateUp(this.$view, true);
+        this.cmdToolDelegate.updateVisibility();
     });
 }
 
@@ -110,83 +122,100 @@ TableEditor.prototype.createView = function () {
     this.$view = _({
         elt: this.opt.elt,
         extendEvent: 'contextmenu',
+        attr: {
+            tabindex: '1'
+        },
         class: ['asht-table-editor'],
         child: [
             'attachhook',
             {
-                class: 'asht-table-editor-main-viewport',
+                class: 'asht-table-editor-header',
+                style: {display: 'none'},
+                child: this.cmdTool.getView()
+            },
+            {
+                class: 'asht-table-editor-body',
                 child: [
                     {
-                        class: 'asht-table-editor-main-scroller',
-                        child: 'table.asht-table-data'
-                    },
-                    {
-                        class: 'asht-table-editor-foreground',
+                        class: 'asht-table-editor-main-viewport',
                         child: [
-                            '.asht-table-editor-selected-box',
+                            {
+                                class: 'asht-table-editor-main-scroller',
+                                child: 'table.asht-table-data'
+                            },
+                            {
+                                class: 'asht-table-editor-fixed-y-viewport',
+                                child: {
+                                    class: 'asht-table-editor-fixed-y-scroller',
+                                    child: {
+                                        class: 'asht-table-editor-fixed-y-size-wrapper',
+                                        child: {
+                                            tag: 'table',
+                                            class: 'asht-table-editor-fixed-y'
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                class: 'asht-table-editor-fixed-x-viewport',
+                                child: {
+                                    class: 'asht-table-editor-fixed-x-scroller',
+                                    child: {
+                                        tag: 'table',
+                                        class: 'asht-table-editor-fixed-x'
+                                    }
+                                }
+                            },
+                            {
+                                class: 'asht-table-editor-fixed-xy-viewport',
+                                child: {
+                                    tag: 'table',
+                                    class: 'asht-table-editor-fixed-xy',
+                                    child: {
+                                        tag: 'thead',
+                                        child: {tag: 'tr', child: 'td'}
+                                    }
+                                }
+                            },
+
+                            {
+                                class: 'asht-table-editor-foreground',
+                                child: [
+                                    '.asht-table-editor-selected-box',
+
+                                ]
+                            },
+                            '.asht-table-editor-editing-box',
 
                         ]
                     },
-                    '.asht-table-editor-editing-box',
 
+                    {
+                        tag: 'vscrollbar',
+                        class: 'asht-table-editor-v-scrollbar',
+                        child: {}
+                    },
+                    {
+                        tag: HScrollbar,
+                        class: 'asht-table-editor-h-scrollbar'
+                    }
                 ]
-            },
-            {
-                class: 'asht-table-editor-fixed-y-viewport',
-                child: {
-                    class: 'asht-table-editor-fixed-y-scroller',
-                    child: {
-                        class: 'asht-table-editor-fixed-y-size-wrapper',
-                        child: {
-                            tag: 'table',
-                            class: 'asht-table-editor-fixed-y'
-                        }
-                    }
-                }
-            },
-            {
-                class: 'asht-table-editor-fixed-x-viewport',
-                child: {
-                    class: 'asht-table-editor-fixed-x-scroller',
-                    child: {
-                        tag: 'table',
-                        class: 'asht-table-editor-fixed-x'
-                    }
-                }
-            },
-            {
-                class: 'asht-table-editor-fixed-xy-viewport',
-                child: {
-                    tag: 'table',
-                    class: 'asht-table-editor-fixed-xy',
-                    child: {
-                        tag: 'thead',
-                        child: { tag: 'tr', child: 'td' }
-                    }
-                }
-            },
-            {
-                tag: 'vscrollbar',
-                class: 'asht-table-editor-v-scrollbar',
-                child: {}
-            },
-            {
-                tag: HScrollbar,
-                class: 'asht-table-editor-h-scrollbar'
             }
         ]
     });
 
     this.$attachook = $('attachhook', this.$view);
     this.$attachook.requestUpdateSize = this.ev_resize;
-    this.$attachook.on('attached', function () {
-        ResizeSystem.add(this);
-        this.requestUpdateSize();
+    this.$attachook.on('attached', () => {
+        ResizeSystem.add(this.$attachook);
+        this.ev_resize();
     });
+
     this.$view.requestUpdateSize = this.ev_resize;
 
     this.$domSignal = _('attachhook').addTo(this.$view);
     this.domSignal = new DomSignal(this.$domSignal);
+    this.$body = $('.asht-table-editor-body', this.$view);
 
 
     this.$body = $('.asht-table-editor-body', this.$view);
@@ -213,17 +242,6 @@ TableEditor.prototype.createView = function () {
     this.$headRow = $('tr', this.$header);
 
 
-    this.$fixedYHeaderScroller = $('.ash-fixed-y-header-scroller', this.$view);
-    // this.$fixedYHeaderSizeWrapper = $('.ash-fixed-y-header-size-wrapper', this.$view);
-
-    this.$fixedXYHeader = $('.as-table-scroller-fixed-xy-header', this.$view);
-    this.$fixXCol = $('.as-table-scroller-fixed-x-col', this.$view);
-
-    this.$vscroller = $('.as-table-scroller-vertical-scroller', this.$view);
-    this.$hscroller = $('.as-table-scroller-horizontal-scroller', this.$view);
-
-
-    this.$indexSccroller = $('.asht-table-editor-index-scroller', this.$view);
     this.opt.loadAttributeHandlers(this.optHandlers);
     this.$view.tableEditor = this;
     var scrollSize = getScrollSize();
@@ -238,25 +256,37 @@ TableEditor.prototype.createView = function () {
     this.selectTool.onViewCreated();
     this.editTool.onViewCreated();
     this.commandCtrl.onViewCreated();
+
     return this.$view;
 };
 
 
+TableEditor.prototype.isDescendantElt = function (elt) {
+    while (elt) {
+        if (elt === this.$view) return true;
+        elt = elt.sponsorElement || elt.parentElement;
+    }
+    return false;
+};
+
 TableEditor.prototype.setData = function (data) {
+    if (this.state !== 'RUNNING' && !this.fragment) this.start();
     data = duplicateData(data);
     if (this.$tableData) this.$tableData.remove();
-    var tableData = new TableData(this, { elt: this.$tableData });
+    var tableData = new TableData(this, {elt: this.$tableData});
     this.$mainScroller.addChild(this.$tableData);
     tableData.import(data);
     this.tableData = tableData;
     this.layoutCtrl.onData();
+    this.cmdToolDelegate.updateVisibility();
+
     //? this.domSignal.emit('request_load_foreground_content');
     tableData.on('new_row_property_change', this.ev_newRowPropertyChange);
 };
 
 TableEditor.prototype.getHash = function () {
-  if (this.tableData) return this.tableData.getHash();
-  return 0;
+    if (this.tableData) return this.tableData.getHash();
+    return 0;
 };
 
 
@@ -358,12 +388,54 @@ TableEditor.prototype.optHandlers.readOnly = {
         // ResizeSystem.update();
     },
     get: function () {
-        return this.$view.containsClass('asht-read-only');
+        return this.$view.hasClass('asht-read-only');
     },
     descriptor: {
         type: 'bool'
     }
 };
+
+TableEditor.prototype.optHandlers.headless = {
+    set: function (value) {
+        if (value) {
+            this.$view.addClass('asht-headless');
+        }
+        else {
+            this.$view.removeClass('asht-headless');
+        }
+        // ResizeSystem.update();
+    },
+    get: function () {
+        return this.$view.hasClass('asht-headless');
+    }
+};
+
+TableEditor.prototype.optHandlers.extendCommands = {
+    /**
+     * @this TableEditor
+     * @param value
+     * @param ref
+     * @returns {string[]}
+     */
+    set: function (value, ref) {
+        value = value || [];
+        if (typeof value === 'string') {
+            value = value.trim().split(/[\s,.]+/);
+        }
+        else if (Array.isArray(value)) {
+            value = value.filter(item => (typeof item === 'string') && (item.trim().length > 0));
+        }
+        ref.set(value);
+        this.cmdToolDelegate.refresh();
+        return value;
+    },
+    get: function (ref) {
+        var value = ref.get();
+        if (!value) return [];
+        return value;
+    }
+};
+
 
 Object.defineProperty(TableEditor.prototype, 'records', {
     get: function () {
@@ -417,6 +489,7 @@ SelectTool.prototype.onViewCreated = function () {
 
 
 SelectTool.prototype.selectRow = function (row) {
+    console.log('selectRow', row);
     if (row) {
         this.selectedData = {
             type: 'row',
@@ -582,6 +655,7 @@ EditTool.prototype.editCell = function (row, col) {
     else {
         this.editor.$editingbox.addStyle('display', 'none');
     }
+    this.editor.cmdToolDelegate.updateVisibility();
 };
 
 EditTool.prototype.editCellDelay = function (row, col) {
@@ -595,15 +669,15 @@ EditTool.prototype.updateEditingBoxPosition = function () {
     if (!this.currentCellEditor) return;
     var cellEditor = this.currentCellEditor;
     var elt = cellEditor.cell.elt;
-    var eLBound = this.editor.$view.getBoundingClientRect();
+    var eLBound = this.editor.$body.getBoundingClientRect();
     var eBound = elt.getBoundingClientRect();
     var left = eBound.left - eLBound.left;
     var width = eBound.width;
     this.editor.$editingbox.addStyle({
-        left: left + 'px',
-        top: eBound.top - eLBound.top + 'px',
-        '--cell-width': width + 'px',
-        '--cell-height': eBound.height + 'px'
+        left: (left - 0.5) + 'px',
+        top: (eBound.top - eLBound.top - 0.5) + 'px',
+        '--cell-width': width - 1 + 'px',//border
+        '--cell-height': eBound.height - 1 + 'px'
     });
 };
 
@@ -656,29 +730,29 @@ LayoutController.prototype.styleHandlers.width = {
         var psValue;
         if (value === 'auto') {
             this.editor.$view.style.width = null;
-            this.editor.$view.addClass('asht-width-auto');
+            this.editor.$view.addClass('as-width-auto');
         }
         else if (value.indexOf('calc(') >= 0) {
             this.editor.$view.style.width = value;
-            this.editor.$view.removeClass('asht-width-auto');
+            this.editor.$view.removeClass('as-width-auto');
         }
         else {
             psValue = parseMeasureValue(value);
             if (psValue) {
                 if (['px', 'vw', 'vh', 'em', 'rem', 'pt'].indexOf(psValue.unit) >= 0) {
                     this.editor.$view.style.width = value;
-                    this.editor.$view.removeClass('asht-width-auto');
+                    this.editor.$view.removeClass('as-width-auto');
                 }
                 else {
 
                     this.editor.$view.style.width = null;
-                    this.editor.$view.addClass('asht-width-auto');
+                    this.editor.$view.addClass('as-width-auto');
 
                 }
             }
             else {
                 this.editor.$view.style.width = null;
-                this.editor.$view.addClass('asht-width-auto');
+                this.editor.$view.addClass('as-width-auto');
             }
         }
         return value;
@@ -696,27 +770,27 @@ LayoutController.prototype.styleHandlers.height = {
         var psValue;
         if (value === 'auto') {
             this.editor.$view.style.height = null;
-            this.editor.$view.addClass('asht-height-auto');
+            this.editor.$view.addClass('as-height-auto');
         }
         else if (value.indexOf('calc(')) {
             this.editor.$view.style.height = value;
-            this.editor.$view.removeClass('asht-height-auto');
+            this.editor.$view.removeClass('as-height-auto');
         }
         else {
             psValue = parseMeasureValue(value);
             if (psValue) {
                 if (['px', 'vw', 'vh', 'em', 'rem', 'pt'].indexOf(psValue.unit) < 0) {
                     this.editor.$view.style.height = null;
-                    this.editor.$view.addClass('asht-height-auto');
+                    this.editor.$view.addClass('as-height-auto');
                 }
                 else {
                     this.editor.$view.style.height = value;
-                    this.editor.$view.removeClass('asht-height-auto');
+                    this.editor.$view.removeClass('as-height-auto');
                 }
             }
             else {
                 this.editor.$view.style.height = null;
-                this.editor.$view.addClass('asht-height-auto');
+                this.editor.$view.addClass('as-height-auto');
             }
         }
         return value;
@@ -736,7 +810,8 @@ LayoutController.prototype.addStyle = function () {
         }
     }
     else if (arguments.length === 2) {
-
+        if (arg0 === '--as-width') arg0 = 'width';
+        if (arg0 === '--as-height') arg0 = 'height';
         if (typeof arg0 === 'string') {
             if (arg0.startsWith('--')) {
                 this.editor.$view.style.setProperty(arg0, arg1);
@@ -761,6 +836,8 @@ LayoutController.prototype.addStyle = function () {
 LayoutController.prototype.removeStyle = function () {
     var arg0 = arguments[0];
     if (arguments.length === 1) {
+        if (arg0 === '--as-width') arg0 = 'width';
+        if (arg0 === '--as-height') arg0 = 'height';
         if (arg0.startsWith('--')) {
             this.editor.$view.style.removeProperty(arg0);
         }
@@ -814,11 +891,33 @@ LayoutController.prototype.updateScrollerStatus = function () {
     var viewElt = this.editor.$view;
     var tableElt = this.editor.$tableData;
     var tableBound = tableElt.getBoundingClientRect();
-    viewElt.style.setProperty('--content-width', tableBound.width + 'px');
-    viewElt.style.setProperty('--content-height', tableBound.height + 'px');
     var cpStyle = getComputedStyle(this.editor.$view);
+    var viewBound = viewElt.getBoundingClientRect();
 
-    var parentBound = viewElt.parentElement.getBoundingClientRect();
+    var minOutWidth = 1960;
+    var parentElt = viewElt.parentElement;
+    var parentBound, temp, curBound, curStyle, curElt;
+    curElt = parentElt;
+    parentBound = new Rectangle(0, 0, 0, 0)
+    while (curElt && curElt !== document.body && curElt !== document.documentElement) {
+        curBound = Rectangle.fromClientRect(curElt.getBoundingClientRect());
+        curStyle = getComputedStyle(curElt);
+        temp = parseMeasureValue(curStyle.paddingLeft || '0');
+        if (isRealNumber(temp.value)) curBound.width -= temp.value;
+        temp = parseMeasureValue(curStyle.paddingRight || '0');
+        if (isRealNumber(temp.value)) curBound.width -= temp.value;
+        temp = parseMeasureValue(curStyle.paddingTop || '0');
+        if (isRealNumber(temp.value)) curBound.height -= temp.value;
+        temp = parseMeasureValue(curStyle.paddingTop || '0');
+        if (isRealNumber(temp.value)) curBound.height -= temp.value;
+        if (curBound.width < minOutWidth) {
+            minOutWidth = curBound.width;
+            parentBound = curBound;
+        }
+        curElt = curElt.parentElement;
+    }
+
+
     var screenViewSize = getScreenSize();
     var getAvailableWidth = () => {
         var res = Infinity;
@@ -842,14 +941,17 @@ LayoutController.prototype.updateScrollerStatus = function () {
             }
         }
 
-
+        if (parentBound.width) {
+            res = Math.min(res, parentBound.width);
+        }
         var maxWidth = cpStyle.maxWidth;
         var psMaxWidth = parseMeasureValue(maxWidth);
         if (psMaxWidth && psMaxWidth.unit === 'px') {
             res = Math.min(res, psMaxWidth.value);
         }
 
-        return res;
+
+        return Math.floor(res);
     };
 
     var getAvailableHeight = () => {
@@ -877,7 +979,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
             res = Math.min(res, psMaxHeight.value);
         }
 
-        return res;
+        return Math.floor(res);
     }
 
     var availableWidth = getAvailableWidth();
@@ -896,24 +998,33 @@ LayoutController.prototype.updateScrollerStatus = function () {
         viewElt.removeStyle('--available-height');
     }
 
-    if ((tableBound.width) > availableWidth - 17) {
+    if ((tableBound.width) > availableWidth - 17 || tableBound.width > viewBound.width) {
         this.editor.$view.addClass('asht-overflow-x');
     }
     else {
         this.editor.$view.removeClass('asht-overflow-x');
     }
 
-    if (tableBound.height > availableHeight - 17) {
+    if (tableBound.height > availableHeight - 17 || tableBound.height > viewBound.height) {
         this.editor.$view.addClass('asht-overflow-y');
     }
     else {
         this.editor.$view.removeClass('asht-overflow-y');
     }
 
-    this.editor.$hscrollbar.innerWidth = tableBound.width;
-    this.editor.$vscrollbar.innerHeight = tableBound.height;
+    tableBound = tableElt.getBoundingClientRect();
+    viewElt.style.setProperty('--content-width', tableBound.width + 'px');
+    viewElt.style.setProperty('--content-height', tableBound.height + 'px');
+
     setTimeout(() => {
         var viewportBound = this.editor.$mainViewport.getBoundingClientRect();
+        tableBound = tableElt.getBoundingClientRect();
+        tableBound = tableElt.getBoundingClientRect();
+        viewElt.style.setProperty('--content-width', tableBound.width + 'px');
+        viewElt.style.setProperty('--content-height', tableBound.height + 'px');
+
+        this.editor.$hscrollbar.innerWidth = tableBound.width;
+        this.editor.$vscrollbar.innerHeight = tableBound.height;
         this.editor.$hscrollbar.outerWidth = viewportBound.width;
         this.editor.$vscrollbar.outerHeight = viewportBound.height;
         if (this.editor.$hscrollbar.innerWidth > this.editor.$hscrollbar.outerWidth) {
@@ -946,12 +1057,14 @@ LayoutController.prototype.fullUpdateFixedXCol = function () {
 };
 
 LayoutController.prototype.updateStyleConfig = function () {
-    if (this.editor.tableData.config && this.editor.tableData.config.rowHeight) {
-        this.editor.$view.addStyle('--row-height', this.editor.tableData.config.rowHeight + 'px');
-    }
-    else {
-        this.editor.$view.removeStyle('--row-height');
-    }
+    //disable row height config
+    // if (this.editor.tableData.config && this.editor.tableData.config.rowHeight) {
+    //     this.editor.$view.addStyle('--row-height', this.editor.tableData.config.rowHeight + 'px');
+    // }
+    // else {
+    //     this.editor.$view.removeStyle('--row-height');
+    // }
+
 };
 
 LayoutController.prototype.onResize = function () {
@@ -964,6 +1077,13 @@ LayoutController.prototype.onResize = function () {
     this.editor.fixedXYCtrl.updateSize();
 
     this.editor.selectTool.updateSelectedPosition();
+    setTimeout(() => {
+        this.editor.fixedYCtrl.updateSize();
+        this.editor.fixedXCtrl.updateSize();
+        this.editor.fixedXYCtrl.updateSize();
+
+        this.editor.selectTool.updateSelectedPosition();
+    }, 10);
 };
 
 LayoutController.prototype.onData = function () {
@@ -1101,7 +1221,7 @@ TEFixedYController.prototype.updateContent = function () {
             var copyTr = $(tr.cloneNode(false));
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD')
-                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })))
+                .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})))
             copyTr.addChild(cells);
 
             return copyTr;
@@ -1117,8 +1237,9 @@ TEFixedYController.prototype.updateSize = function () {
     var cells = this.$fixedYTable.firstChild
         && Array.prototype.slice.call(this.$fixedYTable.firstChild.firstChild.childNodes);
     var headBound = this.editor.tableData.$thead.getBoundingClientRect();
-    cells.forEach(elt => {
-        elt.addStyle('width', elt.$origin.getBoundingClientRect().width + 'px')
+    cells.forEach((elt, i) => {
+        if (i > 0)
+            elt.addStyle('width', elt.$origin.getBoundingClientRect().width + 'px')
     });
     this.editor.$view.addStyle('--head-height', headBound.height + 'px');
 };
@@ -1138,7 +1259,6 @@ TEFixedXController.prototype.onViewCreated = function () {
 };
 
 TEFixedXController.prototype.updateFullContent = function () {
-    console.log("updateFullContent");
     var head, body;
     this.$fixXTable.clearChild();
     this.$fixXTable.$origin = this.editor.tableData.$view;
@@ -1149,7 +1269,7 @@ TEFixedXController.prototype.updateFullContent = function () {
             var copyTr = $(tr.cloneNode(false));
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
-            cells = cells.slice(0, 1).map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+            cells = cells.slice(0, 1).map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
             copyTr.addChild(cells);
             return copyTr;
         });
@@ -1163,7 +1283,7 @@ TEFixedXController.prototype.updateFullContent = function () {
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
             cells = cells.slice(0, 1)
-                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+                .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
             // cells.forEach(elt => {
             //     swapChildrenInElt(elt, elt.$origin);
             //     this._swappedPairs.push([elt, elt.$origin]);
@@ -1194,7 +1314,7 @@ TEFixedXController.prototype.updateChangedContent = function () {
         copyTr.$origin = tr;
         var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
         cells = cells.slice(0, 1)
-            .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
+            .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
         // cells.forEach(elt => {
         //     swapChildrenInElt(elt, elt.$origin);
         //     this._swappedPairs.push([elt, elt.$origin]);
@@ -1216,20 +1336,23 @@ TEFixedXController.prototype.updateContent = function () {
 
 TEFixedXController.prototype.updateSize = function () {
     // var bound = this.editor.tableData.$view.getBoundingClientRect();
-
+    //todo: index col width set by record length
     // this.$fixXCol.addStyle('height', bound.height + 'px');
     if (!this.editor.tableData) return;
     var firstCell = this.editor.tableData.$view.firstChild.firstChild.firstChild;
     var colSize = firstCell.getBoundingClientRect();
     var colWidth = colSize.width;
-    this.editor.$view.addStyle('--index-col-width', colWidth + 'px');
+    var rowLength = this.editor.tableData.bodyRow.length;
+
+
+    this.editor.$view.addStyle('--index-col-width', calcIndexColumnWidth(rowLength) + 'px');
     Array.prototype.forEach.call(this.$fixXTable.firstChild.childNodes, elt => {
         elt.addStyle('height', elt.$origin.getBoundingClientRect().height + 'px');
-        elt.addStyle('width', colWidth + 'px');
+        // elt.addStyle('width', colWidth + 'px');
     });
     Array.prototype.forEach.call(this.$fixXTable.lastChild.childNodes, elt => {
         elt.addStyle('height', elt.$origin.getBoundingClientRect().height + 'px');
-        elt.addStyle('width', colWidth + 'px');
+        // elt.addStyle('width', colWidth + 'px');
     });
 };
 
@@ -1262,6 +1385,8 @@ TEFixedXYController.prototype.updateSize = function () {
  */
 function CommandController(editor) {
     this.editor = editor;
+    this.isFocus = false;
+
     Object.keys(this.constructor.prototype).forEach(key => {
         if (key.startsWith('ev_')) this[key] = this[key].bind(this);
     });
@@ -1271,6 +1396,8 @@ CommandController.prototype.onViewCreated = function () {
     ContextCaptor.auto();
     this.editor.$view.on('click', this.ev_click);
     this.editor.$view.on('contextmenu', this.ev_contextMenu);
+    this.editor.$view.on('focus', this.ev_domFocus, true);
+    this.editor.$view.on('blur', this.ev_domBlur, true);
     // this.editor.$indexCol.on('contextmenu', this.ev_indexColContextMenu);
 };
 
@@ -1299,14 +1426,15 @@ CommandController.prototype.ev_contextMenu = function (event) {
 };
 
 CommandController.prototype.ev_clickTable = function (event) {
-
     var c = event.target;
-    var cellElt;
     while (c) {
         if (c.hasClass && c.hasClass('asht-table-cell')) {
-            cellElt = c;
-            this.ev_clickCell(cellElt, event);
-            return;
+            this.ev_clickCell(c, event);
+            break;
+        }
+        else if (c.hasClass && c.hasClass('asht-menu')) {
+            this.ev_clickMenu(c, event);
+            break;
         }
         c = c.parentElement;
     }
@@ -1370,38 +1498,37 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
                 icon: 'span.mdi.mdi-table-row-remove'
             })
     }
-    if (items.length > 0 && items[items.length - 1] !== '===') {
-        items.push("===");
-    }
-    if (row.idx !== "*") {
-        items.push({
-            cmd: 'copy',
-            text: "Copy",
-            icon: "span.mdi.mdi-content-copy"
-        });
-    }
-    items.push({
-        cmd: 'paste',
-        text: "Paste",
-        icon: 'span.mdi.mdi-content-paste'
-    });
-    items.push('===', {
-        cmd: 'row_height',
-        text: 'Row Height',
-        icon: 'span.mdi.mdi-table-row-height'
-    });
+    // if (items.length > 0 && items[items.length - 1] !== '===') {
+    //     items.push("===");
+    // }
+    // if (row.idx !== "*") {
+    //     items.push({
+    //         cmd: 'copy',
+    //         text: "Copy",
+    //         icon: "span.mdi.mdi-content-copy"
+    //     });
+    // }
+    // items.push({
+    //     cmd: 'paste',
+    //     text: "Paste",
+    //     icon: 'span.mdi.mdi-content-paste'
+    // });
+    // items.push('===', {
+    //     cmd: 'row_height',
+    //     text: 'Row Height',
+    //     icon: 'span.mdi.mdi-table-row-height'
+    // });
 
     ev.showContextMenu({
-        extendStyle: { fontSize: '14px' },
+        extendStyle: {fontSize: '14px'},
         items: items
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventOpt = { cmd: cmd };
+        var eventOpt = {cmd: cmd};
         var ev2;
-        console.log(cmd)
         switch (cmd) {
             case 'row_height':
-                selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
+                selectRowHeight({value: thisTE.tableData.config.rowHeight, standard: 21})
                     .then(function (result) {
                         thisTE.tableData.config.rowHeight = result;
                         thisTE.layoutCtrl.updateStyleConfig();
@@ -1482,7 +1609,7 @@ CommandController.prototype.ev_rootCellContextMenu = function (ev) {
         ]
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventOpt = { cmd: cmd };
+        var eventOpt = {cmd: cmd};
         eventOpt.type = 'cmd_insert_row';
         eventOpt.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.getLength();
         eventOpt.result = {};
@@ -1511,4 +1638,301 @@ CommandController.prototype.ev_rootCellContextMenu = function (ev) {
     });
 };
 
+CommandController.prototype.ev_clickMenu = function (menuElt, event) {
+    if (!this.editor.tableData) return;
+    var row = this.editor.tableData.findRowByElt(menuElt);
+    if (!row) return;
+    if (row.idx === "*") return; //ignore new row
+    this.editor.selectTool.selectRow(row);
+    this.editor.editTool.editCell(row, 0);
+    var cmdTree = this.editor.cmdToolDelegate.getCmdGroupTree();
+    var cmdList = [];
+    var visit = (nd) => {
+        if (Array.isArray(nd)) nd.forEach(visit);
+        else if (nd.children) visit(nd.children);
+        else if (typeof nd === 'string') {
+            cmdList.push(nd);
+        }
+    }
+    visit(cmdTree);
+    var cmdItems = cmdList.map(cmdName => {
+        return Object.assign({name: cmdName}, this.editor.cmdToolDelegate.getCmdDescriptor(cmdName));
+    }).filter(x => !x.disabled).map(it => {
+        it.text = it.text||it.desc || it.name;
+        return it;
+    });
+    var qi = new QuickMenuInstance(menuElt, {
+        menuProps: {
+            items: cmdItems,
+        },
+        onSelect: (item) => {
+            this.editor.cmdToolDelegate.execCmd(item.name);
+        },
+        onClose: () =>{
 
+            console.log('close')
+        }
+    });
+
+    qi.open();
+
+
+    console.log(cmdItems);
+};
+
+CommandController.prototype.ev_focus = function (event) {
+};
+
+CommandController.prototype.ev_blur = function (event) {
+
+};
+
+CommandController.prototype.ev_domFocus = function (event) {
+    if (this.isFocus) return;
+    this.isFocus = true;
+    this.ev_focus(event);
+};
+
+/**
+ *
+ * @param elt
+ * @returns {boolean}
+ */
+CommandController.prototype.isDescendant = function (elt) {
+    return this.editor.isDescendantElt(elt);
+};
+
+CommandController.prototype.ev_domBlur = function (event) {
+    setTimeout(() => {
+        if (this.isFocus && !this.isDescendant(document.activeElement)) {
+            this.isFocus = false;
+            this.ev_blur(event);
+        }
+    }, 200);
+};
+
+
+/**
+ * @extends CMDToolDelegate
+ * @param {TableEditor} editor
+ * @constructor
+ */
+function TECMDToolDelegate(editor) {
+    CMDToolDelegate.call(this, editor);
+    this.editor = editor;
+}
+
+mixClass(TECMDToolDelegate, CMDToolDelegate);
+
+TECMDToolDelegate.prototype.getCmdGroupTree = function () {
+    var res = {
+        type: 'group_x2',
+        children: [
+            'addRowBefore', 'addRowAfter', 'delete'//,
+            // 'copy', 'paste'
+        ]
+    }
+
+    var extendCommands = this.editor.opt.extendCommands;
+    var extGroups;
+    if (extendCommands && extendCommands.length > 0) {
+        res = {
+            type: 'group_x2',
+            children: [res, {type: 'group_x2', children: extendCommands}],
+        }
+    }
+
+    return res;
+};
+
+TECMDToolDelegate.prototype.getCmdDescriptor = function (name) {
+    if (TECommands[name] && TECommands[name].descriptor)
+        return Object.assign({}, TECommandDescriptors[name], TECommands[name].descriptor.call(this.editor));
+    return TECommandDescriptors[name];//default
+};
+
+
+TECMDToolDelegate.prototype.execCmd = function (name, ...args) {
+    if (TECommands[name] && TECommands[name].exec) TECommands[name].exec.call(this.editor, ...args);
+    setTimeout(() => {
+        if (!this.editor.isDescendantElt(document.activeElement)) this.editor.$view.focus();
+    }, 4);
+};
+
+
+var TECommands = {};
+
+
+// TECommands.copy = {
+//     descriptor: function () {
+//         var res = Object.assign({}, TECommandDescriptors.copy);
+//
+//         return res;
+//     },
+//     /**
+//      * @this TableEditor
+//      */
+//     exec: function () {
+//         var selectedData = this.selectTool.selectedData;
+//         if (!selectedData) return;
+//         if (selectedData.type !== 'row' || selectedData.type !== 'cell') return;
+//         console.log(selectedData)
+//         console.log(this.selectTool.selectedData)
+//     },
+//
+// }
+
+TECommands.addRowBefore = {
+    descriptor: function () {
+        var res = {};
+        if (this.opt.readOnly) res.disabled = true;
+        res.desc = "Thêm 1 dòng phía trên";
+        return res;
+    },
+    /**
+     * @this TableEditor
+     */
+    exec: function () {
+        var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        if (!row) {
+            row = this.selectTool.selectedData.row;//fallback
+        }
+        if (!row) return;
+        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        eventOpt.rowIdx = 0;
+        if (row) {
+            if (row.idx === "*") {
+                eventOpt.rowIdx = row.table.bodyRow.length;
+            }
+            else {
+                eventOpt.rowIdx = row.idx;
+            }
+        }
+        var event = new ASHTWaitValueEvent(eventOpt);
+        this.emit(eventOpt.type, event, this);
+        event.afterThen(result => {
+            if (result) {
+                this.insertRow(eventOpt.rowIdx, result);
+            }
+            else if (result === null) {
+                this.insertRow(eventOpt.rowIdx, {});
+            }
+        });
+    }
+};
+
+
+TECommands.addRowAfter = {
+    descriptor: function () {
+        var res = {};
+        if (this.opt.readOnly) res.disabled = true;
+        res.desc = "Thêm 1 dòng phía dưới";
+        return res;
+    },
+    /**
+     * @this TableEditor
+     */
+    exec: function () {
+        var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        if (!row) {
+            row = this.selectTool.selectedData.row;//fallback
+        }
+        if (!row) return;
+        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        eventOpt.rowIdx = row.table.bodyRow.length;
+        if (row) {
+            if (isNaturalNumber(row.idx)) {
+                eventOpt.rowIdx = row.idx + 1;
+            }
+        }
+        var event = new ASHTWaitValueEvent(eventOpt);
+        this.emit(eventOpt.type, event, this);
+        event.afterThen(result => {
+            if (result) {
+                this.insertRow(eventOpt.rowIdx, result);
+            }
+            else if (result === null) {
+                this.insertRow(eventOpt.rowIdx, {});
+            }
+        });
+    }
+};
+
+
+TECommands.delete = {
+    descriptor: function () {
+        var res = {};
+        if (this.opt.readOnly) res.disabled = true;
+        res.desc = "Xóa";
+        res.extendStyle = {color: 'rgb(239,99,99)'}
+        return res;
+    },
+    /**
+     * @this TableEditor
+     */
+    exec: function () {
+        var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        if (!row) {
+            row = this.selectTool.selectedData.row;//fallback
+        }
+        if (!row) return;
+        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        eventOpt.type = 'cmd_remove_row';
+        eventOpt.rowIdx = row.idx;
+        eventOpt.accepted = true;
+        var ev2 = new ASHTConfirmEvent(eventOpt);
+
+        this.emit(eventOpt.type, ev2, this);
+        ev2.afterThen(isAccept => {
+            if (isAccept)
+                this.removeRow(eventOpt.rowIdx);
+        });
+    }
+};
+
+
+TECommands.copy = {
+    descriptor: function () {
+        var res = {};
+        var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        res.disabled = !row || !isNaturalNumber(row.idx);
+        return res;
+    },
+    exec: function () {
+        var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        var canCopy = row && isNaturalNumber(row.idx);
+        if (!canCopy) return;
+        var data = row.record;
+        setDataSheetClipboard(data);
+    }
+};
+
+TECommands.paste = {
+    descriptor: function () {
+        var res = {};
+        var data;
+        if (this.opt.readOnly) {
+            res.disabled = true;
+        }
+        else {
+            data = getDataSheetClipboard();
+            console.log(data)
+        }
+
+        return res;
+    },
+    exec: function () {
+        // var row = this.editTool.currentCellEditor && this.editTool.currentCellEditor.cell.row;
+        // var canPaste = !row || !isNaturalNumber(row.idx);
+        // if (!canPaste) return;
+    }
+};
+
+TECommands.export = {
+    /**
+     * @this TableEditor
+     */
+    exec: function () {
+        this.emit('extend_command', {type: 'extend_command', command: 'export', target: this}, this)
+    }
+};
