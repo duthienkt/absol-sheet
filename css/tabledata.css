@@ -1,10 +1,12 @@
 table.asht-table-data {
-    --row-height: 21px;
+    --row-height: 30px;
+    background-color: white;
 }
 
 
 table.asht-table-data {
     border: solid 1px #dddddd;
+    box-sizing: border-box;
 }
 
 table.asht-table-data > tbody > tr > td,
@@ -16,7 +18,17 @@ table.asht-table-data > tr > td {
     white-space: pre-wrap;
     word-break: normal;
     box-sizing: border-box;
+}
 
+table.asht-table-data > tbody > tr > td:first-child,
+table.asht-table-data > thead > tr > td:first-child {
+    text-align: right;
+    width: var(--index-col-width);
+    min-width: var(--index-col-width); /*force width*/
+}
+
+table.asht-table-data > thead > tr > td {
+    min-height: 30px;
 }
 
 
@@ -31,6 +43,8 @@ table.asht-table-data > thead > tr > td {
     background-color: rgb(248, 249, 250);
     text-align: center;
     box-sizing: border-box;
+    min-height: var(--row-height);
+    height: var(--row-height);
 }
 
 table.asht-table-data > tbody > tr > td > span {
@@ -54,10 +68,18 @@ td.asht-type-boolean {
     text-align: center;
 }
 
+td.asht-type-text {
+    text-align: left;
+    min-width: 64px;
+    line-height: 2;
+}
+
+
 .asht-table-editor td.asht-calc {
     background-color: rgba(255, 255, 0, 0.3);
 }
 
+/*unique value in column*/
 td.asht-duplicated {
     background-color: rgba(255, 0, 0, 0.3);
 }
@@ -90,9 +112,40 @@ table.asht-table-data > tbody > tr > td.asht-type-enum {
     padding-right: calc(0.35em + 18px);
 }
 
-table.asht-table-data > tbody > tr > td.asht-type-time-range-24{
+table.asht-table-data > tbody > tr > td.asht-type-time-range-24 {
     text-align: left;
     padding-right: 1.35em;
     min-width: calc(14em + 11px);
     box-sizing: border-box;
 }
+
+.as-layout-editor .asht-table-editor.asht-read-only.asht-headless .asht-new-row:first-child {
+    display: table-row;
+    pointer-events: none;
+}
+
+
+.asht-table-data tbody .asht-menu {
+    width: 30px;
+    min-width: 30px;
+    text-align: center;
+    font-size: 20px;
+    color: rgb(67, 70, 70);
+    cursor: pointer;
+}
+
+.asht-new-row .asht-menu {
+    cursor: default;
+}
+
+.asht-table-data tbody tr:not(.asht-new-row)  .asht-menu:hover {
+    color: black;
+    background-color: #F4F4F4;
+}
+
+.asht-table-editor.asht-read-only .asht-menu,
+.asht-table-data thead .asht-menu span,/*TODO: handle quickmenu in header*/
+.asht-new-row .asht-menu span {
+    display: none;
+}
+
