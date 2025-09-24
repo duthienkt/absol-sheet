@@ -1,7 +1,6 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
-import {_} from "../../dom/SCore";
-
+import { _ } from "../../dom/SCore";
 
 
 /***
@@ -16,17 +15,26 @@ OOP.mixClass(TDArrayOfText, TDBase);
 
 TDArrayOfText.prototype.attachView = function () {
     this.elt.clearChild();
-    this.$number = _({
+    this.$text = _({
         tag: 'span', child: { text: '' }
     });
-    this.elt.addChild(this.$number);
+    this.elt.addChild(this.$text);
 };
 
 TDArrayOfText.prototype.reload = function () {
     var value = this.value;
-    value = (value === null || value === undefined) ? '' : (value + '');
-    this.$number.firstChild.data = value;
-}
+    if (this.isNoneValue(value)) value = [];
+    this.$text.firstChild.data = value.join(', ');
+};
+
+TDArrayOfText.prototype.implicit = function (value) {
+    if (value === undefined || value === null) return null;
+    if (!Array.isArray(value)) return null;
+    return value.every(function (it) {
+        return it + '';
+    });
+};
+
 
 TDBase.typeClasses.ArrayOfText = TDArrayOfText;
 TDBase.typeClasses['text[]'] = TDArrayOfText;
