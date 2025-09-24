@@ -163,6 +163,9 @@ TDEBase.prototype.flushValue = function (value) {
             cell: this.cell,
             cellEditor: this
         }, this.tableEditor);
+        if (!this.tableEditor.commandCtrl.isDescendant(document.activeElement)) {
+            this.tableEditor.$view.focus();
+        }
     }
 };
 
