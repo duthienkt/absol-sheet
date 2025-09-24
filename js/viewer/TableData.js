@@ -38,13 +38,15 @@ function TableData(editor, opt) {
 OOP.mixClass(TableData, ASHTTable);
 
 TableData.prototype.defaultConfig = {
-    rowHeight: 21
+    rowHeight: 30
 };
 
 TableData.prototype.configHandlers = {};
 
+
 TableData.prototype.configHandlers.rowHeight = {
     set: function (value) {
+        value = 30;
         this.getView();
         if (!(value > 0 && value < 1024)) {
             value = this.defaultConfig.rowHeight;
@@ -73,9 +75,11 @@ TableData.prototype.export = function () {
 };
 
 TableData.prototype.import = function (data) {
+    this.formSource = data.formSource;
     this.propertyDescriptors = data.propertyDescriptors;
     this.propertyNames = data.propertyNames;
     Object.assign(this.config, this.defaultConfig, data.config || {});
+    this.computeFormSource();
     this.computeHeader();
     this.bodyRow = (data.records || []).map((record, idx) => {
         return new TDRecord(this, record, idx);
@@ -146,9 +150,11 @@ TableData.prototype.loadHeader = function () {
             elt: cell,
             index: i,
             name: name,
-            descriptor: (thisTable.propertyDescriptors && thisTable.propertyDescriptors[name]) || { type: 'text' }
+            descriptor: (thisTable.propertyDescriptors && thisTable.propertyDescriptors[name]) || {type: 'text'}
         };
     });
+    this.$headRow.addChild(this.$menu);
+
 };
 
 TableData.prototype.loadBody = function () {
@@ -171,7 +177,7 @@ TableData.prototype.getView = function () {
     var viewConstructor = {
         class: 'asht-table-data',
         child: [
-            { tag: 'thead', child: 'tr' },
+            {tag: 'thead', child: 'tr'},
             {
                 tag: 'tbody',
                 child: [
@@ -193,6 +199,11 @@ TableData.prototype.getView = function () {
     this.$headRow = $('tr', this.$thead);
     this.$tbody = $('tbody', this.$view);
     this.$rootCell = _('td.asht-table-data-root-cell');
+    this.$menu = _({
+        tag: 'td',
+        class: 'asht-menu',
+        child: 'span.mdi.mdi-dots-vertical'
+    });
     this.$domSignal = _('attachhook').addTo(this.$rootCell);
     this.domSignal = new DomSignal(this.$domSignal)
         .on('requestEmitResizeEvent', function () {
@@ -250,6 +261,19 @@ TableData.prototype.findRowByClientY = function (y) {
     return null;
 };
 
+/**
+ *
+ * @param elt
+ * @returns {TDRecord}
+ */
+TableData.prototype.findRowByElt = function (elt) {
+    while (elt) {
+        if (elt.tdRecord) return elt.tdRecord;
+        elt = elt.parentElement;
+    }
+    return  null;
+};
+
 TableData.prototype.findFirsIncompleteCell = function () {
     var cells;
     for (var i = 0; i < this.bodyRow.length; ++i) {
@@ -297,6 +321,8 @@ TableData.prototype.findColByIndex = function (index) {
 TableData.prototype.findColByName = function (name) {
     return this.headCells[this.propertyNames.indexOf(name)] || null;
 };
+
+
 
 
 TableData.prototype.findRowByIndex = function (index) {
