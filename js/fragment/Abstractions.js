@@ -155,7 +155,12 @@ ASHField.prototype.renewDescriptor = function () {
                 Object.assign(descriptor, fx[key].getCase(self.record));
             }
             else {
-                ac[key] = fx[key].invoke(self, self.record, self.getVariablesContext());
+                if (fx[key].callable(self.record)) {
+                    ac[key] = fx[key].invoke(self, self.record, self.getVariablesContext());
+                }
+                else {
+                    ac[key] = undefined;
+                }
                 if (ac[key] && ac[key].then) {
                     ac[key] = ac[key].then(function (result) {
                         ac[key] = result;
