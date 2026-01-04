@@ -23,12 +23,9 @@ import "./types/TDTimeRange24";
 import "./types/TDWeek";
 import "./types/TDWeek";
 import "./types/TDDateNLevel";
+import "./types/TDDateInYear";
 import { _ } from '../dom/SCore';
-import EventEmitter from "absol/src/HTML5/EventEmitter";
 import OOP from "absol/src/HTML5/OOP";
-import { randomIdent } from "absol/src/String/stringGenerate";
-import ResizeSystem from "absol/src/HTML5/ResizeSystem";
-import Context from "absol/src/AppPattern/Context";
 import { ASHTRow } from "../fragment/Abstractions";
 
 /***
@@ -40,46 +37,29 @@ import { ASHTRow } from "../fragment/Abstractions";
  */
 export function TDRecord(table, record, idx) {
     ASHTRow.call(this, table, record);
-   this.idx = idx;
+    this.idx = idx;
 }
 
 OOP.mixClass(TDRecord, ASHTRow);
 
 TDRecord.prototype.render = function () {
-    this.elt = _('tr');
+    this.elt = _('tr.asht-record');
     this.$idx = _('td');
+    this.$menu = _({
+        tag: 'td',
+        class: 'asht-menu',
+        child: 'span.mdi.mdi-dots-vertical',
+    });
+
     this.elt.addChild(this.$idx);
+    this.elt.addChild(this.$menu);
+    this.elt.tdRecord = this;
 };
 
 
 TDRecord.prototype.loadFields = function () {
     this.loadCells();
-}
-
-Object.defineProperty(TDRecord.prototype, 'computedRecord', {
-    get: function () {
-        var descriptors = this.propertyDescriptors;
-        var pNames = this.propertyNames;
-        var self = this;
-        return pNames.reduce((ac, pName) => {
-            var descriptor = descriptors[pName];
-            Object.defineProperty(ac, pName, {
-                enumerable: true,
-                configurable: true,
-                get: function () {
-                    if (descriptor.__fx__ && descriptor.__fx__.calc) {
-
-                    }
-                },
-                set: function () {
-
-                }
-            });
-
-            return ac;
-        }, {});
-    }
-});
+};
 
 
 Object.defineProperty(TDRecord.prototype, 'idx', {
@@ -103,6 +83,7 @@ Object.defineProperty(TDRecord.prototype, 'idx', {
 
 
 TDRecord.prototype.loadCells = function () {
+    this.$menu.remove();
     var tdRow = this;
     var propertyNames = this.propertyNames;
     var propertyDescriptors = this.propertyDescriptors;
@@ -120,6 +101,7 @@ TDRecord.prototype.loadCells = function () {
         return cell.elt;
     });
     this.elt.addChild(cellEltList);
+    this.elt.addChild(this.$menu);
 };
 
 
