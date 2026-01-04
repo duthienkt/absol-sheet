@@ -539,18 +539,28 @@ input.asht-cell-editor-input[type="number"]::-webkit-inner-spin-button {
 .as-printer-content .asht-menu,
 .as-printer-content .asht-record td:first-child,
 .as-printer-content .asht-table-editor-main-viewport thead td:first-child,
-.as-printer-content .asht-table-editor-main-viewport .asht-new-row{
-   display: none;
+.as-printer-content .asht-table-editor-main-viewport .asht-new-row {
+    display: none;
 }
 
 .as-printer-content .asht-table-data {
     min-width: unset !important;
 }
 
+.as-printer-content .asht-table-data td,
+.as-printer-content .asht-table-data td * {
+    white-space: pre-wrap;
+}
+
 .as-printer-content .asht-table-editor.as-width-auto {
     width: 100% !important;
 }
 
-.as-printer-content .asht-table-editor.as-width-auto .asht-table-data{
+.as-printer-content .asht-table-editor.as-width-auto .asht-table-data {
     width: 100% !important;
+}
+
+.as-printer-content .asht-table-editor-main-viewport {
+    overflow: visible;
+    max-height: unset;
 }
