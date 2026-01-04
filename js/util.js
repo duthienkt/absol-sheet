@@ -1,6 +1,7 @@
 import { generateJSVariable, replaceDateStringJSVariable } from "absol/src/JSMaker/generator";
 import TSSwitch from "./fx/TSSwitch";
 import TSFunction from "./fx/TSFunction";
+import TextMeasure from "absol-acomp/js/TextMeasure";
 
 export function isNone(o) {
     return o === null || o === undefined;
@@ -80,4 +81,34 @@ export function computeSheetDescriptor(propertyNames, propertyDescriptors) {
         computeFxDescriptor(descriptor);
         computeDependenciesDescriptor(descriptor);
     });
+}
+
+
+var icWidthCache = Array(10).fill(0);
+
+export function calcIndexColumnWidth(nRow) {
+    var l = (nRow + '').length;
+    l = Math.max(1, l);
+    if (icWidthCache[l]) return icWidthCache[l];
+    var res = TextMeasure.measureWidth('0'.repeat(l), 'Arial', 14) + 2 + 0.7 * 14;
+    res = Math.ceil(res);
+    icWidthCache[l] = res;
+    return res;
+}
+
+export function setDataSheetClipboard(data) {
+    var text = generateJSVariable(data);
+    localStorage.setItem("data_sheet_clipboard", text);
+}
+
+
+export function getDataSheetClipboard() {
+    var text = localStorage.getItem("data_sheet_clipboard");
+    if (!text) return null;
+    try {
+        return (new Function( 'return ' + text))();
+    }
+    catch (error) {
+        return null;
+    }
 }
