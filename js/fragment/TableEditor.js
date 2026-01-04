@@ -919,6 +919,33 @@ LayoutController.prototype.updateScrollerStatus = function () {
 
 
     var screenViewSize = getScreenSize();
+
+    var findFirstOver = ()=>{
+        var c = parentElt;
+        var bound = this.editor.$view.getBoundingClientRect();
+        var cb;
+        while (c) {
+            if (c === document.body || c === document.documentElement) return null;
+            cb = c.getBoundingClientRect();
+            if (cb.right < bound.right) {
+                break;
+            }
+            c = c.parentElement;
+        }
+
+        if (!c) return null;
+        var cStyle = getComputedStyle(c);
+        var overflowX = cStyle.getPropertyValue('overflow-x');
+        if (overflowX === 'auto' || overflowX === 'scroll') {
+            return null;
+        }
+        if (c.scrollWidth <= c.clientWidth) return null;
+        availableWidth -= bound.right -  cb.right;
+        if (availableWidth < 0) availableWidth = 0;
+        viewElt.addStyle('--available-width', availableWidth + 'px');
+
+    };
+
     var getAvailableWidth = () => {
         var res = Infinity;
         var width = this.extendStyle.width || 'auto';
@@ -986,6 +1013,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
     var availableHeight = getAvailableHeight();
     if (isRealNumber(availableWidth)) {
         viewElt.addStyle('--available-width', availableWidth + 'px');
+        findFirstOver();
     }
     else {
         viewElt.removeStyle('--available-width');
