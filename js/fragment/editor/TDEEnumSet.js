@@ -18,7 +18,7 @@ OOP.mixClass(TDEEnumSet, TDEBase);
 TDEEnumSet.prototype.prepareInput = function () {
     var descriptor = this.cell.descriptor;
     this.$input = _({
-        tag: 'multiselectmenu',
+        tag: 'multicheckmenu',
         class: 'asht-enum-set-cell-editor-input',
         props: {
             items: descriptor.items,
