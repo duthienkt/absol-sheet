@@ -11,6 +11,8 @@ This project implements a highly dynamic, spreadsheet-like data editor and viewe
 - **TableData** (`js/viewer/TableData.js`): Core data structure for tabular data, manages rows (`TDRecord`), columns, and configuration. Handles import/export and row operations.
 - **TDRecord** (`js/viewer/TDRecord.js`): Represents a single row in the table, manages field instances and cell rendering.
 - **Field Types** (`js/viewer/types/`): Each file implements a specific cell type (e.g., `TDEnum.js`, `TDText.js`). Extend `TDBase` and implement `attachView`, `loadDescriptor`, `loadValue`.
+- **Editor Types** (`js/fragment/editor/`): In-cell editing UIs for `TableEditor` (e.g., `TDEText`, `TDENumber`). Registered by descriptor `type` via `TDEBase.typeClasses`.
+- **Formula/Excel helpers** (`js/fx/`): Formula utilities used by the sheet runtime/export API (notably `ExcelFx`, `ExcelParser`, `TSFunction`, and `excelFormula2KVFormula` exported from `index.js`).
 - **Abstractions** (`js/fragment/Abstractions.js`): Defines base classes for editors, fields, rows, and tables. Implements event and context propagation, formula/circuit logic, and property descriptor computation.
 - **Demo & Example Data** (`demo/`, `example_data/`): Example usage, test harnesses, and sample data descriptors for rapid prototyping and manual testing.
 
@@ -25,7 +27,7 @@ This project implements a highly dynamic, spreadsheet-like data editor and viewe
 
 - **Descriptors**: Data schema is defined by `propertyNames` and `propertyDescriptors` (see `example_data/ex_001.js`). Descriptors can include formulas (`calc`, `onchange`), validation, and custom field logic.
 - **Formula Syntax**: Formulas use `=` prefix for expressions, `{{ ... }}` for multi-line JS. See `computeSheetDescriptor` in `js/util.js`.
-- **Dynamic Field Types**: Field and cell types are mapped by string in descriptors to classes in `TDBase.typeClasses` and `FAField.typeClasses`.
+- **Dynamic Field Types**: Field and cell types are mapped by string in descriptors to classes in `TDBase.typeClasses`, `TDEBase.typeClasses`, and `FAField.typeClasses`.
 - **Event Model**: Uses custom event emitters and DOM signals for resize, property change, and command handling.
 - **Extensibility**: New field types can be added by extending `TDBase` and registering in `typeClasses`.
 - **Read-only/Headless Modes**: Controlled via options (`readOnly`, `headless`) in editor config.
@@ -40,8 +42,10 @@ This project implements a highly dynamic, spreadsheet-like data editor and viewe
 ## Key Files & Directories
 
 - `js/fragment/TableEditor.js`, `js/fragment/FormArrayEditor.js`: Main editors.
+- `js/fragment/editor/`: In-cell editor implementations used by `TableEditor`.
 - `js/viewer/TableData.js`, `js/viewer/TDRecord.js`: Data and row logic.
 - `js/viewer/types/`: Field/cell type implementations.
+- `js/fx/`: Formula helpers (Excel-like functions + Excel-to-sheet formula conversion).
 - `js/fragment/Abstractions.js`: Base classes and event logic.
 - `js/util.js`: Utility functions, formula parsing, clipboard.
 - `demo/`, `example_data/`: Usage examples and test data.
