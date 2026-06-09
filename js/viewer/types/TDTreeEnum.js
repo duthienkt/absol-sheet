@@ -6,6 +6,7 @@ import treeListToList from "absol-acomp/js/list/treeListToList";
 import TDEnum from "./TDEnum";
 import { isDifferent } from "../../util";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import { keyStringOf } from "absol-acomp/js/utils";
 
 
 /***
@@ -37,7 +38,7 @@ TDTreeEnum.prototype.loadDescriptor = function () {
             enumerable: false,
             value: descriptor.items
                 .reduce(function visitor(ac, item) {
-                    ac[item.value] = item;
+                    ac[keyStringOf(item.value)] = item;
                     if (item.items && item.items.length > 0)
                         item.items.reduce(visitor, ac);
                     return ac;
@@ -70,8 +71,9 @@ TDTreeEnum.prototype.isNoneValue = TDEnum.prototype.isNoneValue;
 TDTreeEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;
-    if (value !== null && value !== undefined && descriptor.items.__val2Item__[value]) {
-        this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
+    const { keyStringOf } = require('absol-acomp/js/utils');
+    if (value !== null && value !== undefined && descriptor.items.__val2Item__[keyStringOf(value)]) {
+        this.$text.firstChild.data = descriptor.items.__val2Item__[keyStringOf(value)].text;
     }
     else {
         this.$text.firstChild.data = '';
