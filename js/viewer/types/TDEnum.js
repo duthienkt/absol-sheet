@@ -4,6 +4,7 @@ import {_} from "../../dom/SCore";
 import {measureListSize} from "absol-acomp/js/SelectList";
 import {isDifferent} from "../../util";
 import ResizeSystem from "absol/src/HTML5/ResizeSystem";
+import { keyStringOf } from "absol-acomp/js/utils";
 
 
 /***
@@ -34,7 +35,7 @@ TDEnum.prototype.loadDescriptor = function () {
             enumerable: false,
             value: descriptor.items
                 .reduce(function (ac, item) {
-                    ac[item.value] = item;
+                    ac[keyStringOf(item.value)] = item;
                     return ac;
                 }, {})
         });
@@ -63,9 +64,9 @@ TDEnum.prototype.implicit = function (value) {
     if (this.row.busy) return value;
     var descriptor = this.descriptor;
     descriptor.items = descriptor.items || [];
-    if (value !== null && value !== undefined && !descriptor.items.__val2Item__[value]) {
+    if (value !== null && value !== undefined && !descriptor.items.__val2Item__[keyStringOf(value)]) {
         return descriptor.items.length > 0 ? descriptor.items[0].value : null;
-    } else if (descriptor.items.__val2Item__[value]) return value;
+    } else if (descriptor.items.__val2Item__[keyStringOf(value)]) return value;
     return null;
 };
 
@@ -73,8 +74,8 @@ TDEnum.prototype.implicit = function (value) {
 TDEnum.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.value;
-    if (value !== null && value !== undefined && descriptor.items.__val2Item__[value] && !this.isNoneValue(value)) {
-        this.$text.firstChild.data = descriptor.items.__val2Item__[value].text;
+    if (value !== null && value !== undefined && descriptor.items.__val2Item__[keyStringOf(value)] && !this.isNoneValue(value)) {
+        this.$text.firstChild.data = descriptor.items.__val2Item__[keyStringOf(value)].text;
     }
     else {
         this.$text.firstChild.data = '';

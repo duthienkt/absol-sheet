@@ -1,6 +1,7 @@
 import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import {_} from "../../dom/SCore";
+import { keyStringOf } from "absol-acomp/js/utils";
 
 
 /***
@@ -30,7 +31,7 @@ TDEnumSet.prototype.loadDescriptor = function () {
             enumerable: false,
             value: (descriptor.items || [])
                 .reduce(function (ac, item) {
-                    ac[item.value] = item;
+                    ac[keyStringOf(item.value)] = item;
                     return ac;
                 }, {})
         });
@@ -49,7 +50,7 @@ TDEnumSet.prototype.implicit = function (value) {
     var items = descriptor.items;
     value = value.filter(function (value) {
         return items.__val2Item__ === undefined
-            || items.__val2Item__[value];
+            || items.__val2Item__[keyStringOf(value)];
     });
     return value;
 };
@@ -62,7 +63,7 @@ TDEnumSet.prototype.loadValue = function () {
     var descriptor = this.descriptor;
     var value = this.implicit(this.value || []);
     var text = value.map(function (iVal) {
-        var item = descriptor.items.__val2Item__[iVal];
+        var item = descriptor.items.__val2Item__[keyStringOf(iVal)];
         if (item) return item.text;
         return '?[' + JSON.stringify(iVal) + ']';
     }).join(', ');
