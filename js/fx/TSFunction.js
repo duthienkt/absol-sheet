@@ -16,6 +16,31 @@ TSFunction.prototype.localConstants = {};
 
 Object.assign(TSFunction.prototype.localConstants, ExcelFx);
 
+var RESERVED_VAR_NAMES = [
+    'await', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete',
+    'do', 'else', 'enum', 'export', 'extends', 'false', 'finally', 'for', 'function', 'if', 'import',
+    'in', 'instanceof', 'let', 'new', 'null', 'return', 'super', 'switch', 'this', 'throw', 'true',
+    'try', 'typeof', 'var', 'void', 'while', 'with', 'yield',
+    'implements', 'interface', 'package', 'private', 'protected', 'public', 'static',
+    'arguments', 'eval'
+];
+
+function makeGlobalKeyDict() {
+    var keys = RESERVED_VAR_NAMES.slice();
+    var globalScope = typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : null);
+    if (globalScope) {
+        try {
+            keys = keys.concat(Object.getOwnPropertyNames(globalScope));
+        } catch (err) {
+            safeThrow(err);
+        }
+    }
+    return keys.reduce(function (ac, cr) {
+        ac[cr] = true;
+        return ac;
+    }, {});
+}
+
 TSFunction.prototype._isAsync = function (jsCode) {
     if (!window.babel) return false;
     var scriptCode = 'async function fx(){\n'
@@ -31,10 +56,22 @@ TSFunction.prototype._isAsync = function (jsCode) {
     return result;
 };
 
+TSFunction.prototype.globalKeys = makeGlobalKeyDict();
+
+TSFunction.prototype._isSafeVarName = function (key) {
+    if (babel && babel.types && typeof babel.types.isValidIdentifier === 'function') {
+        if (!babel.types.isValidIdentifier(key)) return false;
+    }
+    else if (!/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(key)) return false;
+    return !this.globalKeys[key];
+};
 
 TSFunction.prototype._makeConstCode = function (localConstants, context) {
     localConstants = Object.assign({}, localConstants || {}, context || {});
-    return Object.keys(localConstants).map(function (key) {
+    return Object.keys(localConstants).filter(function (key) {
+        return this._isSafeVarName(key);
+    }, this).map(function (key) {
+
         return 'const ' + key + ' = localConstants[' + JSON.stringify(key) + '];'
     }).join('\n') + '\n';
 };
@@ -110,8 +147,10 @@ TSFunction.prototype._makeFunction = function (context) {
 TSFunction.prototype.invoke = function (_this, record, context) {
     try {
         var func = this._makeFunction(context);
+        this.func = func;
         return func.call(_this, record);
     } catch (err) {
+        this.err = err;
         // console.error(err);
         if (window["ABSOL_DEBUG"])
             safeThrow(err);
