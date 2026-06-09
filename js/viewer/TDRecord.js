@@ -24,6 +24,7 @@ import "./types/TDWeek";
 import "./types/TDWeek";
 import "./types/TDDateNLevel";
 import "./types/TDDateInYear";
+import "./types/TDTreeLeafEnumSet";
 import { _ } from '../dom/SCore';
 import OOP from "absol/src/HTML5/OOP";
 import { ASHTRow } from "../fragment/Abstractions";
