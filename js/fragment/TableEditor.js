@@ -16,6 +16,7 @@ import "./editor/TDETimeRange24";
 import "./editor/TDEWeek";
 import "./editor/TDEDateNLevel";
 import "./editor/TDEDateInYear";
+import "./editor/TDETreeLeafEnumSet";
 import "absol-acomp/js/BContextCapture";
 import ContextCaptor from 'absol-acomp/js/ContextMenu';
 import OOP, { mixClass } from "absol/src/HTML5/OOP";
@@ -489,7 +490,7 @@ SelectTool.prototype.onViewCreated = function () {
 
 
 SelectTool.prototype.selectRow = function (row) {
-    console.log('selectRow', row);
+    // console.log('selectRow', row);
     if (row) {
         this.selectedData = {
             type: 'row',
@@ -1081,7 +1082,7 @@ LayoutController.prototype.updateFixedYHeaderSize = function () {
 };
 
 LayoutController.prototype.fullUpdateFixedXCol = function () {
-    console.log("fullUpdateFixedXCol");
+    // console.log("fullUpdateFixedXCol");
 };
 
 LayoutController.prototype.updateStyleConfig = function () {
@@ -1698,14 +1699,14 @@ CommandController.prototype.ev_clickMenu = function (menuElt, event) {
         },
         onClose: () =>{
 
-            console.log('close')
+            // console.log('close')
         }
     });
 
     qi.open();
 
 
-    console.log(cmdItems);
+    // console.log(cmdItems);
 };
 
 CommandController.prototype.ev_focus = function (event) {
@@ -1944,7 +1945,7 @@ TECommands.paste = {
         }
         else {
             data = getDataSheetClipboard();
-            console.log(data)
+            // console.log(data)
         }
 
         return res;
