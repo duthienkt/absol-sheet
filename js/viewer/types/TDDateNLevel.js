@@ -16,7 +16,7 @@ function TDDateNLevel() {
 
 OOP.mixClass(TDDateNLevel, TDBase);
 
-TDDateNLevel.prototype.leve2format = DateNLevelInput.prototype.leve2format;
+TDDateNLevel.prototype.level2format = DateNLevelInput.prototype.level2format;
 
 TDDateNLevel.prototype.attachView = function () {
     this.elt.clearChild();
@@ -43,7 +43,7 @@ TDDateNLevel.prototype.loadValue = function () {
     var text = '';
     value = this.implicit(value);
     if (value) {
-        text = formatDateTime(value.value, this.leve2format[value.level]);
+        text = formatDateTime(value.value, this.level2format[value.level]);
     }
     this.$date.firstChild.data = text;
 };
