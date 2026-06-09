@@ -71,7 +71,8 @@ TDENumber.prototype.reload = function () {
     this.$input.value = value;
     this.$input.min = min;
     this.$input.max = max;
-    this.$input.disabled = descriptor.readOnly || ('calc' in descriptor);
+    this.$input.disabled = descriptor.disabled;
+    this.$input.readOnly = descriptor.readOnly || ('calc' in descriptor);
 };
 
 

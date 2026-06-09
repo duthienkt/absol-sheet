@@ -39,7 +39,8 @@ TDEEnum.prototype.reload = function () {
     var descriptor = this.cell.descriptor;
     this.$input.items = descriptor.items;
     this.$input.value = this.cell.value;
-    this.$input.disabled = descriptor.readOnly;
+    this.$input.disabled = descriptor.disabled;
+    this.$input.readOnly = descriptor.readOnly;
     this.$input.enableSearch = descriptor.enableSearch || descriptor.searchable;
 
 
