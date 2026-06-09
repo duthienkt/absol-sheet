@@ -491,7 +491,7 @@ ASHTRow.prototype.ev_propertyChange = function () {
 
 
     var sync = needUpdatePNames.map(function (name) {
-        return self.propertyByName[name].reload();
+        return self.propertyByName[name].reload(true);//todo: user action
     }).filter(function (p) {
         return !!p && p.then;
     });
@@ -713,15 +713,15 @@ ASHTTable.prototype.getVariablesContext = function () {
         /**
          * @type {SCScope}
          */
-        variableScope = this.fragment.getContext('variableScope');
+        variableScope = this.fragment.getContext('variableScope') || this.fragment.getContext('VARIABLE_SCOPE');//adapt new name
         if (variableScope) {
             variableScope = variableScope.makeFlattenedScope();
             Object.keys(variableScope.data).forEach(key => {
-                context[key] = variableScope.data[key];
+                context[key] = variableScope.get(key);
             });
         }
     }
-    variableScope = this.getContext('variableScope');
+    variableScope = this.getContext('variableScope')|| this.getContext('VARIABLE_SCOPE');//adapt new name
     if (variableScope) {
         variableScope = variableScope.makeFlattenedScope();
         Object.keys(variableScope.data).forEach(key => {
