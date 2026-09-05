@@ -15,7 +15,8 @@
 .asht-table-editor {
     position: relative;
     overflow: hidden;
-    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-family: inherit;
+
     font-size: 14px;
     --available-width: 10000000px;
     --available-height: 1000000px;
@@ -538,6 +539,10 @@ div.asht-enum-set-cell-editor-input {
     border: 1px solid #aaaaaa;
 }
 
+.as-printer-content .asht-table-editor.asht-overflow-x {
+    padding-bottom: 0;
+}
+
 .as-printer-content .asht-table-editor-fixed-x-viewport,
 .as-printer-content .asht-table-editor-fixed-y-viewport,
 .as-printer-content .asht-table-editor-fixed-xy-viewport,
@@ -568,4 +573,63 @@ div.asht-enum-set-cell-editor-input {
 .as-printer-content .asht-table-editor-main-viewport {
     overflow: visible;
     max-height: unset;
+}
+
+
+table.asht-table-data {
+    border-color: black;
+}
+
+.as-printer-content table.asht-table-data > tbody > tr > td,
+.as-printer-content table.asht-table-data > thead > tr > td,
+.as-printer-content table.asht-table-data > tr > td {
+    border-color: black;
+}
+
+
+.as-printer-content  table.asht-table-data > thead > tr > td {
+    min-height: 25px;
+    font-weight: bold;
+}
+
+
+.as-printer-content  table.asht-table-data > tbody > tr > td,
+.as-printer-content table.asht-table-data > tr > td {
+    min-height: var(--row-height);
+    line-height: 1.5;
+}
+
+.as-printer-content   table.asht-table-data {
+    --row-height: 20px;
+    break-inside: avoid;
+}
+
+.as-printer-content  .asht-table-editor-body::before{
+    display: none;
+}
+
+
+.as-printer-content  .asht-table-editor.asht-overflow-x .asht-table-editor-body {
+    padding-bottom: 0;
+}
+
+.as-printer-content .asht-table-editor-main-scroller {
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.as-printer-content .asht-table-editor.asht-overflow-x .asht-table-editor-main-scroller {
+    width: 100%;
+}
+
+
+.as-printer-content  .asht-table-editor {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.as-printer-content  .asht-table-editor * {
+
 }
