@@ -49,7 +49,8 @@ export function selectRowHeight(opt) {
             top: '30vh',
             left: '30vw',
             width: '250px',
-            height: '85px'
+            height: '85px',
+            zIndex: 1e9
         },
         props: {
             windowTitle: 'Row Height',
@@ -103,6 +104,9 @@ export function selectRowHeight(opt) {
     var blinkTO = -1;
     var modal = _({
         class: 'asht-modal',
+        style:{
+          zIndex: 1e9
+        },
         child: windowElt,
         on: {
             mousedown: function () {
