@@ -10,8 +10,16 @@ import Frame from "absol-acomp/js/Frame";
 import Rectangle from "absol/src/Math/Rectangle";
 import FlexiconButton from "absol-acomp/js/FlexiconButton";
 import { pasteFiles, pasteHTML, pasteText } from "absol/src/HTML5/Clipboard";
-import { fileXlsxToExcelData, htmlToExcelData, isEmptyExcelData, textToExcelData } from "./DSIHelpers";
-import { openFileDialog } from "absol-acomp/js/utils";
+import {
+    fileXlsxToExcelData,
+    htmlToExcelData,
+    isEmptyExcelData,
+    parseRangeAddress2ZeroIndex,
+    textToExcelData
+} from "./DSIHelpers";
+import { excelColumnToNumber, numberToExcelColumn, openFileDialog } from "absol-acomp/js/utils";
+import { TextInput } from "absol-acomp/js/TextEditor";
+import TextMeasure from "absol-acomp/js/TextMeasure";
 
 /**
  * @extends Fragment
@@ -256,7 +264,7 @@ DSIStepController.prototype.onCreateView = function () {
 
 DSIStepController.prototype.onDestroy = function () {
     Object.keys(this).forEach(function (key) {
-        if (key[0] === '$') {
+        if (key[0] === '$' && this[key] && this[key].offAll) {
             this[key].offAll();
         }
     }, this);
@@ -284,7 +292,7 @@ DSIStepController.prototype.viewStep = function (index) {
     var newStepFrag = this.wizard.stepFrags[index] || null;
     if (newStepFrag === curStepFrag) return;
     if (!newStepFrag) return;
-    this.$timeline.value = index;
+    this.$timeline.current = index;
     this.$frames[index].requestActive();
     if (curStepFrag) {
         curStepFrag.pause();
@@ -455,7 +463,10 @@ DSISourceInputFragment.prototype.handleExcelData = function (excelData) {
     }
     else {
         if (excelData.sheets.length === 1) {
-            text = `${excelData.name || ''} - ${excelData.sheets[0].data.length} cell`;
+            text = `${excelData.name || '*'} - ${excelData.sheets[0].data.length} cell`;
+        }
+        else {
+            text = `${excelData.name || '*'} - ${excelData.sheets.length} sheet`;
         }
         this.wizard.data.excelData = excelData;
     }
@@ -528,7 +539,10 @@ DSISourceInputFragment.prototype.ev_clickPaste = function () {
 
             Promise.all(syncs).then(res => {
                 res = res.filter(r => !isEmptyExcelData(r));
-                this.handleExcelData(res[0]);
+                var preferred = ['xlsx', 'html', 'text']
+                    .map(sourceType => res.find(r => r.sourceType === sourceType))
+                    .find(r => r);
+                this.handleExcelData(preferred || res[0]);
             });
         });
     }
@@ -572,6 +586,9 @@ DSISheetSelectingFragment.prototype.createView = function () {
     this.$view = _({
         class: 'asi-wizard-step',
         attr: { 'data-step': '1' },
+        style: {
+            display: 'inline-block'
+        },
         child: {
             class: 'asi-panel',
             child: [
@@ -581,6 +598,10 @@ DSISheetSelectingFragment.prototype.createView = function () {
                 },
                 {
                     class: 'asi-toolbar',
+                    style:{
+                        justifyContent : 'flex-start',
+                        gap: '10px'
+                    },
                     child: [
                         {
                             class: 'asi-action',
@@ -598,6 +619,19 @@ DSISheetSelectingFragment.prototype.createView = function () {
                             }
                         },
                         {
+                            tag:'label',
+                            attr: { for: 'selectedAddress' },
+                            child: {text: "Vùng chọn"}
+                        },
+                        {
+                            tag:TextInput,
+                            id: 'selectedAddress',
+                            style:{
+                                size:'regular',
+                                width: '100px'
+                            }
+                        },
+                        {
                             tag: 'span',
                             class: 'asi-muted',
                             id: 'sheetDimensions',
@@ -612,7 +646,232 @@ DSISheetSelectingFragment.prototype.createView = function () {
             ]
         }
     });
+    this.$sheetSL = $('#sheetSelect', this.$view)
+        .on('change', this.ev_onSheetSelect.bind(this));
+    this.$tableCtn = $('.asi-table-wrap', this.$view);
+    this.$selectedAddress = $('#selectedAddress', this.$view)
+        .on('input', this.ev_onAddressChange.bind(this));
+    this.$dimesionText = $('#sheetDimensions', this.$view);
 }
+
+DSISheetSelectingFragment.prototype.updateSheetList = function () {
+    var excelData = this.wizard.data.excelData;//excelData will not be empty
+    this.$sheetSL.items = excelData.sheets
+        .map((it, i) => {
+            return { text: it.name, value: i }
+        });
+    this.$sheetSL.value = 0;
+};
+
+DSISheetSelectingFragment.prototype.updateTable = function () {
+    this.$tableCtn.clearChild();
+    var sheetData = this.wizard.data.excelData.sheets[this.$sheetSL.value];
+    if (!sheetData) return;
+    var size = sheetData.data.reduce((ac, cr) => {
+        ac.rC = Math.max(ac.rC, cr.row + (cr.rowspan || 1));
+        ac.cC = Math.max(ac.cC, cr.col + (cr.colspan || 1));
+        return ac;
+    }, { rC: 0, cC: 0 });
+
+    this.$selectedAddress.value = sheetData.selectedAddress ||'';
+
+
+    var matrix = Array(size.rC).fill(0).map(() => Array(size.cC).fill(1).map(()=>({
+        tag: 'td',
+        child: {
+            text: ''
+        }
+    })));
+
+    sheetData.data.forEach(cr => {
+        var value = cr.value;
+        if (value && (typeof value === 'object')) {
+            if ('result' in value) {
+                value = value.result;
+            }
+        }
+        value = value +'';
+        var cell = {
+            tag: 'td',
+            attr: {},
+            style: {},
+            child: {
+                text: value + ''
+            },
+            cellData: cr
+        };
+        if (value.length < 20) {
+            cell.style = {
+                whiteSpace: 'nowrap'
+            };
+        }
+
+        if (cr.style) {
+            cell.style = Object.assign({}, cell.style, cr.style);
+        }
+
+        matrix[cr.row][cr.col] = cell;
+        if (cr.rowspan > 1) {
+            cell.attr.rowspan = cr.rowspan;
+        }
+        if (cr.colspan > 1) {
+            cell.attr.colspan = cr.colspan;
+        }
+        var i, j;
+        for (i = 0; i < cr.rowspan; ++i) {
+            for (j = 0; j < cr.colspan; ++j) {
+                if (i === 0 && j === 0) continue;
+                matrix[cr.row + i ][cr.col + j] = null;
+            }
+        }
+    });
+    var i, j, tr, td;
+    var rows = [];
+    for (i = 0; i < size.rC; ++i) {
+        tr = _({
+            tag: 'tr',
+            child: [{
+                tag: 'td',
+                child: {text: i + 1}
+            }]
+        });
+        for (j = 0; j < size.cC; ++j) {
+            if (matrix[i][j]) {
+                td = _(matrix[i][j]);
+                tr.addChild(td);
+                matrix[i][j].domElt = td;
+            }
+        }
+        rows.push(tr);
+    }
+
+    var table = _({
+        tag: 'table',
+        class: 'asht-table-data',
+        style:{
+            display: 'inline-table',
+            width: 'auto'
+        },
+        child: [
+            {
+                tag: 'thead',
+                child: {
+                    tag: 'tr',
+                    child: Array(size.cC + 1).fill(0).map((u, i) => ({
+                        tag: 'td',
+                        child: {
+                            text: i > 0 ? numberToExcelColumn(i - 1) : ''
+                        }
+                    }))
+                }
+            },
+            {
+                tag: 'tbody',
+                child: rows
+            }
+        ]
+    });
+    this.$tableCtn.addChild(table);
+
+    this.matrix = matrix;
+    this.sheetData = sheetData;// save current data
+
+    this.updateSelectedView();
+};
+
+DSISheetSelectingFragment.prototype.updateSelectedView = function () {
+    var selectedAddress = this.$selectedAddress.value;
+    var parsedAddr = parseRangeAddress2ZeroIndex(selectedAddress);
+    var matrix = this.matrix;
+    this.selectedMatrix = matrix
+        .slice(parsedAddr.from.row, parsedAddr.to.row + 1)
+        .map(row => row.slice(parsedAddr.from.col, parsedAddr.to.col + 1));
+    this.wizard.data.selectedMatrix = this.selectedMatrix;
+
+    var i, j;
+    var row, cell;
+    for (i = 0; i < matrix.length; i++) {
+        row = matrix[i];
+        for (j = 0; j < row.length; j++) {
+            cell = row[j];
+            if (!cell) continue;
+            if (i === parsedAddr.from.row && j >= parsedAddr.from.col && j <= parsedAddr.to.col) {
+                cell.domElt.addClass('asi-selected-top');
+            }
+            else {
+                cell.domElt.removeClass('asi-selected-top');
+            }
+
+            if ((i === parsedAddr.to.row || (i < parsedAddr.to.row && i === matrix.length - 1))  && j >= parsedAddr.from.col && j <= parsedAddr.to.col) {
+                cell.domElt.addClass('asi-selected-bottom');
+            }
+            else {
+                cell.domElt.removeClass('asi-selected-bottom');
+            }
+            if (j === parsedAddr.from.col && i >= parsedAddr.from.row && i <= parsedAddr.to.row) {
+                cell.domElt.addClass('asi-selected-left');
+            }
+            else {
+                cell.domElt.removeClass('asi-selected-left');
+            }
+
+            if ((j === parsedAddr.to.col || (j < parsedAddr.to.col && j === row.length - 1)) && i >= parsedAddr.from.row && i <= parsedAddr.to.row) {
+                cell.domElt.addClass('asi-selected-right');
+            }
+            else {
+                cell.domElt.removeClass('asi-selected-right');
+            }
+        }
+    }
+
+    this.updateSheetDimensionsText();
+    this.notifyActionsChange();
+};
+
+DSISheetSelectingFragment.prototype.updateSheetDimensionsText = function () {
+    var matrix = this.selectedMatrix || [];
+    var rowCount = matrix.length;
+    var colCount = matrix.reduce((count, row) => Math.max(count, row.length), 0);
+    if (!rowCount || !colCount) {
+        this.$dimesionText.textContent = '0 dòng x 0 cột';
+        return;
+    }
+    var hasMergedCell = matrix.some(row => row.some(cell => !cell));
+    this.$dimesionText.textContent = rowCount + ' dòng x ' + colCount + ' cột'
+        + (hasMergedCell ? ' (Có merge cell, không hợp lệ)' : '');
+};
+
+
+
+DSISheetSelectingFragment.prototype.onResume = function () {
+    this.updateSheetList();
+    this.updateTable();
+};
+
+DSISheetSelectingFragment.prototype.canPrevious = function () {
+    return true;
+};
+
+DSISheetSelectingFragment.prototype.canNext = function () {
+    return !!this.selectedMatrix && this.selectedMatrix.length > 0 && this.selectedMatrix.every(row =>
+        row.length > 0 && row.every(cell => cell !== null && cell !== undefined));
+};
+
+
+DSISheetSelectingFragment.prototype.canPrevious = function () {
+    return true;
+};
+
+DSISheetSelectingFragment.prototype.ev_onSheetSelect = function () {
+    this.updateTable();
+};
+
+DSISheetSelectingFragment.prototype.ev_onAddressChange = function () {
+    if (this.sheetData) {
+        this.sheetData.selectedAddress = this.$selectedAddress.value;
+        this.updateSelectedView();
+    }
+};
 
 
 /**
@@ -624,6 +883,14 @@ function DSIPrepareEditingFragment(wizard) {
 }
 
 mixClass(DSIPrepareEditingFragment, DSIBaseStep);
+
+DSIPrepareEditingFragment.prototype.canNext = function () {
+    return true;
+};
+
+DSIPrepareEditingFragment.prototype.canPrevious = function () {
+    return true;
+};
 
 DSIPrepareEditingFragment.prototype.createView = function () {
     this.$view = _({
@@ -637,45 +904,44 @@ DSIPrepareEditingFragment.prototype.createView = function () {
                     child: { text: 'Chuẩn bị và chỉnh sửa dữ liệu' }
                 },
                 {
-                    class: 'asi-toolbar',
+                    class: 'asi-prepare-options',
+                    style: {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        margin: '15px 0'
+                    },
                     child: [
                         {
-                            class: 'asi-action',
-                            attr: { 'data-action': 'choose-header' },
-                            child: {
-                                tag: 'label',
-                                child: [
-                                    { text: 'Dòng tiêu đề: ' },
-                                    {
-                                        tag: 'selectmenu',
-                                        class: 'asi-select',
-                                        id: 'headerRow',
-                                        props: {
-                                            items: [
-                                                { text: 'Dòng 1', value: 0 },
-                                                { text: 'Dòng 2', value: 1 },
-                                                { text: 'Dòng 3', value: 2 }
-                                            ],
-                                            value: 0
-                                        }
-                                    }
-                                ]
+                            tag: "checkbox",
+                            id: 'includesHeader',
+                            props: {
+                                text: 'Dữ liệu bao gồm header',
+                                checked: true
                             }
                         },
                         {
-                            class: 'asi-action',
-                            attr: { 'data-action': 'add-row' },
-                            child: {
-                                tag: FlexiconButton,
-                                style: {
-                                    size: 'regular',
-                                    variant: 'secondary'
-                                },
-                                id: 'addRowButton',
-                                props: {
-                                    icon: 'span.mdi.mdi-plus',
-                                    text: 'Thêm dòng'
-                                }
+                            tag: "checkbox",
+                            id: 'removeEmptyRows',
+                            props: {
+                                text: 'Loại bỏ các dòng trống',
+                                checked: true
+                            }
+                        },
+                        {
+                            tag: "checkbox",
+                            id: 'trimWhitespace',
+                            props: {
+                                text: 'Xóa khoảng trắng đầu/cuối',
+                                checked: true
+                            }
+                        },
+                        {
+                            tag: "checkbox",
+                            id: 'autoMatchListValue',
+                            props: {
+                                text: 'Tự động chọn chuỗi khớp nhất trong danh sách',
+                                checked: false
                             }
                         }
                     ]
@@ -687,8 +953,26 @@ DSIPrepareEditingFragment.prototype.createView = function () {
             ]
         }
     });
+    this.$includesHeader = $('#includesHeader', this.$view);
+    this.$removeEmptyRows = $('#removeEmptyRows', this.$view);
+    this.$trimWhitespace = $('#trimWhitespace', this.$view);
+    this.$autoMatchListValue = $('#autoMatchListValue', this.$view);
+    this.$editableTable = $('#editableTable', this.$view);
 };
 
+DSIPrepareEditingFragment.prototype.updateConfigFromView = function () {
+    this.wizard.data.config = {
+        includesHeader: this.$includesHeader.checked,
+        removeEmptyRows: this.$removeEmptyRows.checked,
+        trimWhitespace: this.$trimWhitespace.checked,
+        autoMatchListValue: this.$autoMatchListValue.checked
+    };
+};
+
+
+DSIPrepareEditingFragment.prototype.onPause = function () {
+    this.updateConfigFromView();
+};
 
 /**
  * @extends DSIBaseStep
