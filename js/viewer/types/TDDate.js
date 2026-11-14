@@ -71,6 +71,8 @@ Object.defineProperty(TDDate.prototype, 'dateValue', {
     }
 });
 
+TDDate.prototype.type = 'date';
+
 TDBase.typeClasses.date = TDDate;
 TDBase.typeClasses.Date = TDDate;
 TDBase.typeClasses.DateInput = TDDate;

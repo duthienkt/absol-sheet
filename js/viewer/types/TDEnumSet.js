@@ -2,6 +2,7 @@ import TDBase from "./TDBase";
 import OOP from "absol/src/HTML5/OOP";
 import {_} from "../../dom/SCore";
 import { keyStringOf } from "absol-acomp/js/utils";
+import { measureListSize } from "absol-acomp/js/SelectList";
 
 
 /***
@@ -20,6 +21,7 @@ TDEnumSet.prototype.attachView = function () {
         tag: 'span', child: {text: ''}
     });
     this.elt.addChild(this.$text);
+    this.elt.addStyle('white-space', 'pre-wrap');
 };
 
 TDEnumSet.prototype.loadDescriptor = function () {
@@ -35,7 +37,17 @@ TDEnumSet.prototype.loadDescriptor = function () {
                     return ac;
                 }, {})
         });
+        var listSize = measureListSize(descriptor.items);
+        Object.defineProperty(descriptor.items, '__width14__', {
+            configurable: true,
+            enumerable: false,
+            value: listSize.width
+        });
     }
+    var cellEstWidth = (descriptor.items.__width14__ + 50) / 14 + 'em'
+    this.elt.addStyle('min-width', cellEstWidth);
+    this.elt.addStyle('max-width', `min(${cellEstWidth}, 600px, 50vw)`);
+
     this.record[this.pName] = this.implicit(this.record[this.pName]);
 };
 
@@ -70,6 +82,8 @@ TDEnumSet.prototype.loadValue = function () {
     this.$text.firstChild.data = text;
 };
 
+
+TDEnumSet.prototype.type = '{enum}';
 
 TDBase.typeClasses.EnumSet = TDEnumSet;
 TDBase.typeClasses['{enum}'] = TDEnumSet;

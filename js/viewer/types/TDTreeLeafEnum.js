@@ -21,6 +21,8 @@ function TDTreeLeafEnum() {
 OOP.mixClass(TDTreeLeafEnum, TDTreeEnum);
 
 
+TDTreeLeafEnum.prototype.type = 'treeleafenum';
+
 TDBase.typeClasses.treeleafenum = TDTreeLeafEnum;
 TDBase.typeClasses.TreeLeafEnum = TDTreeLeafEnum;
 

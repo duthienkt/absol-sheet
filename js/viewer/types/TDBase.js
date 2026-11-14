@@ -14,6 +14,8 @@ function TDBase(row, pName) {
 
 OOP.mixClass(TDBase, ASHField);
 
+TDBase.prototype.type = 'notSupport';
+
 TDBase.typeClasses = {
     notSupport: TDBase
 };

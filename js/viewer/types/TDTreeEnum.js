@@ -81,6 +81,8 @@ TDTreeEnum.prototype.loadValue = function () {
 };
 
 
+TDTreeEnum.prototype.type = 'treeenum';
+
 TDBase.typeClasses.treeenum = TDTreeEnum;
 TDBase.typeClasses.TreeEnum = TDTreeEnum;
 TDBase.typeClasses.TreeComboBox = TDTreeEnum;

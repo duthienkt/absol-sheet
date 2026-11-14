@@ -69,6 +69,8 @@ Object.defineProperty(TDDateNLevel.prototype, 'dateValue', {
     }
 });
 
+TDDateNLevel.prototype.type = 'datenlevel';
+
 TDBase.typeClasses.datenlevel = TDDateNLevel;
 TDBase.typeClasses.DateNLevel = TDDateNLevel;
 TDBase.typeClasses.DateNLevelInput = TDDateNLevel;

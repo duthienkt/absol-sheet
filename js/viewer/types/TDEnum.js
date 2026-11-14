@@ -46,7 +46,9 @@ TDEnum.prototype.loadDescriptor = function () {
             value: listSize.width
         });
     }
-    this.elt.addStyle('min-width', (descriptor.items.__width14__ + 50) / 14 + 'em');
+    var cellEstWidth = (descriptor.items.__width14__ + 50) / 14 + 'em'
+    this.elt.addStyle('min-width', cellEstWidth);
+    this.elt.addStyle('max-width', `min(${cellEstWidth}, 600px, 50vw)`);
     var value = this.record[this.pName];
     this.record[this.pName] = this.implicit(value);
     if (isDifferent(value, this.record[this.pName])) {
@@ -81,6 +83,8 @@ TDEnum.prototype.loadValue = function () {
         this.$text.firstChild.data = '';
     }
 };
+
+TDEnum.prototype.type = 'enum';
 
 TDBase.typeClasses.enum = TDEnum;
 TDBase.typeClasses.ComboBox = TDEnum;

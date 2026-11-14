@@ -52,6 +52,8 @@ TDWeek.prototype.isEmpty = function () {
 };
 
 
+TDWeek.prototype.type = 'week';
+
 TDBase.typeClasses.week = TDWeek;
 TDBase.typeClasses.Week = TDWeek;
 export default TDWeek;

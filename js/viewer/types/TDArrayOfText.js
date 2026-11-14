@@ -36,6 +36,8 @@ TDArrayOfText.prototype.implicit = function (value) {
 };
 
 
+TDArrayOfText.prototype.type = 'text[]';
+
 TDBase.typeClasses.ArrayOfText = TDArrayOfText;
 TDBase.typeClasses['text[]'] = TDArrayOfText;
 export default TDArrayOfText;

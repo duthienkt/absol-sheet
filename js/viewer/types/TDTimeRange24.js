@@ -63,6 +63,8 @@ TDTimeRange24.prototype.isEmpty = function () {
 };
 
 
+TDTimeRange24.prototype.type = 'timerange24';
+
 TDBase.typeClasses.timerange24 = TDTimeRange24;
 TDBase.typeClasses.TimeRange24 = TDTimeRange24;
 TDBase.typeClasses.time_period = TDTimeRange24;

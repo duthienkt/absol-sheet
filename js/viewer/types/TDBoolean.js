@@ -38,6 +38,8 @@ TDBoolean.prototype.isNoneValue = function (value) {
     return typeof value !== 'boolean';
 };
 
+TDBoolean.prototype.type = 'bool';
+
 TDBase.typeClasses.bool = TDBoolean;
 TDBase.typeClasses.boolean = TDBoolean;
 TDBase.typeClasses.CheckBox = TDBoolean;

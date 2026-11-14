@@ -83,6 +83,8 @@ TDPairEnum.prototype.loadValue = function () {
     }
 };
 
-TDBase.typeClasses.enum = TDPairEnum;
-TDBase.typeClasses.ComboBox = TDPairEnum;
+TDPairEnum.prototype.type = 'pair<enum>';
+
+TDBase.typeClasses['pair<enum>'] = TDPairEnum;
+TDBase.typeClasses.PairEnum = TDPairEnum;
 export default TDPairEnum;

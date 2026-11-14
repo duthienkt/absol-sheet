@@ -48,6 +48,8 @@ TDUniqueString.prototype.loadValue = function () {
     }
 };
 
+TDUniqueString.prototype.type = 'unique<string>';
+
 TDBase.typeClasses.UniqueString = TDUniqueString;
 TDBase.typeClasses.unique_string = TDUniqueString;
 TDBase.typeClasses['unique<string>'] = TDUniqueString;

@@ -58,6 +58,8 @@ TDNumber.prototype.isNoneValue = function (value) {
 };
 
 
+TDNumber.prototype.type = 'number';
+
 TDBase.typeClasses.number = TDNumber;
 TDBase.typeClasses.NumberInput = TDNumber;
 export default TDNumber;

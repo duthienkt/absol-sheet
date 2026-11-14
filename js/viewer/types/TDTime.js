@@ -49,6 +49,8 @@ TDTime.prototype.implicit = function (value) {
 }
 
 
+TDTime.prototype.type = 'time';
+
 TDBase.typeClasses.time = TDTime;
 
 export default TDTime;

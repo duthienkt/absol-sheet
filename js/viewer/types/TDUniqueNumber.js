@@ -34,6 +34,8 @@ TDUniqueNumber.prototype.loadValue = function () {
     }
 };
 
+TDUniqueNumber.prototype.type = 'unique<number>';
+
 TDBase.typeClasses.UniqueNumber = TDUniqueNumber;
 TDBase.typeClasses.unique_number = TDUniqueNumber;
 TDBase.typeClasses['unique<number>'] = TDUniqueNumber;

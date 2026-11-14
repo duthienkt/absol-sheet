@@ -42,5 +42,7 @@ TDDateInYear.prototype.reload = function () {
 
 export default TDDateInYear;
 
+TDDateInYear.prototype.type = 'DateInYear';
+
 TDBase.typeClasses.DateInYear = TDDateInYear;
 TDBase.typeClasses.DateInYearInput = TDDateInYear;

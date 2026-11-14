@@ -130,5 +130,7 @@ TDTreeLeafEnumSet.prototype.loadValue = function () {
 
 export default TDTreeLeafEnumSet;
 
+TDTreeLeafEnumSet.prototype.type = '{treeleafenum}';
+
 TDBase.typeClasses['{treeleafenum}'] = TDTreeLeafEnumSet;
 TDBase.typeClasses['TreeLeafEnumSet'] = TDTreeLeafEnumSet;
