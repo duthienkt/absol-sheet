@@ -6,6 +6,7 @@ var languageTexts = {
         paste: 'Dán',
         addRowBefore: 'Thêm hàng trước',
         addRowAfter: 'Thêm hàng sau',
+        exportExcelFile: 'Xuất file Excel'
     },
     en: {
         cut: 'Cut',
@@ -14,20 +15,21 @@ var languageTexts = {
         paste: 'Paste',
         addRowBefore: 'Add Row Before',
         addRowAfter: 'Add Row After',
+        exportExcelFile: 'Export Excel File'
     }
 };
 
-var getCode = ()=>{
+var getCode = () => {
     var code;
     if (window.LanguageModule) code = window.LanguageModule.code;
     if (!code) code = navigator.language;
     if (!code) code = 'en';
     code = code.toLowerCase();
-    if (['vi', 'vn'].indexOf(code)>=0) code = 'vi';
+    if (['vi', 'vn'].indexOf(code) >= 0) code = 'vi';
     return code;
 }
 
-var mlTextOf = (key)=>{
+var mlTextOf = (key) => {
     var code = getCode();
     var text = languageTexts[code] && languageTexts[code][key];
     if (text) return text;
@@ -74,15 +76,20 @@ var TECommandDescriptors = {
             }
         ]
     },
-    addRowBefore:{
+    addRowBefore: {
         type: 'trigger',
-        icon:"span.mdi.mdi-table-row-plus-before",
+        icon: "span.mdi.mdi-table-row-plus-before",
         desc: mlTextOf('addRowBefore'),
     },
-    addRowAfter:{
+    addRowAfter: {
         type: 'trigger',
-        icon:"span.mdi.mdi-table-row-plus-after",
+        icon: "span.mdi.mdi-table-row-plus-after",
         desc: mlTextOf('addRowAfter'),
+    },
+    exportExcelFile: {
+        type: 'trigger',
+        icon: { tag: 'span', class: ['mdi','mdi-file-excel'],style:{color:'#217346'} },
+        desc: mlTextOf('exportExcelFile'),
     },
     export: {
         type: 'trigger',

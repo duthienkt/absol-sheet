@@ -17,10 +17,8 @@ import {
     parseRangeAddress2ZeroIndex,
     textToExcelData
 } from "./DSIHelpers";
-import { excelColumnToNumber, numberToExcelColumn, openFileDialog } from "absol-acomp/js/utils";
+import {  numberToExcelColumn } from "absol-acomp/js/utils";
 import { TextInput } from "absol-acomp/js/TextEditor";
-import TextMeasure from "absol-acomp/js/TextMeasure";
-import tableEditor from "../fragment/TableEditor";
 
 /**
  * @extends Fragment

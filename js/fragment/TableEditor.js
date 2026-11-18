@@ -47,15 +47,14 @@ import { computeMeasureExpression, parseMeasureValue } from "absol/src/JSX/attri
 import Dom, { getScreenSize, traceOutBoundingClientRect } from "absol/src/HTML5/Dom";
 import { HScrollbar } from "absol-acomp/js/Scroller";
 import CMDTool, { CMDToolDelegate } from "absol-acomp/js/CMDTool";
-import TDEDateTime from "./editor/TDEDateTime";
 import Follower from "absol-acomp/js/Follower";
 import TECommandDescriptors from "./TECommandDescriptors";
-import { generateJSVariable } from "absol/src/JSMaker/generator";
 import Rectangle from "absol/src/Math/Rectangle";
 import QuickMenu, { QuickMenuInstance } from "absol-acomp/js/QuickMenu";
 import DynamicCSS from "absol/src/HTML5/DynamicCSS";
 import DataSheetImportWizard from "../ingest/DataSheetImportWizard";
 import DataSheetExcelExporter from "../egest/DataSheetExcelExporter";
+import { formatDateTime } from "absol/src/Time/datetime";
 
 
 function getScrollSize() {
@@ -72,7 +71,7 @@ function getScrollSize() {
             position: 'fixed'
         }
     }).addTo(document.body);
-    var child = _({style: {width: '100%', height: '100%'}}).addTo(parent);
+    var child = _({ style: { width: '100%', height: '100%' } }).addTo(parent);
     var parentBound = parent.getBoundingClientRect();
     var childBound = child.getBoundingClientRect();
     return {
@@ -146,8 +145,12 @@ TableEditor.prototype.createView = function () {
         child: [
             'attachhook',
             {
+                tag: Follower,
+                props: {
+                    anchor: [6, 5]
+                },
                 class: 'asht-table-editor-header',
-                style: {display: 'none'},
+                // style: {display: 'none'},
                 child: this.cmdTool.getView()
             },
             {
@@ -190,7 +193,7 @@ TableEditor.prototype.createView = function () {
                                     class: 'asht-table-editor-fixed-xy',
                                     child: {
                                         tag: 'thead',
-                                        child: {tag: 'tr', child: 'td'}
+                                        child: { tag: 'tr', child: 'td' }
                                     }
                                 }
                             },
@@ -258,7 +261,7 @@ TableEditor.prototype.createView = function () {
 
 
     this.$header = $('.asht-table-editor-header', this.$view);
-    this.$headRow = $('tr', this.$header);
+    this.$header.cancelWaiting();
 
 
     this.opt.loadAttributeHandlers(this.optHandlers);
@@ -292,7 +295,7 @@ TableEditor.prototype.setData = function (data) {
     if (this.state !== 'RUNNING' && !this.fragment) this.start();
     data = duplicateData(data);
     if (this.$tableData) this.$tableData.remove();
-    var tableData = new TableData(this, {elt: this.$tableData});
+    var tableData = new TableData(this, { elt: this.$tableData });
     this.$mainScroller.addChild(this.$tableData);
     tableData.import(data);
     this.tableData = tableData;
@@ -406,7 +409,7 @@ TableEditor.prototype.openImportWizard = function () {
  * @param {{fileName: string}} opt
  */
 TableEditor.prototype.downloadExcel = function (opt) {
-    opt = opt || {fileName: 'table.xlsx'};
+    opt = opt || { fileName: 'table.xlsx' };
     opt.fileName = opt.fileName || 'table.xlsx';
     var exporter = new DataSheetExcelExporter({
         editor: this
@@ -934,8 +937,8 @@ LayoutController.prototype.updateScrollerStatus = function () {
     var tableBound = tableElt.getBoundingClientRect();
     var bak = this.editor.$view.style.getPropertyValue('--content-height');
     this.editor.$view.style.setProperty('--content-height', 1000000 + 'px');
-    var cpStyle = Object.assign({},getComputedStyle(this.editor.$view));
-    this.editor.$view.style.setProperty('--content-height',bak);
+    var cpStyle = Object.assign({}, getComputedStyle(this.editor.$view));
+    this.editor.$view.style.setProperty('--content-height', bak);
 
     var viewBound = viewElt.getBoundingClientRect();
 
@@ -967,7 +970,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
 
     var screenViewSize = getScreenSize();
 
-    var findFirstOver = ()=>{
+    var findFirstOver = () => {
         var c = parentElt;
         var bound = this.editor.$view.getBoundingClientRect();
         var cb;
@@ -988,7 +991,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
         }
         if (c.scrollWidth <= c.clientWidth) return null;
         var scrollBarWidthSize = c.offsetWidth - c.clientWidth;
-        availableWidth -= bound.right -  cb.right - scrollBarWidthSize;
+        availableWidth -= bound.right - cb.right - scrollBarWidthSize;
         if (availableWidth < 0) availableWidth = 0;
         viewElt.addStyle('--available-width', availableWidth + 'px');
 
@@ -1238,7 +1241,6 @@ LayoutController.prototype.ev_scroll = function (tag, event) {
         // this.editor.$fixedYHeaderScroller.scrollLeft = scrollLeft;
     }
     else if (tag === 'vscrollbar') {
-        console.log('vscrollbar', this.editor.$vscrollbar.innerOffset, this.editor.$mainScroller.scrollTop);
         scrollTop = this.editor.$vscrollbar.innerOffset;
         this.editor.$mainScroller.scrollTop = scrollTop;
         //todo
@@ -1282,7 +1284,7 @@ LayoutController.prototype.ev_attached = function () {
     });
     this.listendScrollEventElements = [];
     var c = this.editor.$view.parentElement;
-    while (c && c!== document.body) {
+    while (c && c !== document.body) {
         c.addEventListener('scroll', this.ev_outScroll);
         this.listendScrollEventElements.push(c);
         c = c.parentElement;
@@ -1298,7 +1300,7 @@ LayoutController.prototype.ev_outScroll = function (event) {
     var curBottom = bound.bottom;
     var outBot = outBound.bottom;
     if (outTop > curTop && curTop + 60 < outBot) {
-       this.editor.$view.addStyle('--sticky-header-top', (outTop - curTop) + 'px');
+        this.editor.$view.addStyle('--sticky-header-top', (outTop - curTop) + 'px');
     }
     else {
         this.editor.$view.removeStyle('--sticky-header-top');
@@ -1346,7 +1348,7 @@ TEFixedYController.prototype.updateContent = function () {
             var copyTr = $(tr.cloneNode(false));
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD')
-                .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})))
+                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })))
             copyTr.addChild(cells);
 
             return copyTr;
@@ -1394,7 +1396,7 @@ TEFixedXController.prototype.updateFullContent = function () {
             var copyTr = $(tr.cloneNode(false));
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
-            cells = cells.slice(0, 1).map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
+            cells = cells.slice(0, 1).map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
             copyTr.addChild(cells);
             return copyTr;
         });
@@ -1408,7 +1410,7 @@ TEFixedXController.prototype.updateFullContent = function () {
             copyTr.$origin = tr;
             var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
             cells = cells.slice(0, 1)
-                .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
+                .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
             // cells.forEach(elt => {
             //     swapChildrenInElt(elt, elt.$origin);
             //     this._swappedPairs.push([elt, elt.$origin]);
@@ -1439,7 +1441,7 @@ TEFixedXController.prototype.updateChangedContent = function () {
         copyTr.$origin = tr;
         var cells = Array.prototype.filter.call(tr.childNodes, elt => elt.tagName === 'TH' || elt.tagName === 'TD');
         cells = cells.slice(0, 1)
-            .map(td => $(Object.assign(td.cloneNode(true), {$origin: td})));
+            .map(td => $(Object.assign(td.cloneNode(true), { $origin: td })));
         // cells.forEach(elt => {
         //     swapChildrenInElt(elt, elt.$origin);
         //     this._swappedPairs.push([elt, elt.$origin]);
@@ -1645,15 +1647,15 @@ CommandController.prototype.ev_indexColContextMenu = function (ev) {
     // });
 
     ev.showContextMenu({
-        extendStyle: {fontSize: '14px'},
+        extendStyle: { fontSize: '14px' },
         items: items
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventOpt = {cmd: cmd};
+        var eventOpt = { cmd: cmd };
         var ev2;
         switch (cmd) {
             case 'row_height':
-                selectRowHeight({value: thisTE.tableData.config.rowHeight, standard: 21})
+                selectRowHeight({ value: thisTE.tableData.config.rowHeight, standard: 21 })
                     .then(function (result) {
                         thisTE.tableData.config.rowHeight = result;
                         thisTE.layoutCtrl.updateStyleConfig();
@@ -1734,7 +1736,7 @@ CommandController.prototype.ev_rootCellContextMenu = function (ev) {
         ]
     }, function (ev1) {
         var cmd = ev1.menuItem.cmd;
-        var eventOpt = {cmd: cmd};
+        var eventOpt = { cmd: cmd };
         eventOpt.type = 'cmd_insert_row';
         eventOpt.rowIdx = cmd === 'insert_first' ? 0 : thisTE.tableData.getLength();
         eventOpt.result = {};
@@ -1781,9 +1783,9 @@ CommandController.prototype.ev_clickMenu = function (menuElt, event) {
     }
     visit(cmdTree);
     var cmdItems = cmdList.map(cmdName => {
-        return Object.assign({name: cmdName}, this.editor.cmdToolDelegate.getCmdDescriptor(cmdName));
+        return Object.assign({ name: cmdName }, this.editor.cmdToolDelegate.getCmdDescriptor(cmdName));
     }).filter(x => !x.disabled).map(it => {
-        it.text = it.text||it.desc || it.name;
+        it.text = it.text || it.desc || it.name;
         return it;
     });
     var qi = new QuickMenuInstance(menuElt, {
@@ -1793,7 +1795,7 @@ CommandController.prototype.ev_clickMenu = function (menuElt, event) {
         onSelect: (item) => {
             this.editor.cmdToolDelegate.execCmd(item.name);
         },
-        onClose: () =>{
+        onClose: () => {
 
             // console.log('close')
         }
@@ -1809,12 +1811,21 @@ CommandController.prototype.ev_focus = function (event) {
 };
 
 CommandController.prototype.ev_blur = function (event) {
-
+    setTimeout(() => {
+        if (!this.editor.$view.contains(document.activeElement)) {
+            this.isFocus = false;
+            this.editor.$view.removeClass('as-focus');
+            this.editor.$header.followTarget = null;
+        }
+    }, 20);
 };
 
 CommandController.prototype.ev_domFocus = function (event) {
     if (this.isFocus) return;
     this.isFocus = true;
+    this.editor.$header.followTarget = this.editor.$view;
+    this.editor.$header.updatePosition();
+    this.editor.$view.addClass('as-focus');
     this.ev_focus(event);
 };
 
@@ -1853,8 +1864,9 @@ TECMDToolDelegate.prototype.getCmdGroupTree = function () {
     var res = {
         type: 'group_x2',
         children: [
-            'addRowBefore', 'addRowAfter', 'delete'//,
-            // 'copy', 'paste'
+            // 'addRowBefore', 'addRowAfter', 'delete'//,
+            // 'copy', 'paste',
+            'exportExcelFile'
         ]
     }
 
@@ -1863,7 +1875,7 @@ TECMDToolDelegate.prototype.getCmdGroupTree = function () {
     if (extendCommands && extendCommands.length > 0) {
         res = {
             type: 'group_x2',
-            children: [res, {type: 'group_x2', children: extendCommands}],
+            children: [res, { type: 'group_x2', children: extendCommands }],
         }
     }
 
@@ -1923,7 +1935,7 @@ TECommands.addRowBefore = {
             row = this.selectTool.selectedData.row;//fallback
         }
         if (!row) return;
-        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        var eventOpt = { cmd: 'insert_before', type: 'cmd_insert_row' };
         eventOpt.rowIdx = 0;
         if (row) {
             if (row.idx === "*") {
@@ -1963,7 +1975,7 @@ TECommands.addRowAfter = {
             row = this.selectTool.selectedData.row;//fallback
         }
         if (!row) return;
-        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        var eventOpt = { cmd: 'insert_before', type: 'cmd_insert_row' };
         eventOpt.rowIdx = row.table.bodyRow.length;
         if (row) {
             if (isNaturalNumber(row.idx)) {
@@ -1989,7 +2001,7 @@ TECommands.delete = {
         var res = {};
         if (this.opt.readOnly) res.disabled = true;
         res.desc = "Xóa";
-        res.extendStyle = {color: 'rgb(239,99,99)'}
+        res.extendStyle = { color: 'rgb(239,99,99)' }
         return res;
     },
     /**
@@ -2001,7 +2013,7 @@ TECommands.delete = {
             row = this.selectTool.selectedData.row;//fallback
         }
         if (!row) return;
-        var eventOpt = {cmd: 'insert_before', type: 'cmd_insert_row'};
+        var eventOpt = { cmd: 'insert_before', type: 'cmd_insert_row' };
         eventOpt.type = 'cmd_remove_row';
         eventOpt.rowIdx = row.idx;
         eventOpt.accepted = true;
@@ -2053,11 +2065,20 @@ TECommands.paste = {
     }
 };
 
+TECommands.exportExcelFile = {
+    /**
+     * @this TableEditor
+     */
+    exec: function () {
+        this.downloadExcel({ fileName: `data ${formatDateTime(new Date(), 'dd MM yyyy HH mm')}.xlsx` });
+    }
+}
+
 TECommands.export = {
     /**
      * @this TableEditor
      */
     exec: function () {
-        this.emit('extend_command', {type: 'extend_command', command: 'export', target: this}, this)
+        this.emit('extend_command', { type: 'extend_command', command: 'export', target: this }, this)
     }
 };
