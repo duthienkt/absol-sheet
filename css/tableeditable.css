@@ -22,9 +22,11 @@
     --available-height: 1000000px;
     --sys-scrollbar-width: 17px;
     --sys-scrollbar-height: 17px;
+    --soft-scrollbar-size: 15px;
     --head-height: 21px;
     --index-col-width: 35px;
     box-sizing: border-box;
+    max-height: calc(var(--content-height) + var(--soft-scrollbar-size));
 }
 
 .asht-table-editor-header .as-form-cmd-tool {
@@ -49,6 +51,7 @@
 
 .asht-table-editor-body {
     position: relative;
+    height: 100%;
 }
 
 
@@ -57,15 +60,12 @@
     position: absolute;
     left: 0;
     width: 100%;
-    top: var(--head-height);
+    top: calc(var(--head-height) + var(--sticky-header-top));
     max-width: var(--content-width);
     border-bottom: 1px solid #aaa;
     z-index: 23;
 }
 
-.asht-table-editor.asht-overflow-y .asht-table-editor-body::before {
-    width: calc(100% - 17px);
-}
 
 .asht-table-editor-body::after {
     content: "";
@@ -79,7 +79,7 @@
 }
 
 .asht-table-editor.asht-overflow-x::after {
-    height: calc(100% - 17px);
+    height: calc(100% - var(--soft-scrollbar-size));
 
 }
 
@@ -87,13 +87,6 @@
     /*background-color: transparent !important;*/
 }
 
-.asht-table-editor.asht-overflow-x .asht-table-editor-body {
-    padding-bottom: 17px;
-}
-
-.asht-table-editor.asht-overflow-y .asht-table-editor-body {
-    padding-right: 17px;
-}
 
 .asht-table-editor.asht-headless .asht-table-data > thead {
     display: none;
@@ -105,6 +98,11 @@
 .asht-table-editor.as-height-auto .asht-table-editor-main-scroller .asht-table-data {
     min-width: var(--available-width);
 }
+
+.asht-table-editor.as-height-auto.asht-overflow-y .asht-table-editor-main-scroller .asht-table-data {
+    min-width: calc(var(--available-width) - var(--soft-scrollbar-size));
+}
+
 
 .asht-table-editor.as-width-auto {
     /*max-width: var(--available-width);*/
@@ -126,12 +124,12 @@
 
 .asht-table-editor.asht-overflow-x {
     width: var(--available-width);
-    padding-bottom: 17px;
+    padding-bottom: var(--soft-scrollbar-size);
 }
 
 .asht-table-editor.asht-overflow-y {
     height: var(--available-height);
-    padding-right: 17px;
+    padding-right: var(--soft-scrollbar-size);
 }
 
 
@@ -162,9 +160,14 @@
 
 /*******   FIXED Y ***************************/
 
+.asht-table-editor{
+    --sticky-header-top: 0px;
+    --sticky-footer-bottom: 0px;
+}
+
 .asht-table-editor-fixed-y-viewport {
     position: absolute;
-    top: 0;
+    top: var(--sticky-header-top);
     left: 0;
     overflow: hidden;
     z-index: 20;
@@ -217,14 +220,14 @@
 .asht-table-editor-fixed-xy-viewport {
     position: absolute;
     left: 0;
-    top: 0;
+    top: var(--sticky-header-top);
     z-index: 21;
     user-select: none;
 }
 
 .asht-table-editor-fixed-xy td {
-    width: calc(var(--index-col-width)); /*? border*/
-    height: var(--head-height);
+    width: calc(var(--index-col-width)) !important; /*? border*/
+    height: var(--head-height) !important;;
     box-sizing: border-box;
 }
 
@@ -235,31 +238,32 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: 17px;
+    width: var(--soft-scrollbar-size);
     display: none;
 }
 
 .asht-table-editor-h-scrollbar {
     position: absolute;
     left: 0;
-    bottom: 0;
+    bottom: var(--sticky-footer-bottom);
     right: 0;
-    height: 17px;
+    height: var(--soft-scrollbar-size);
     display: none;
 }
 
 
 .asht-table-editor.asht-overflow-x .asht-table-editor-v-scrollbar {
-    bottom: 17px;
+    bottom: var(--soft-scrollbar-size);
 }
 
 .asht-table-editor.asht-overflow-y .asht-table-editor-h-scrollbar {
-    right: 17px;
+    right: var(--soft-scrollbar-size);
 }
 
 .asht-table-editor.asht-overflow-x .asht-table-editor-h-scrollbar,
 .asht-table-editor.asht-overflow-y .asht-table-editor-v-scrollbar {
     display: block;
+    z-index: 100;
 }
 
 
@@ -424,10 +428,10 @@ div.asht-enum-set-cell-editor-input {
     min-width: var(--cell-width);
     min-height: var(--cell-height);
     max-width: calc(var(--cell-width) * 2);
-    --select-box-item-font-size: 11px;
-    --select-box-item-height: 16px;
+    --select-box-item-font-size: 13px;
+    --select-box-item-height: 20px;
     --select-box-item-border-radius: 5px;
-    --select-box-min-height: 20px;
+    --select-box-min-height:var(--head-height);
 }
 
 .asht-enum-set-cell-editor-input.as-multi-select-menu {
@@ -632,4 +636,10 @@ table.asht-table-data {
 
 .as-printer-content  .asht-table-editor * {
 
+}
+
+/****  keeview ******/
+
+.absol-single-page-scroller-viewport>.hr-body-container:first-child:last-child > .ez-container:first-child:last-child > .asht-table-editor {
+    height: var(--single-page-scroller-height);
 }

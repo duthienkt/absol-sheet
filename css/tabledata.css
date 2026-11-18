@@ -48,7 +48,7 @@ table.asht-table-data > thead > tr > td {
 }
 
 table.asht-table-data > tbody > tr > td > span {
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 table.asht-table-data > tbody > tr > td:first-child,
