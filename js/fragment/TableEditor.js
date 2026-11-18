@@ -32,12 +32,19 @@ import Attributes from 'absol/src/AppPattern/Attributes';
 import { calcIndexColumnWidth, duplicateData, getDataSheetClipboard, setDataSheetClipboard } from "../util";
 import Fragment from 'absol/src/AppPattern/Fragment';
 import safeThrow from "absol/src/Code/safeThrow";
-import { findMaxZIndex, isNaturalNumber, isRealNumber, swapChildrenInElt, vScrollIntoView } from "absol-acomp/js/utils";
+import {
+    findMaxZIndex,
+    getBoundingContentRect,
+    isNaturalNumber,
+    isRealNumber,
+    swapChildrenInElt,
+    vScrollIntoView
+} from "absol-acomp/js/utils";
 import { ASHTConfirmEvent, ASHTEditor, ASHTWaitValueEvent } from "./Abstractions";
 import AElement from "absol/src/HTML5/AElement";
 import { kebabCaseToCamelCase } from "absol/src/String/stringFormat";
 import { computeMeasureExpression, parseMeasureValue } from "absol/src/JSX/attribute";
-import Dom, { getScreenSize } from "absol/src/HTML5/Dom";
+import Dom, { getScreenSize, traceOutBoundingClientRect } from "absol/src/HTML5/Dom";
 import { HScrollbar } from "absol-acomp/js/Scroller";
 import CMDTool, { CMDToolDelegate } from "absol-acomp/js/CMDTool";
 import TDEDateTime from "./editor/TDEDateTime";
@@ -46,6 +53,9 @@ import TECommandDescriptors from "./TECommandDescriptors";
 import { generateJSVariable } from "absol/src/JSMaker/generator";
 import Rectangle from "absol/src/Math/Rectangle";
 import QuickMenu, { QuickMenuInstance } from "absol-acomp/js/QuickMenu";
+import DynamicCSS from "absol/src/HTML5/DynamicCSS";
+import DataSheetImportWizard from "../ingest/DataSheetImportWizard";
+import DataSheetExcelExporter from "../egest/DataSheetExcelExporter";
 
 
 function getScrollSize() {
@@ -72,6 +82,12 @@ function getScrollSize() {
 }
 
 var EV_CONTENT_CHANGE = 'contentchange';
+var SOFT_SCROLLBAR_SIZE = 15;
+
+var editorCss = new DynamicCSS();
+editorCss.setRule('div.asht-table-editor', {
+    '--soft-scrollbar-size': SOFT_SCROLLBAR_SIZE + 'px'
+}).commit();
 
 
 /***
@@ -191,16 +207,17 @@ TableEditor.prototype.createView = function () {
                         ]
                     },
 
-                    {
-                        tag: 'vscrollbar',
-                        class: 'asht-table-editor-v-scrollbar',
-                        child: {}
-                    },
-                    {
-                        tag: HScrollbar,
-                        class: 'asht-table-editor-h-scrollbar'
-                    }
+
                 ]
+            },
+            {
+                tag: 'vscrollbar',
+                class: 'asht-table-editor-v-scrollbar',
+                child: {}
+            },
+            {
+                tag: HScrollbar,
+                class: 'asht-table-editor-h-scrollbar'
             }
         ]
     });
@@ -210,6 +227,7 @@ TableEditor.prototype.createView = function () {
     this.$attachook.on('attached', () => {
         ResizeSystem.add(this.$attachook);
         this.ev_resize();
+        this.layoutCtrl.ev_attached();
     });
 
     this.$view.requestUpdateSize = this.ev_resize;
@@ -375,6 +393,27 @@ TableEditor.prototype.showError = function (title, message) {
 
     setTimeout(toast.disappear.bind(toast), 2000);
 };
+
+TableEditor.prototype.openImportWizard = function () {
+    var wizard = new DataSheetImportWizard({
+        editor: this
+    });
+    wizard.startInModal();
+};
+
+/**
+ *
+ * @param {{fileName: string}} opt
+ */
+TableEditor.prototype.downloadExcel = function (opt) {
+    opt = opt || {fileName: 'table.xlsx'};
+    opt.fileName = opt.fileName || 'table.xlsx';
+    var exporter = new DataSheetExcelExporter({
+        editor: this
+    });
+    exporter.download(opt.fileName);
+};
+
 
 TableEditor.prototype.optHandlers = {};
 
@@ -704,6 +743,7 @@ EditTool.prototype.ev_cellEditorFinish = function (event) {
  * @constructor
  */
 function LayoutController(editor) {
+    this.listendScrollEventElements = [];
     this.editor = editor;
     Object.keys(this.constructor.prototype).forEach(key => {
         if (key.startsWith('ev_')) this[key] = this[key].bind(this);
@@ -892,7 +932,11 @@ LayoutController.prototype.updateScrollerStatus = function () {
     var viewElt = this.editor.$view;
     var tableElt = this.editor.$tableData;
     var tableBound = tableElt.getBoundingClientRect();
-    var cpStyle = getComputedStyle(this.editor.$view);
+    var bak = this.editor.$view.style.getPropertyValue('--content-height');
+    this.editor.$view.style.setProperty('--content-height', 1000000 + 'px');
+    var cpStyle = Object.assign({},getComputedStyle(this.editor.$view));
+    this.editor.$view.style.setProperty('--content-height',bak);
+
     var viewBound = viewElt.getBoundingClientRect();
 
     var minOutWidth = 1960;
@@ -909,8 +953,10 @@ LayoutController.prototype.updateScrollerStatus = function () {
         if (isRealNumber(temp.value)) curBound.width -= temp.value;
         temp = parseMeasureValue(curStyle.paddingTop || '0');
         if (isRealNumber(temp.value)) curBound.height -= temp.value;
-        temp = parseMeasureValue(curStyle.paddingTop || '0');
+        temp = parseMeasureValue(curStyle.paddingBottom || '0');
         if (isRealNumber(temp.value)) curBound.height -= temp.value;
+        curBound.width -= curElt.offsetWidth - curElt.clientWidth;
+        curBound.height -= curElt.offsetHeight - curElt.clientHeight;
         if (curBound.width < minOutWidth) {
             minOutWidth = curBound.width;
             parentBound = curBound;
@@ -941,7 +987,8 @@ LayoutController.prototype.updateScrollerStatus = function () {
             return null;
         }
         if (c.scrollWidth <= c.clientWidth) return null;
-        availableWidth -= bound.right -  cb.right;
+        var scrollBarWidthSize = c.offsetWidth - c.clientWidth;
+        availableWidth -= bound.right -  cb.right - scrollBarWidthSize;
         if (availableWidth < 0) availableWidth = 0;
         viewElt.addStyle('--available-width', availableWidth + 'px');
 
@@ -1027,14 +1074,14 @@ LayoutController.prototype.updateScrollerStatus = function () {
         viewElt.removeStyle('--available-height');
     }
 
-    if ((tableBound.width) > availableWidth - 17 || tableBound.width > viewBound.width) {
+    if ((tableBound.width) > availableWidth - SOFT_SCROLLBAR_SIZE || tableBound.width > viewBound.width) {
         this.editor.$view.addClass('asht-overflow-x');
     }
     else {
         this.editor.$view.removeClass('asht-overflow-x');
     }
 
-    if (tableBound.height > availableHeight - 17 || tableBound.height > viewBound.height) {
+    if (tableBound.height > availableHeight - SOFT_SCROLLBAR_SIZE || tableBound.height > viewBound.height) {
         this.editor.$view.addClass('asht-overflow-y');
     }
     else {
@@ -1046,8 +1093,7 @@ LayoutController.prototype.updateScrollerStatus = function () {
     viewElt.style.setProperty('--content-height', tableBound.height + 'px');
 
     setTimeout(() => {
-        var viewportBound = this.editor.$mainViewport.getBoundingClientRect();
-        tableBound = tableElt.getBoundingClientRect();
+        var viewportBound = getBoundingContentRect(this.editor.$view);
         tableBound = tableElt.getBoundingClientRect();
         viewElt.style.setProperty('--content-width', tableBound.width + 'px');
         viewElt.style.setProperty('--content-height', tableBound.height + 'px');
@@ -1112,6 +1158,7 @@ LayoutController.prototype.onResize = function () {
         this.editor.fixedXYCtrl.updateSize();
 
         this.editor.selectTool.updateSelectedPosition();
+        this.ev_outScroll();
     }, 10);
 };
 
@@ -1120,6 +1167,7 @@ LayoutController.prototype.onData = function () {
     this.editor.fixedYCtrl.updateContent();
     this.editor.fixedXCtrl.updateContent();
     this.editor.fixedXYCtrl.updateContent();
+    this.onResize();
 };
 
 
@@ -1190,6 +1238,7 @@ LayoutController.prototype.ev_scroll = function (tag, event) {
         // this.editor.$fixedYHeaderScroller.scrollLeft = scrollLeft;
     }
     else if (tag === 'vscrollbar') {
+        console.log('vscrollbar', this.editor.$vscrollbar.innerOffset, this.editor.$mainScroller.scrollTop);
         scrollTop = this.editor.$vscrollbar.innerOffset;
         this.editor.$mainScroller.scrollTop = scrollTop;
         //todo
@@ -1226,6 +1275,53 @@ LayoutController.prototype.ev_scroll = function (tag, event) {
     this.editor.editTool.updateEditingBoxPosition();
     this.editor.selectTool.updateSelectedPosition();
 };
+
+LayoutController.prototype.ev_attached = function () {
+    this.listendScrollEventElements.forEach(elt => {
+        elt.removeEventListener('scroll', this.ev_outScroll);
+    });
+    this.listendScrollEventElements = [];
+    var c = this.editor.$view.parentElement;
+    while (c && c!== document.body) {
+        c.addEventListener('scroll', this.ev_outScroll);
+        this.listendScrollEventElements.push(c);
+        c = c.parentElement;
+
+    }
+};
+
+LayoutController.prototype.ev_outScroll = function (event) {
+    var outBound = traceOutBoundingClientRect(this.editor.$view);
+    var bound = this.editor.$view.getBoundingClientRect();
+    var outTop = outBound.top;
+    var curTop = bound.top;
+    var curBottom = bound.bottom;
+    var outBot = outBound.bottom;
+    if (outTop > curTop && curTop + 60 < outBot) {
+       this.editor.$view.addStyle('--sticky-header-top', (outTop - curTop) + 'px');
+    }
+    else {
+        this.editor.$view.removeStyle('--sticky-header-top');
+    }
+
+    if (curBottom > outBot && curBottom - 60 > outTop) {
+        this.editor.$view.addStyle('--sticky-footer-bottom', (curBottom - outBot) + 'px');
+    }
+    else {
+        this.editor.$view.removeStyle('--sticky-footer-bottom');
+    }
+};
+
+LayoutController.prototype.ev_docClick = function () {
+    if (this.editor.$view.isDescendantOf(document.body)) {
+        return;
+    }
+    document.removeEventListener('click', this.ev_docClick);
+    this.listendScrollEventElements.forEach(elt => {
+        elt.removeEventListener('scroll', this.ev_outScroll);
+    });
+    this.listendScrollEventElements = [];
+}
 
 /**
  * @param {TableEditor} editor

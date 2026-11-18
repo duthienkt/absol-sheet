@@ -20,13 +20,17 @@ import {
 import { excelColumnToNumber, numberToExcelColumn, openFileDialog } from "absol-acomp/js/utils";
 import { TextInput } from "absol-acomp/js/TextEditor";
 import TextMeasure from "absol-acomp/js/TextMeasure";
+import tableEditor from "../fragment/TableEditor";
 
 /**
  * @extends Fragment
+ * @param {TableEditor} tableEditor
  * @constructor
  */
-function DataSheetImportWizard() {
+function DataSheetImportWizard(opt) {
     Fragment.call(this);
+    this.opt = opt || {};
+    this.tableEditor = opt.editor;
     this.lang = 'vi';
     this.data = {};
     this.stepFrags = [
@@ -984,6 +988,15 @@ function DSIColumnMappingFragment(wizard) {
 
 mixClass(DSIColumnMappingFragment, DSIBaseStep);
 
+DSIColumnMappingFragment.prototype.getPropertyNames = function () {
+    console.log(this.wizard.tableEditor);
+    if (!this.wizard.tableEditor.tableData)
+        return [];
+    var descriptors = this.wizard.tableEditor.tableData.propertyDescriptors;
+    console.log(descriptors);
+    return Object.keys(descriptors);
+};
+
 DSIColumnMappingFragment.prototype.createView = function () {
     this.$view = _({
         class: 'asi-wizard-step',
@@ -1007,6 +1020,10 @@ DSIColumnMappingFragment.prototype.createView = function () {
         }
     });
 };
+
+DSIColumnMappingFragment.prototype.onResume = function () {
+    console.log('getPropertyName', this.getPropertyNames())
+}
 
 
 /**
