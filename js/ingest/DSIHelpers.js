@@ -1,29 +1,5 @@
-import safeThrow from "absol/src/Code/safeThrow";
+import { loadExcelLibrary } from "../util";
 
-var libSync = null;
-var libUrl = "https://absoljs.dev/vendor/exceljs/exceljs_v1.js?ver=" + Date.now();
-
-export function loadExcelLibrary() {
-    if (libSync) {
-        return libSync;
-    }
-    if (window['excel_module'] && window['excel_module'].ready) {
-        libSync = window['excel_module'].ready().then(() => {
-        }, () => {
-            libSync = null;//fail and load again
-        });
-    }
-    else {
-        libSync = fetch(libUrl).then(res => res.text()).then(res => {
-            res += "\n//#sourceURL=vendor/exceljs/exceljs_v1.js";
-            (new Function( 'global', res))(window);
-        }, (error) => {
-            safeThrow(error);
-            libSync = null;
-        })
-    }
-    return libSync;
-}
 
 export function isEmptyExcelSheetData(sheet) {
     if (!sheet) return true;
