@@ -188,6 +188,7 @@ ASHField.prototype.renewDescriptor = function () {
             this.record[this.pName] = this.value;
         }
     }
+    this.elt.attr('data-type', descriptor.type);
 };
 
 ASHField.prototype.implicit = function (value) {
